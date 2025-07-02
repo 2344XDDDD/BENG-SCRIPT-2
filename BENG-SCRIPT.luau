@@ -5299,16 +5299,16 @@ function MacLib:Window(Settings)
 	exit.MouseButton1Click:Connect(function()
 		WindowFunctions:Dialog({
 			Title = Settings.Title,
-			Description = "Are you sure you want to exit the menu? You will lose any unsaved configurations.",
+			Description = "确定要关闭Ui吗-点击关闭Ui即可关闭-点击不关闭即可继续使用BENG-SCRIPT",
 			Buttons = {
 				{
-					Name = "Confirm",
+					Name = "关闭",
 					Callback = function()
 						WindowFunctions:Unload()
 					end,
 				},
 				{
-					Name = "Cancel"
+					Name = "不关闭"
 				}
 			}
 		})
