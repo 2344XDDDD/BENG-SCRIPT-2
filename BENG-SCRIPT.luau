@@ -4646,7 +4646,7 @@ function MacLib:Window(Settings)
 				local selectedConfig = nil
 
 				configSection:Input({
-					Name = "Config Name",
+					Name = "配置名称",
 					Placeholder = "Name",
 					AcceptedCharacters = "All",
 					Callback = function(input)
@@ -4655,7 +4655,7 @@ function MacLib:Window(Settings)
 				})
 
 				local configSelection = configSection:Dropdown({
-					Name = "Select Config",
+					Name = "选择配置",
 					Multi = false,
 					Required = false,
 					Options = MacLib:RefreshConfigList(),
@@ -4694,7 +4694,7 @@ function MacLib:Window(Settings)
 				})
 
 				configSection:Button({
-					Name = "Load Config",
+					Name = "加载配置",
 					Callback = function()
 						local success, returned = MacLib:LoadConfig(configSelection.Value)
 						if not success then
@@ -4713,7 +4713,7 @@ function MacLib:Window(Settings)
 				})
 
 				configSection:Button({
-					Name = "Overwrite Config",
+					Name = "覆盖配置",
 					Callback = function()
 						local success, returned = MacLib:SaveConfig(configSelection.Value)
 						if not success then
@@ -4732,7 +4732,7 @@ function MacLib:Window(Settings)
 				})
 
 				configSection:Button({
-					Name = "Refresh Config List",
+					Name = "刷新配置列表",
 					Callback = function()
 						configSelection:ClearOptions()
 						configSelection:InsertOptions(MacLib:RefreshConfigList())
@@ -4742,11 +4742,11 @@ function MacLib:Window(Settings)
 				local autoloadLabel
 
 				configSection:Button({
-					Name = "Set as autoload",
+					Name = "设置为自动加载",
 					Callback = function()
 						local name = configSelection.Value
 						writefile(MacLib.Folder .. "/settings/autoload.txt", name)
-						autoloadLabel:UpdateName("Autoload config: " .. name)
+						autoloadLabel:UpdateName("自动加载配置: " .. name)
 						WindowFunctions:Notify({
 							Title = "Interface",
 							Description = string.format("Set %q as autoload", name),
