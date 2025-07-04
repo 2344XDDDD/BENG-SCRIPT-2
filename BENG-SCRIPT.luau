@@ -4665,7 +4665,7 @@ function MacLib:Window(Settings)
 				})
 
 				configSection:Button({
-					Name = "Create Config",
+					Name = "创建配置",
 					Callback = function()
 						if not inputPath or string.gsub(inputPath, " ", "") == "" then
 							WindowFunctions:Notify({
@@ -4758,7 +4758,7 @@ function MacLib:Window(Settings)
 
 				if isfile(MacLib.Folder .. "/settings/autoload.txt") then
 					local name = readfile(MacLib.Folder .. "/settings/autoload.txt")
-					autoloadLabel:UpdateName("Autoload config: " .. name)
+					autoloadLabel:UpdateName("自动加载配置: " .. name)
 				end
 			end
 
