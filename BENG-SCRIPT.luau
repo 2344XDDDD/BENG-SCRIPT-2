@@ -4647,7 +4647,7 @@ function MacLib:Window(Settings)
 
 				configSection:Input({
 					Name = "配置名称",
-					Placeholder = "Name",
+					Placeholder = "输入",
 					AcceptedCharacters = "All",
 					Callback = function(input)
 						inputPath = input
