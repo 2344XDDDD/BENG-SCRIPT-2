@@ -4754,7 +4754,7 @@ function MacLib:Window(Settings)
 					end,
 				})
 
-				autoloadLabel = configSection:Label({Text = "自动加载配置: 没有"})
+				autoloadLabel = configSection:Label({Text = "自动加载配置: None"})
 
 				if isfile(MacLib.Folder .. "/settings/autoload.txt") then
 					local name = readfile(MacLib.Folder .. "/settings/autoload.txt")
