@@ -402,7 +402,7 @@ local SaveManager = {} do
         local section = tab:AddRightGroupbox("配置", "folder-cog")
 
         section:AddInput("SaveManager_ConfigName",    { Text = "配置名称" })
-        section:AddButton("Create config", function()
+        section:AddButton("创建配置", function()
             local name = self.Library.Options.SaveManager_ConfigName.Value
 
             if name:gsub(" ", "") == "" then
@@ -473,7 +473,7 @@ local SaveManager = {} do
             SaveManager.AutoloadLabel:SetText("当前自动加载配置：" .. name)
             self.Library:Notify(string.format("Set %q to auto load", name))
         end)
-        section:AddButton("Reset autoload", function()
+        section:AddButton("重置自动加载", function()
             local success, err = self:DeleteAutoLoadConfig()
             if not success then
                 return self.Library:Notify("无法设置自动加载配置：" .. err)
