@@ -5283,7 +5283,7 @@ function MacLib:Window(Settings)
 		WindowFunctions:SetState(state)
 		WindowFunctions:Notify({
 			Title = Settings.Title,
-			Description = (state and "Maximized " or "Minimized ") .. "the menu. Use " .. tostring(MenuKeybind.Name) .. " to toggle it.",
+			Description = (state and "已开启" or "已关闭") .. "使用" .. tostring(MenuKeybind.Name) .. "按键:进行操作",
 			Lifetime = 5
 		})
 	end
