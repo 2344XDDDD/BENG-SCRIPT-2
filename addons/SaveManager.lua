@@ -355,15 +355,15 @@ local SaveManager = {} do
         if isfile(autoLoadPath) then
             local successRead, name = pcall(readfile, autoLoadPath)
             if not successRead then
-                return self.Library:Notify("Failed to load autoload config: write file error")
+                return self.Library:Notify("无法加载自动加载配置：写入文件错误")
             end
 
             local success, err = self:Load(name)
             if not success then
-                return self.Library:Notify("Failed to load autoload config: " .. err)
+                return self.Library:Notify("无法加载自动加载配置：" .. err)
             end
 
-            self.Library:Notify(string.format("Auto loaded config %q", name))
+            self.Library:Notify(string.format("自动加载配置 %q", name))
         end
     end
 
