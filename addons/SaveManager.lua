@@ -406,15 +406,15 @@ local SaveManager = {} do
             local name = self.Library.Options.SaveManager_ConfigName.Value
 
             if name:gsub(" ", "") == "" then
-                return self.Library:Notify("Invalid config name (empty)", 2)
+                return self.Library:Notify("无效的配置名称（空）", 2)
             end
 
             local success, err = self:Save(name)
             if not success then
-                return self.Library:Notify("Failed to create config: " .. err)
+                return self.Library:Notify("无法创建配置：" .. err)
             end
 
-            self.Library:Notify(string.format("Created config %q", name))
+            self.Library:Notify(string.format("已创建配置 %q", name))
 
             self.Library.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
             self.Library.Options.SaveManager_ConfigList:SetValue(nil)
@@ -428,20 +428,20 @@ local SaveManager = {} do
 
             local success, err = self:Load(name)
             if not success then
-                return self.Library:Notify("Failed to load config: " .. err)
+                return self.Library:Notify("无法加载配置：" .. err)
             end
 
-            self.Library:Notify(string.format("Loaded config %q", name))
+            self.Library:Notify(string.format("已加载配置 %q", name))
         end)
         section:AddButton("覆盖配置", function()
             local name = self.Library.Options.SaveManager_ConfigList.Value
 
             local success, err = self:Save(name)
             if not success then
-                return self.Library:Notify("Failed to overwrite config: " .. err)
+                return self.Library:Notify("无法覆盖配置：" .. err)
             end
 
-            self.Library:Notify(string.format("Overwrote config %q", name))
+            self.Library:Notify(string.format("覆盖配置 %q", name))
         end)
 
         section:AddButton("删除配置", function()
@@ -449,10 +449,10 @@ local SaveManager = {} do
 
             local success, err = self:Delete(name)
             if not success then
-                return self.Library:Notify("Failed to delete config: " .. err)
+                return self.Library:Notify("无法删除配置：" .. err)
             end
 
-            self.Library:Notify(string.format("Deleted config %q", name))
+            self.Library:Notify(string.format("已删除配置 %q", name))
             self.Library.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
             self.Library.Options.SaveManager_ConfigList:SetValue(nil)
         end)
@@ -471,7 +471,7 @@ local SaveManager = {} do
             end
 
             SaveManager.AutoloadLabel:SetText("当前自动加载配置：" .. name)
-            self.Library:Notify(string.format("Set %q to auto load", name))
+            self.Library:Notify(string.format("将 %q 设置为自动加载", name))
         end)
         section:AddButton("重置自动加载", function()
             local success, err = self:DeleteAutoLoadConfig()
@@ -483,7 +483,7 @@ local SaveManager = {} do
             SaveManager.AutoloadLabel:SetText("当前自动加载配置：无")
         end)
 
-        self.AutoloadLabel = section:AddLabel("Current autoload config: " .. self:GetAutoloadConfig(), true)
+        self.AutoloadLabel = section:AddLabel("当前自动加载配置：" .. self:GetAutoloadConfig(), true)
 
         -- self:LoadAutoloadConfig()
         self:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
