@@ -206,10 +206,10 @@ local ThemeManager = {} do
         end
 
         local file = self.Folder .. "/themes/" .. name .. ".json"
-        if not isfile(file) then return false, "invalid file" end
+        if not isfile(file) then return false, "无效文件" end
 
         local success = pcall(delfile, file)
-        if not success then return false, "delete file error" end
+        if not success then return false, "d删除文件错误" end
         
         return true
     end
@@ -267,7 +267,7 @@ local ThemeManager = {} do
         groupbox:AddDropdown("ThemeManager_ThemeList", { Text = "主题列表-设置", Values = ThemesArray, Default = 1 })
         groupbox:AddButton("设为默认值", function()
             self:SaveDefault(self.Library.Options.ThemeManager_ThemeList.Value)
-            self.Library:Notify(string.format("Set default theme to %q", self.Library.Options.ThemeManager_ThemeList.Value))
+            self.Library:Notify(string.format("将默认主题设置为 %q", self.Library.Options.ThemeManager_ThemeList.Value))
         end)
 
         self.Library.Options.ThemeManager_ThemeList:OnChanged(function()
@@ -277,7 +277,7 @@ local ThemeManager = {} do
         groupbox:AddDivider()
 
         groupbox:AddInput("ThemeManager_CustomThemeName", { Text = "自定义主题名称" })
-        groupbox:AddButton("Create theme", function() 
+        groupbox:AddButton("创建主题", function() 
             self:SaveCustomTheme(self.Library.Options.ThemeManager_CustomThemeName.Value)
 
             self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
@@ -291,23 +291,23 @@ local ThemeManager = {} do
             local name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
             self:ApplyTheme(name)
-            self.Library:Notify(string.format("Loaded theme %q", name))
+            self.Library:Notify(string.format("已加载主题 %q", name))
         end)
         groupbox:AddButton("覆盖主题", function()
             local name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
             self:SaveCustomTheme(name)
-            self.Library:Notify(string.format("Overwrote config %q", name))
+            self.Library:Notify(string.format("覆盖配置 %q", name))
         end)
         groupbox:AddButton("删除主题", function()
             local name = self.Library.Options.ThemeManager_CustomThemeList.Value
 
             local success, err = self:Delete(name)
             if not success then
-                return self.Library:Notify("Failed to delete theme: " .. err)
+                return self.Library:Notify("删除主题失败：" .. err)
             end
 
-            self.Library:Notify(string.format("Deleted theme %q", name))
+            self.Library:Notify(string.format("已删除主题 %q", name))
             self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
             self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
         end)
@@ -318,16 +318,16 @@ local ThemeManager = {} do
         groupbox:AddButton("设为默认值", function()
             if self.Library.Options.ThemeManager_CustomThemeList.Value ~= nil and self.Library.Options.ThemeManager_CustomThemeList.Value ~= "" then
                 self:SaveDefault(self.Library.Options.ThemeManager_CustomThemeList.Value)
-                self.Library:Notify(string.format("Set default theme to %q", self.Library.Options.ThemeManager_CustomThemeList.Value))
+                self.Library:Notify(string.format("将默认主题设置为 %q", self.Library.Options.ThemeManager_CustomThemeList.Value))
             end
         end)
         groupbox:AddButton("重置默认值", function()
             local success = pcall(delfile, self.Folder .. "/themes/default.txt")
             if not success then 
-                return self.Library:Notify("Failed to reset default: delete file error")
+                return self.Library:Notify("无法重置默认值：删除文件错误")
             end
                 
-            self.Library:Notify("Set default theme to nothing")
+            self.Library:Notify("将默认主题设置为无")
             self.Library.Options.ThemeManager_CustomThemeList:SetValues(self:ReloadCustomThemes())
             self.Library.Options.ThemeManager_CustomThemeList:SetValue(nil)
         end)
