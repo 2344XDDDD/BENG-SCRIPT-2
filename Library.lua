@@ -174,7 +174,7 @@ local Templates = {
         MobileButtonsSide = "Left",
     },
     Toggle = {
-        Text = "Toggle",
+        Text = "开关",
         Default = false,
 
         Callback = function() end,
@@ -5758,7 +5758,7 @@ function Library:CreateWindow(WindowInfo)
 
         local LockButton = Library:AddDraggableButton("Lock", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            self:SetText(Library.CantDragForced and "Unlock" or "Lock")
+            self:SetText(Library.CantDragForced and "关闭锁定Ui" or "锁定Ui")
         end)
 
         if WindowInfo.MobileButtonsSide == "Right" then
