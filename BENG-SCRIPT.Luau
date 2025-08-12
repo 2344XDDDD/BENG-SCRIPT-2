@@ -17123,7 +17123,7 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 			notify.new({
 				Title = "Configs",
 				Icon = Compkiller:_GetIcon('settings'),
-				Content = "创建配置成功-配置名: \""..Config.Name.."\""
+				Content = "Create config \""..Config.Name.."\""
 			})
 		end
 
