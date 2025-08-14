@@ -2500,7 +2500,7 @@ function Luna:CreateWindow(WindowSettings)
 
 		HomeTabSettings = Kwargify({
 			Icon = 1,
-			SupportedExecutors = {"Vega X", "Delta", "Nihon", "Xeno"}, -- THESE DEFAULTS ARE PLACEHOLDERS!! I DO NOT ADVERTISE THESE, THEY ARE JUS THE FIRST THAT CAME TO MIND. I HAVE NO IDEA WHETHER THEYA RE RATS (they prob are) AND IM NOT RESPONSIBLE IF U GET VIRUSES FROM INSTALLING AFTER SEEING THIS LIST
+			SupportedExecutors = {"Vega X", "Delta", "Krnl", "Zenith", "AWP", "Swift", "Bunni", "Nucleus", "Potassium"}, -- THESE DEFAULTS ARE PLACEHOLDERS!! I DO NOT ADVERTISE THESE, THEY ARE JUS THE FIRST THAT CAME TO MIND. I HAVE NO IDEA WHETHER THEYA RE RATS (they prob are) AND IM NOT RESPONSIBLE IF U GET VIRUSES FROM INSTALLING AFTER SEEING THIS LIST
 			DiscordInvite = "noinvitelink" -- The disvord invite link. Do not include the link so for example if my invite was discord.gg/nebula I would put nebula
 		}, HomeTabSettings or {})
 
@@ -5807,7 +5807,7 @@ function Luna:CreateWindow(WindowSettings)
 					Dropdown.Desc.Text = DropdownSettings.Description
 				end
 
-				if DropdownSettings.SpecialType == "Player" then
+				if DropdownSettings.SpecialType == "玩家" then
 
 					for i,v in pairs(DropdownSettings.Options) do
 						table.remove(DropdownSettings.Options, i)
