@@ -6119,13 +6119,13 @@ function Luna:CreateWindow(WindowSettings)
 			local selectedConfig = nil
 
 			local Title = Elements.Template.Title:Clone()
-			Title.Text = "配置"
+			Title.Text = "Configurations"
 			Title.Visible = true
 			Title.Parent = TabPage
 			Title.TextTransparency = 1
 			TweenService:Create(Title, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
 
-			Tab:CreateSection("配置创建器")
+			Tab:CreateSection("Config Creator")
 
 			Tab:CreateInput({
 				Name = "Config Name",
@@ -6722,3 +6722,4 @@ if isStudio then
 	})
 end
 return Luna
+CreateHomeTab
