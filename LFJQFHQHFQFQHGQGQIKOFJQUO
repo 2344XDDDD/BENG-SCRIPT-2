@@ -4028,7 +4028,7 @@ function Luna:CreateWindow(WindowSettings)
 						Dropdown.Desc.Text = DropdownSettings.Description
 					end
 
-					if DropdownSettings.SpecialType == "Player" then
+					if DropdownSettings.SpecialType == "玩家" then
 
 						for i,v in pairs(DropdownSettings.Options) do
 							table.remove(DropdownSettings.Options, i)
@@ -5807,7 +5807,7 @@ function Luna:CreateWindow(WindowSettings)
 					Dropdown.Desc.Text = DropdownSettings.Description
 				end
 
-				if DropdownSettings.SpecialType == "玩家" then
+				if DropdownSettings.SpecialType == "Player" then
 
 					for i,v in pairs(DropdownSettings.Options) do
 						table.remove(DropdownSettings.Options, i)
