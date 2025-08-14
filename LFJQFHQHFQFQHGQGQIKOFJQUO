@@ -6255,7 +6255,7 @@ function Luna:CreateWindow(WindowSettings)
 				Callback = function()
 					local name = selectedConfig
 					writefile(Luna.Folder .. "/settings/autoload.txt", name)
-					loadlabel:Set({ Text = "Current autoload config: " .. name })
+					loadlabel:Set({ Text = "" .. name })
 
 					Luna:Notification({
 						Title = "通知",
@@ -6722,3 +6722,4 @@ if isStudio then
 	})
 end
 return Luna
+CreateHomeTab
