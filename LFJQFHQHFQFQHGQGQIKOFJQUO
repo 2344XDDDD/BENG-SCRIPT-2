@@ -6722,3 +6722,4 @@ if isStudio then
 	})
 end
 return Luna
+CreateHomeTab
