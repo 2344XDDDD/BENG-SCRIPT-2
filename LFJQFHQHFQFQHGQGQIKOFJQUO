@@ -6290,7 +6290,7 @@ function Luna:CreateWindow(WindowSettings)
 
 			if isfile(Luna.Folder .. "/settings/autoload.txt") then
 				local name = readfile(Luna.Folder .. "/settings/autoload.txt")
-				loadlabel:Set( { Text = "Current autoload config: " .. name })
+				loadlabel:Set( { Text = "当前自动加载配置：" .. name })
 			end     
 		end
 
@@ -6722,4 +6722,3 @@ if isStudio then
 	})
 end
 return Luna
-CreateHomeTab
