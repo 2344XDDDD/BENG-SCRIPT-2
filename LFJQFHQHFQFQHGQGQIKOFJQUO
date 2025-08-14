@@ -6268,7 +6268,7 @@ function Luna:CreateWindow(WindowSettings)
 
 			loadlabel = Tab:CreateParagraph({
 				Title = "当前自动加载",
-				Text = "None"
+				Text = "无"
 			})
 
 			Tab:CreateButton({
