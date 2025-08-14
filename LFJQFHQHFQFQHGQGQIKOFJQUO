@@ -6119,18 +6119,18 @@ function Luna:CreateWindow(WindowSettings)
 			local selectedConfig = nil
 
 			local Title = Elements.Template.Title:Clone()
-			Title.Text = "Configurations"
+			Title.Text = "配置"
 			Title.Visible = true
 			Title.Parent = TabPage
 			Title.TextTransparency = 1
 			TweenService:Create(Title, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
 
-			Tab:CreateSection("Config Creator")
+			Tab:CreateSection("配置创建")
 
 			Tab:CreateInput({
-				Name = "Config Name",
-				Description = "Insert a name for your to be created config.",
-				PlaceholderText = "Name",
+				Name = "配置名称",
+				Description = "为要创建的配置插入一个名称",
+				PlaceholderText = "输入...",
 				CurrentValue = "",
 				Numeric = false,
 				MaxCharacters = nil,
@@ -6143,15 +6143,15 @@ function Luna:CreateWindow(WindowSettings)
 			local configSelection
 
 			Tab:CreateButton({
-				Name = "Create Config",
-				Description = "Create a config with all of your current settings.",
+				Name = "创建配置",
+				Description = "使用所有当前设置创建配置",
 				Callback = function()
 					if not inputPath or string.gsub(inputPath, " ", "") == "" then
 						Luna:Notification({
-							Title = "Interface",
+							Title = "通知",
 							Icon = "warning",
 							ImageSource = "Material",
-							Content = "Config name cannot be empty."
+							Content = "配置名称不能为空"
 						})
 						return
 					end
@@ -6159,30 +6159,30 @@ function Luna:CreateWindow(WindowSettings)
 					local success, returned = Luna:SaveConfig(inputPath)
 					if not success then
 						Luna:Notification({
-							Title = "Interface",
+							Title = "通知",
 							Icon = "error",
 							ImageSource = "Material",
-							Content = "Unable to save config, return error: " .. returned
+							Content = "无法保存配置，返回错误：" .. returned
 						})
 					end
 
 					Luna:Notification({
-						Title = "Interface",
+						Title = "通知",
 						Icon = "info",
 						ImageSource = "Material",
-						Content = string.format("Created config %q", inputPath),
+						Content = string.format("已创建配置 %q", inputPath),
 					})
 
 					configSelection:Set({ Options = Luna:RefreshConfigList() })
 				end
 			})
 
-			Tab:CreateSection("Config Load/Settings")
+			Tab:CreateSection("配置加载/设置")
 
 
 			configSelection = Tab:CreateDropdown({
-				Name = "Select Config",
-				Description = "Select a config to load your settings on.",
+				Name = "选择配置",
+				Description = "选择一个配置来加载您的设置",
 				Options = Luna:RefreshConfigList(),
 				CurrentOption = {},
 				MultipleOptions = false,
@@ -6193,56 +6193,56 @@ function Luna:CreateWindow(WindowSettings)
 			})
 
 			Tab:CreateButton({
-				Name = "Load Config",
-				Description = "Load your saved config settings.",
+				Name = "加载配置",
+				Description = "加载您保存的配置设置",
 				Callback = function()
 					local success, returned = Luna:LoadConfig(selectedConfig)
 					if not success then
 						Luna:Notification({
-							Title = "Interface",
+							Title = "通知",
 							Icon = "error",
 							ImageSource = "Material",
-							Content = "Unable to load config, return error: " .. returned
+							Content = "无法加载配置，返回错误：" .. returned
 						})
 						return
 					end
 
 					Luna:Notification({
-						Title = "Interface",
+						Title = "通知",
 						Icon = "info",
 						ImageSource = "Material",
-						Content = string.format("Loaded config %q", selectedConfig),
+						Content = string.format("已加载配置 %q", selectedConfig),
 					})
 				end
 			})
 
 			Tab:CreateButton({
-				Name = "Overwrite Config",
-				Description = "Overwrite your current config settings.",
+				Name = "覆盖配置",
+				Description = "覆盖您当前的配置设置。",
 				Callback = function()
 					local success, returned = Luna:SaveConfig(selectedConfig)
 					if not success then
 						Luna:Notification({
-							Title = "Interface",
+							Title = "通知",
 							Icon = "error",
 							ImageSource = "Material",
-							Content = "Unable to overwrite config, return error: " .. returned
+							Content = "无法覆盖配置 - 返回错误: " .. returned
 						})
 						return
 					end
 
 					Luna:Notification({
-						Title = "Interface",
+						Title = "通知",
 						Icon = "info",
 						ImageSource = "Material",
-						Content = string.format("Overwrote config %q", selectedConfig),
+						Content = string.format("覆盖配置 %q", selectedConfig),
 					})
 				end
 			})
 
 			Tab:CreateButton({
-				Name = "Refresh Config List",
-				Description = "Refresh the current config list.",
+				Name = "刷新配置列表",
+				Description = "刷新当前配置列表",
 				Callback = function()
 					configSelection:Set({ Options = Luna:RefreshConfigList() })
 				end,
@@ -6250,40 +6250,40 @@ function Luna:CreateWindow(WindowSettings)
 
 			local loadlabel
 			Tab:CreateButton({
-				Name = "Set as autoload",
-				Description = "Set a config to auto load setting in your next session.",
+				Name = "设置为自动加载",
+				Description = "在下一个会话中设置配置以自动加载设置",
 				Callback = function()
 					local name = selectedConfig
 					writefile(Luna.Folder .. "/settings/autoload.txt", name)
 					loadlabel:Set({ Text = "Current autoload config: " .. name })
 
 					Luna:Notification({
-						Title = "Interface",
+						Title = "通知",
 						Icon = "info",
 						ImageSource = "Material",
-						Content = string.format("Set %q to auto load", name),
+						Content = string.format("放 %q 自动加载", name),
 					})
 				end,
 			})
 
 			loadlabel = Tab:CreateParagraph({
-				Title = "Current Auto Load",
+				Title = "当前自动加载",
 				Text = "None"
 			})
 
 			Tab:CreateButton({
-				Name = "Delete Autoload",
-				Description = "Delete The Autoload File",
+				Name = "删除自动加载",
+				Description = "删除自动加载文件",
 				Callback = function()
 					local name = selectedConfig
 					delfile(Luna.Folder .. "/settings/autoload.txt")
 					loadlabel:Set({ Text = "None" })
 
 					Luna:Notification({
-						Title = "Interface",
+						Title = "通知",
 						Icon = "info",
 						ImageSource = "Material",
-						Content = "Deleted Autoload",
+						Content = "已删除自动加载",
 					})
 				end,
 			})
@@ -6384,13 +6384,13 @@ function Luna:CreateWindow(WindowSettings)
 		function Tab:BuildThemeSection()
 
 			local Title = Elements.Template.Title:Clone()
-			Title.Text = "Theming"
+			Title.Text = "主题"
 			Title.Visible = true
 			Title.Parent = TabPage
 			Title.TextTransparency = 1
 			TweenService:Create(Title, TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
 
-			Tab:CreateSection("Custom Editor")
+			Tab:CreateSection("主题")
 
 			local c1cp = Tab:CreateColorPicker({
 				Name = "Color 1",
