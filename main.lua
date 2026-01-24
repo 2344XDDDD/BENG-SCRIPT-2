@@ -9772,7 +9772,6 @@ end,
         local ap = al.TabCount
         ao.Index = ap
 
-        -- 创建 Tab 主体
         ao.UIElements.Main = af.NewRoundFrame(ao.UICorner, "Squircle", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, -7, 0, 0),
@@ -9800,7 +9799,6 @@ end,
                     FillDirection = "Horizontal",
                     VerticalAlignment = "Center",
                 }),
-                -- Tab 文字
                 ah("TextLabel", {
                     Text = ao.Title,
                     ThemeTag = { TextColor3 = "TabTitle" },
@@ -9816,10 +9814,10 @@ end,
                     BackgroundTransparency = 1,
                 }, {
                     ah("UIPadding", {
-                        Name = "TextPadding", -- 命名方便后续定位动画
+                        Name = "TextPadding", 
                         PaddingTop = UDim.new(0, ao.TitlePaddingY),
                         PaddingBottom = UDim.new(0, ao.TitlePaddingY),
-                        PaddingLeft = UDim.new(0, 0) -- 初始化偏移
+                        PaddingLeft = UDim.new(0, 0) 
                     })
                 }),
                 ah("UIPadding", {
@@ -9831,7 +9829,6 @@ end,
             }),
         }, true)
 
-        -- 原有的 Icon 处理逻辑 (保持不变)
         local aq = 0
         local ar
         local as
@@ -9861,7 +9858,7 @@ end,
                     }),
                 })
                 ar.AnchorPoint = Vector2.new(0.5, 0.5)
-                ar.Position = Vector2.new(0.5, 0, 0.5, 0)
+                ar.Position = UDim2.new(0.5, 0, 0.5, 0) -- 这里已经修正为 UDim2
                 ar.ImageLabel.ImageTransparency = 0
                 ar.ImageLabel.ImageColor3 = af.GetTextColorForHSB(ao.IconColor, 0.68)
                 aq = -28 - (Window.UIPadding / 2)
@@ -9873,7 +9870,6 @@ end,
             aq = -30
         end
 
-        -- 容器逻辑保持不变...
         ao.UIElements.ContainerFrame = ah("ScrollingFrame", {
             Size = UDim2.new(1, 0, 1, ao.ShowTabTitle and -((Window.UIPadding * 2.4) + 12) or 0),
             BackgroundTransparency = 1,
@@ -9914,7 +9910,6 @@ end,
             }, {
                 as,
                 ah("TextLabel", {
-                    -- 此处的 TabTitle 不受侧边栏动画影响
                     Text = ao.Title,
                     ThemeTag = { TextColor3 = "Text" },
                     TextSize = 20,
@@ -9959,7 +9954,6 @@ end,
             end
         end)
 
-        -- 其余初始化逻辑保持不变...
         if Window.ScrollBarEnabled then
             ak(ao.UIElements.ContainerFrame, ao.UIElements.ContainerFrameCanvas, Window, 3)
         end
@@ -10040,7 +10034,7 @@ end,
         function ao.GetUnlocked(ay)
             local az = {}
             for aA, aB in next, Window.AllElements do
-                if aB.Tab and aB.Tab.Index and aB.Tab.Index == ao.Index and aB.Locked == false then table.insert(az, aB) end
+                if aA.Tab and aA.Tab.Index and aA.Tab.Index == ao.Index and aB.Locked == false then table.insert(az, aB) end
             end
             return az
         end
@@ -10065,21 +10059,16 @@ end,
 
     function al.OnChange(am, an) al.OnChangeFunc = an end
 
-    -- ============================================================
-    -- 修改重点：选中 Tab 的动画逻辑
-    -- ============================================================
     function al.SelectTab(am, an)
         if not al.Tabs[an].Locked then
             al.SelectedTab = an
 
             for index, ap in next, al.Tabs do
                 if not ap.Locked then
-                    -- 恢复其他未选中的样式
                     af.SetThemeTag(ap.UIElements.Main, { ImageTransparency = "TabBorderTransparency" }, 0.15)
                     if ap.Border then af.SetThemeTag(ap.UIElements.Main.Outline, { ImageTransparency = "TabBorderTransparency" }, 0.15) end
                     af.SetThemeTag(ap.UIElements.Main.Frame.TextLabel, { TextTransparency = "TabTextTransparency" }, 0.15)
                     
-                    -- 【动画回正】：文字 Padding 恢复 0
                     af.Tween(ap.UIElements.Main.Frame.TextLabel.TextPadding, 0.15, { PaddingLeft = UDim.new(0, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 
                     if ap.UIElements.Icon and not ap.IconColor then
@@ -10089,13 +10078,11 @@ end,
                 end
             end
 
-            -- 设置选中样式
             local currentTab = al.Tabs[an]
             af.SetThemeTag(currentTab.UIElements.Main, { ImageTransparency = "TabBackgroundActiveTransparency" }, 0.15)
             if currentTab.Border then af.SetThemeTag(currentTab.UIElements.Main.Outline, { ImageTransparency = "TabBorderTransparencyActive" }, 0.15) end
             af.SetThemeTag(currentTab.UIElements.Main.Frame.TextLabel, { TextTransparency = "TabTextTransparencyActive" }, 0.15)
             
-            -- 【添加动画】：选中 Tab 时，文字向右偏移 6 像素
             af.Tween(currentTab.UIElements.Main.Frame.TextLabel.TextPadding, 0.15, { PaddingLeft = UDim.new(0, 6) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 
             if currentTab.UIElements.Icon and not currentTab.IconColor then
@@ -10103,7 +10090,6 @@ end,
             end
             currentTab.Selected = true
 
-            -- 切换容器...
             task.spawn(function()
                 for ao, ap in next, al.Containers do ap.AnchorPoint = Vector2.new(0, 0.05) ap.Visible = false end
                 al.Containers[an].Visible = true
@@ -10117,7 +10103,7 @@ end,
     end
 
     return al
- end function a.X()
+end function a.X()
 
 local aa={}
 
