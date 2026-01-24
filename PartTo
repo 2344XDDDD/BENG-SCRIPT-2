@@ -6291,28 +6291,30 @@ function Library:CreateWindow(WindowInfo)
         WindowInfo.Title = title
     end
 
-    local function ApplyCompact()
-        IsCompact = Window:GetSidebarWidth() == WindowInfo.SidebarCompactWidth
-        if WindowInfo.DisableCompactingSnap then
-            IsCompact = Window:GetSidebarWidth() <= WindowInfo.CompactWidthActivation
-        end
-
+local function ApplyCompact()
+        IsCompact = Window:GetSidebarWidth() <= WindowInfo.SidebarCompactWidth + 2
         WindowTitle.Visible = not IsCompact
         if not WindowInfo.Icon then
             WindowIcon.Visible = IsCompact
         end
 
         for _, Button in Library.TabButtons do
-            if not Button.Icon then
-                continue
-            end
-
             Button.Label.Visible = not IsCompact
-            Button.Padding.PaddingBottom = UDim.new(0, IsCompact and 6 or 11)
-            Button.Padding.PaddingLeft = UDim.new(0, IsCompact and 6 or 12)
-            Button.Padding.PaddingRight = UDim.new(0, IsCompact and 6 or 12)
-            Button.Padding.PaddingTop = UDim.new(0, IsCompact and 6 or 11)
-            Button.Icon.SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY
+
+            if Button.Icon then
+                if IsCompact then
+                    Button.Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+                    Button.Icon.Position = UDim2.fromScale(0.5, 0.5)
+                    Button.Padding.PaddingLeft = UDim.new(0, 0)
+                    Button.Padding.PaddingRight = UDim.new(0, 0)
+                else
+                    Button.Icon.AnchorPoint = Vector2.new(0, 0.5)
+                    Button.Icon.Position = UDim2.new(0, 0, 0.5, 0)
+                    Button.Padding.PaddingLeft = UDim.new(0, 12)
+                    Button.Padding.PaddingRight = UDim.new(0, 12)
+                end
+                Button.Icon.SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY
+            end
         end
     end
 
@@ -6387,7 +6389,7 @@ function Library:CreateWindow(WindowInfo)
         local TabRight
 
         Icon = Library:GetCustomIcon(Icon)
-        do
+do
             TabButton = New("TextButton", {
                 BackgroundColor3 = "MainColor",
                 BackgroundTransparency = 1,
@@ -6395,11 +6397,12 @@ function Library:CreateWindow(WindowInfo)
                 Text = "",
                 Parent = Tabs,
             })
+            
             local ButtonPadding = New("UIPadding", {
-                PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
-                PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
-                PaddingRight = UDim.new(0, IsCompact and 6 or 12),
-                PaddingTop = UDim.new(0, IsCompact and 6 or 11),
+                PaddingBottom = UDim.new(0, 11),
+                PaddingLeft = UDim.new(0, IsCompact and 0 or 12),
+                PaddingRight = UDim.new(0, IsCompact and 0 or 12),
+                PaddingTop = UDim.new(0, 11),
                 Parent = TabButton,
             })
 
@@ -6423,12 +6426,13 @@ function Library:CreateWindow(WindowInfo)
                     ImageRectSize = Icon.ImageRectSize,
                     ImageTransparency = 0.5,
                     ScaleType = Enum.ScaleType.Fit,
+                    AnchorPoint = IsCompact and Vector2.new(0.5, 0.5) or Vector2.new(0, 0.5),
+                    Position = IsCompact and UDim2.fromScale(0.5, 0.5) or UDim2.new(0, 0, 0.5, 0),
                     Size = UDim2.fromScale(1, 1),
                     SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY,
                     Parent = TabButton,
                 })
             end
-
             table.insert(Library.TabButtons, {
                 Label = TabLabel,
                 Padding = ButtonPadding,
