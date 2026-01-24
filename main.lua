@@ -9647,7 +9647,148 @@ au=aw
 break
 end
 end
+function a.MS()
+        local aa = a.load 'c'
+        local ab = aa.New
+        local ac = aa.Tween
+        local ad = aa.NewRoundFrame
 
+        local ae = {}
+
+        function ae.New(af, ag)
+            local sectionData = {
+                __type = "MultiSection",
+                Title = ag.Title or "Multi Section",
+                Sections = ag.Sections or {},
+                Pages = {},
+                SectionButtons = {},
+                CurrentSection = nil,
+                HeaderSize = 42,
+                IconSize = 20,
+            }
+
+            -- 创建外壳容器
+            local mainFrame = ad(ag.Window.ElementConfig.UICorner, "Squircle", {
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = "Y",
+                Parent = ag.Parent,
+                ThemeTag = { ImageColor3 = "SectionBoxBackground", ImageTransparency = "SectionBoxBackgroundTransparency" }
+            }, {
+                ad(ag.Window.ElementConfig.UICorner, "Glass-1", {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    ThemeTag = { ImageColor3 = "SectionBoxBorder", ImageTransparency = "SectionBoxBorderTransparency" },
+                    Name = "Outline"
+                }),
+                ab("Frame", {
+                    Name = "Header",
+                    Size = UDim2.new(1, 0, 0, sectionData.HeaderSize),
+                    BackgroundTransparency = 1
+                }, {
+                    ab("TextLabel", {
+                        Text = sectionData.Title,
+                        Size = UDim2.new(1, -20, 1, 0),
+                        Position = UDim2.new(0, 12, 0, 0),
+                        BackgroundTransparency = 1,
+                        TextXAlignment = "Left",
+                        ThemeTag = { TextColor3 = "Text" },
+                        FontFace = Font.new(aa.Font, Enum.FontWeight.SemiBold),
+                        TextSize = 16
+                    })
+                }),
+                ab("Frame", {
+                    Name = "Content",
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = "Y",
+                    Position = UDim2.new(0, 0, 0, sectionData.HeaderSize),
+                    BackgroundTransparency = 1
+                }, {
+                    ab("UIListLayout", { SortOrder = "LayoutOrder", Padding = UDim.new(0, 8) }),
+                    ab("UIPadding", { PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10) }),
+                    -- 导航栏 (NavBar)
+                    ab("Frame", {
+                        Name = "NavBar",
+                        Size = UDim2.new(1, 0, 0, 32),
+                        BackgroundTransparency = 1,
+                    }, {
+                        ab("UIListLayout", { FillDirection = "Horizontal", Padding = UDim.new(0, 5), HorizontalAlignment = "Center" })
+                    }),
+                    -- 页面容器
+                    ab("Frame", {
+                        Name = "PageHolder",
+                        Size = UDim2.new(1, 0, 0, 0),
+                        AutomaticSize = "Y",
+                        BackgroundTransparency = 1
+                    })
+                })
+            })
+
+            local navBar = mainFrame.Content.NavBar
+            local pageHolder = mainFrame.Content.PageHolder
+            local elementMod = ag.ElementsModule
+
+            -- 循环创建子页面
+            for i, sName in ipairs(sectionData.Sections) do
+                local pFrame = ab("Frame", {
+                    Name = sName,
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = "Y",
+                    BackgroundTransparency = 1,
+                    Visible = (i == 1)
+                }, {
+                    ab("UIListLayout", { SortOrder = "LayoutOrder", Padding = UDim.new(0, ag.Tab.Gap) })
+                })
+                pFrame.Parent = pageHolder
+
+                -- 子页面对象，使其可以添加 Button/Toggle 等
+                local pgObj = {
+                    __type = "MultiSectionPage",
+                    Elements = {},
+                    Parent = pFrame,
+                    Window = ag.Window,
+                    WindUI = ag.WindUI,
+                    Tab = ag.Tab,
+                    UIScale = ag.UIScale
+                }
+                
+                -- 加载组件方法 (Button, Toggle 等)
+                elementMod.Load(pgObj, pFrame, elementMod.Elements, ag.Window, ag.WindUI, nil, elementMod, ag.UIScale, ag.Tab)
+                sectionData.Pages[sName] = pgObj
+
+                -- 创建切换按钮
+                local btn = ad(8, "Squircle", {
+                    Size = UDim2.new(0, 80, 1, 0),
+                    ThemeTag = { ImageColor3 = (i == 1 and "Accent" or "Button") },
+                    ImageTransparency = (i == 1 and 0 or 0.5),
+                    Parent = navBar
+                }, {
+                    ab("TextButton", {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        Text = sName,
+                        BackgroundTransparency = 1,
+                        ThemeTag = { TextColor3 = "Text" },
+                        FontFace = Font.new(aa.Font, Enum.FontWeight.Medium),
+                        TextSize = 14
+                    })
+                }, true)
+
+                aa.AddSignal(btn.MouseButton1Click, function()
+                    for name, pg in pairs(sectionData.Pages) do
+                        pg.Parent.Visible = (name == sName)
+                    end
+                    for _, otherBtn in ipairs(navBar:GetChildren()) do
+                        if otherBtn:IsA("ImageLabel") then
+                            ac(otherBtn, 0.2, { ImageTransparency = 0.5 }):Play()
+                        end
+                    end
+                    ac(btn, 0.2, { ImageTransparency = 0 }):Play()
+                end)
+            end
+
+            return "MultiSection", sectionData.Pages
+        end
+
+        return ae
+    end
 if au then
 at.ElementFrame=au.UIElements.Main
 function at.SetTitle(av,aw)
