@@ -9575,78 +9575,6 @@ aj.Tab
 
 return ak.__type,ak
 end
-
-return af end function a.V()
-return{
-Elements={
-Paragraph=a.load'C',
-Button=a.load'D',
-Toggle=a.load'G',
-Slider=a.load'H',
-Keybind=a.load'I',
-Input=a.load'J',
-Dropdown=a.load'M',
-Code=a.load'P',
-Colorpicker=a.load'Q',
-Section=a.load'R',
-Divider=a.load'K',
-Space=a.load'S',
-Image=a.load'T',
-Group=a.load'U',
-
-},
-Load=function(aa,ae,af,ah,aj,ak,al,am,an)
-for ao,ap in next,af do
-aa[ao]=function(aq,ar)
-ar=ar or{}
-ar.Tab=an or aa
-ar.ParentType=aa.__type
-ar.ParentTable=aa
-ar.Index=#aa.Elements+1
-ar.GlobalIndex=#ah.AllElements+1
-ar.Parent=ae
-ar.Window=ah
-ar.WindUI=aj
-ar.UIScale=am
-ar.ElementsModule=al local
-
-as, at=ap:New(ar)
-
-if ar.Flag and typeof(ar.Flag)=="string"then
-if ah.CurrentConfig then
-ah.CurrentConfig:Register(ar.Flag,at)
-
-if ah.PendingConfigData and ah.PendingConfigData[ar.Flag]then
-local au=ah.PendingConfigData[ar.Flag]
-
-local av=ah.ConfigManager
-if av.Parser[au.__type]then
-task.defer(function()
-local aw,ax=pcall(function()
-av.Parser[au.__type].Load(at,au)
-end)
-
-if aw then
-ah.PendingConfigData[ar.Flag]=nil
-else
-warn("[ WindUI ] Failed to apply pending config for '"..ar.Flag.."': "..tostring(ax))
-end
-end)
-end
-end
-else
-ah.PendingFlags=ah.PendingFlags or{}
-ah.PendingFlags[ar.Flag]=at
-end
-end
-
-local au
-for av,aw in next,at do
-if typeof(aw)=="table"and av~="ElementFrame"and av:match"Frame$"then
-au=aw
-break
-end
-end
 function a.MS()
         local aa = a.load 'c'
         local ab = aa.New
@@ -9789,6 +9717,78 @@ function a.MS()
 
         return ae
     end
+return af end function a.V()
+return{
+Elements={
+Paragraph=a.load'C',
+Button=a.load'D',
+Toggle=a.load'G',
+Slider=a.load'H',
+Keybind=a.load'I',
+Input=a.load'J',
+Dropdown=a.load'M',
+Code=a.load'P',
+Colorpicker=a.load'Q',
+Section=a.load'R',
+Divider=a.load'K',
+Space=a.load'S',
+Image=a.load'T',
+Group=a.load'U',
+
+},
+Load=function(aa,ae,af,ah,aj,ak,al,am,an)
+for ao,ap in next,af do
+aa[ao]=function(aq,ar)
+ar=ar or{}
+ar.Tab=an or aa
+ar.ParentType=aa.__type
+ar.ParentTable=aa
+ar.Index=#aa.Elements+1
+ar.GlobalIndex=#ah.AllElements+1
+ar.Parent=ae
+ar.Window=ah
+ar.WindUI=aj
+ar.UIScale=am
+ar.ElementsModule=al local
+
+as, at=ap:New(ar)
+
+if ar.Flag and typeof(ar.Flag)=="string"then
+if ah.CurrentConfig then
+ah.CurrentConfig:Register(ar.Flag,at)
+
+if ah.PendingConfigData and ah.PendingConfigData[ar.Flag]then
+local au=ah.PendingConfigData[ar.Flag]
+
+local av=ah.ConfigManager
+if av.Parser[au.__type]then
+task.defer(function()
+local aw,ax=pcall(function()
+av.Parser[au.__type].Load(at,au)
+end)
+
+if aw then
+ah.PendingConfigData[ar.Flag]=nil
+else
+warn("[ WindUI ] Failed to apply pending config for '"..ar.Flag.."': "..tostring(ax))
+end
+end)
+end
+end
+else
+ah.PendingFlags=ah.PendingFlags or{}
+ah.PendingFlags[ar.Flag]=at
+end
+end
+
+local au
+for av,aw in next,at do
+if typeof(aw)=="table"and av~="ElementFrame"and av:match"Frame$"then
+au=aw
+break
+end
+end
+
 if au then
 at.ElementFrame=au.UIElements.Main
 function at.SetTitle(av,aw)
