@@ -10041,52 +10041,83 @@ end,
         al.OnChangeFunc = an
     end
 
-function al.SelectTab(am, an)
+    function al.SelectTab(am, an)
         if not al.Tabs[an].Locked then
             al.SelectedTab = an
 
-            -- 1. 处理 Tab 按钮的样式切换
             for ao, ap in next, al.Tabs do
                 if not ap.Locked then
-                    af.SetThemeTag(ap.UIElements.Main, { ImageTransparency = "TabBorderTransparency" }, 0.15)
-                    af.SetThemeTag(ap.UIElements.Main.Frame.TextLabel, { TextTransparency = "TabTextTransparency" }, 0.15)
+                    af.SetThemeTag(ap.UIElements.Main, {
+                        ImageTransparency = "TabBorderTransparency"
+                    }, 0.15)
+                    if ap.Border then
+                        af.SetThemeTag(ap.UIElements.Main.Outline, {
+                            ImageTransparency = "TabBorderTransparency"
+                        }, 0.15)
+                    end
+                    af.SetThemeTag(ap.UIElements.Main.Frame.TextLabel, {
+                        TextTransparency = "TabTextTransparency"
+                    }, 0.15)
                     
+                    -- [选中动画]：未选中的文字回到原位
                     if ap.UIElements.TextPadding then
-                        af.Tween(ap.UIElements.TextPadding, 0.2, { PaddingLeft = UDim.new(0, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                        af.Tween(ap.UIElements.TextPadding, 0.2, {
+                            PaddingLeft = UDim.new(0, 0)
+                        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                    end
+
+                    if ap.UIElements.Icon and not ap.IconColor then
+                        af.SetThemeTag(ap.UIElements.Icon.ImageLabel, {
+                            ImageTransparency = "TabIconTransparency"
+                        }, 0.15)
                     end
                     ap.Selected = false
                 end
             end
 
-            -- 2. 激活当前选中的 Tab 按钮
+            -- [选中动画]：当前选中的文字向右偏移 6 像素
             local currentTab = al.Tabs[an]
             if currentTab.UIElements.TextPadding then
-                af.Tween(currentTab.UIElements.TextPadding, 0.2, { PaddingLeft = UDim.new(0, 6) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                af.Tween(currentTab.UIElements.TextPadding, 0.2, {
+                    PaddingLeft = UDim.new(0, 6)
+                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             end
-            currentTab.Selected = true
 
-            -- 3. 【核心修改】内容容器收回与自动调整动画
+            af.SetThemeTag(al.Tabs[an].UIElements.Main, {
+                ImageTransparency = "TabBackgroundActiveTransparency"
+            }, 0.15)
+            if al.Tabs[an].Border then
+                af.SetThemeTag(al.Tabs[an].UIElements.Main.Outline, {
+                    ImageTransparency = "TabBorderTransparencyActive"
+                }, 0.15)
+            end
+            af.SetThemeTag(al.Tabs[an].UIElements.Main.Frame.TextLabel, {
+                TextTransparency = "TabTextTransparencyActive"
+            }, 0.15)
+            if al.Tabs[an].UIElements.Icon and not al.Tabs[an].IconColor then
+                af.SetThemeTag(al.Tabs[an].UIElements.Icon.ImageLabel, {
+                    ImageTransparency = "TabIconTransparencyActive"
+                }, 0.15)
+            end
+            al.Tabs[an].Selected = true
+
             task.spawn(function()
-                -- 先隐藏所有容器，并重置其状态
                 for ao, ap in next, al.Containers do
+                    ap.AnchorPoint = Vector2.new(0, 0.05)
                     ap.Visible = false
-                    ap.AnchorPoint = Vector2.new(0, 0) -- 强制固定锚点，防止放大
                 end
+                al.Containers[an].Visible = true
+                local ao = game:GetService "TweenService"
 
-                local targetContainer = al.Containers[an]
-                
-                -- 设置初始位置：在标准位置下方 30 像素处 (实现收回感)
-                targetContainer.Position = UDim2.new(0, 0, 0, 30) 
-                targetContainer.Visible = true
-                
-                -- 执行向上平滑“收回”到 (0,0) 的动画
-                local TS = game:GetService("TweenService")
-                local ti = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-                
-                local anim = TS:Create(targetContainer, ti, {
-                    Position = UDim2.new(0, 0, 0, 0)
+                local ap = TweenInfo.new(
+                    0.15,
+                    Enum.EasingStyle.Quart,
+                    Enum.EasingDirection.Out
+                )
+                local aq = ao:Create(al.Containers[an], ap, {
+                    AnchorPoint = Vector2.new(0, 0)
                 })
-                anim:Play()
+                aq:Play()
             end)
 
             al.OnChangeFunc(an)
