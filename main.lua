@@ -10041,77 +10041,52 @@ end,
         al.OnChangeFunc = an
     end
 
-    function al.SelectTab(am, an)
+function al.SelectTab(am, an)
         if not al.Tabs[an].Locked then
             al.SelectedTab = an
+
+            -- 1. 处理 Tab 按钮的样式切换
             for ao, ap in next, al.Tabs do
                 if not ap.Locked then
-                    af.SetThemeTag(ap.UIElements.Main, {
-                        ImageTransparency = "TabBorderTransparency"
-                    }, 0.15)
-                    if ap.Border then
-                        af.SetThemeTag(ap.UIElements.Main.Outline, {
-                            ImageTransparency = "TabBorderTransparency"
-                        }, 0.15)
-                    end
-                    af.SetThemeTag(ap.UIElements.Main.Frame.TextLabel, {
-                        TextTransparency = "TabTextTransparency"
-                    }, 0.15)
+                    af.SetThemeTag(ap.UIElements.Main, { ImageTransparency = "TabBorderTransparency" }, 0.15)
+                    af.SetThemeTag(ap.UIElements.Main.Frame.TextLabel, { TextTransparency = "TabTextTransparency" }, 0.15)
+                    
                     if ap.UIElements.TextPadding then
-                        af.Tween(ap.UIElements.TextPadding, 0.2, {
-                            PaddingLeft = UDim.new(0, 0)
-                        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-                    end
-
-                    if ap.UIElements.Icon and not ap.IconColor then
-                        af.SetThemeTag(ap.UIElements.Icon.ImageLabel, {
-                            ImageTransparency = "TabIconTransparency"
-                        }, 0.15)
+                        af.Tween(ap.UIElements.TextPadding, 0.2, { PaddingLeft = UDim.new(0, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                     end
                     ap.Selected = false
                 end
             end
+
+            -- 2. 激活当前选中的 Tab 按钮
             local currentTab = al.Tabs[an]
             if currentTab.UIElements.TextPadding then
-                af.Tween(currentTab.UIElements.TextPadding, 0.25, {
-                    PaddingLeft = UDim.new(0, 6)
-                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-            end
-
-            af.SetThemeTag(currentTab.UIElements.Main, {
-                ImageTransparency = "TabBackgroundActiveTransparency"
-            }, 0.15)
-            if currentTab.Border then
-                af.SetThemeTag(currentTab.UIElements.Main.Outline, {
-                    ImageTransparency = "TabBorderTransparencyActive"
-                }, 0.15)
-            end
-            af.SetThemeTag(currentTab.UIElements.Main.Frame.TextLabel, {
-                TextTransparency = "TabTextTransparencyActive"
-            }, 0.15)
-            
-            if currentTab.UIElements.Icon and not currentTab.IconColor then
-                af.SetThemeTag(currentTab.UIElements.Icon.ImageLabel, {
-                    ImageTransparency = "TabIconTransparencyActive"
-                }, 0.15)
+                af.Tween(currentTab.UIElements.TextPadding, 0.2, { PaddingLeft = UDim.new(0, 6) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             end
             currentTab.Selected = true
+
+            -- 3. 【核心修改】内容容器收回与自动调整动画
             task.spawn(function()
+                -- 先隐藏所有容器，并重置其状态
                 for ao, ap in next, al.Containers do
                     ap.Visible = false
-                    ap.Position = UDim2.new(0, 0, 0, 20) 
+                    ap.AnchorPoint = Vector2.new(0, 0) -- 强制固定锚点，防止放大
                 end
+
                 local targetContainer = al.Containers[an]
+                
+                -- 设置初始位置：在标准位置下方 30 像素处 (实现收回感)
+                targetContainer.Position = UDim2.new(0, 0, 0, 30) 
                 targetContainer.Visible = true
+                
+                -- 执行向上平滑“收回”到 (0,0) 的动画
                 local TS = game:GetService("TweenService")
-                local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-                TS:Create(targetContainer, tweenInfo, {
+                local ti = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+                
+                local anim = TS:Create(targetContainer, ti, {
                     Position = UDim2.new(0, 0, 0, 0)
-                }):Play()
-                if targetContainer:IsA("CanvasGroup") then
-                    targetContainer.GroupTransparency = 1
-                    TS:Create(targetContainer, tweenInfo, { GroupTransparency = 0 }):Play()
-                end
+                })
+                anim:Play()
             end)
 
             al.OnChangeFunc(an)
@@ -11906,9 +11881,9 @@ local x
 al.Icon"minimize"
 al.Icon"maximize"
 
-au:CreateTopbarButton("Fullscreen", au.Topbar.ButtonsType=="Mac" and "rbxassetid://127426072704909" or "expand", function()
-    au:ToggleFullscreen()
-end, (au.Topbar.ButtonsType=="Default" and 998 or 999), true, Color3.fromHex"#60C762", au.Topbar.ButtonsType=="Mac" and 9 or nil)
+au:CreateTopbarButton("Fullscreen",au.Topbar.ButtonsType=="Mac"and"rbxassetid://127426072704909"or"maximize",function()
+au:ToggleFullscreen()
+end,(au.Topbar.ButtonsType=="Default"and 998 or 999),true,Color3.fromHex"#60C762",au.Topbar.ButtonsType=="Mac"and 9 or nil)
 
 function au.ToggleFullscreen(z)
 local A=au.IsFullscreen
