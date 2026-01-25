@@ -1197,310 +1197,183 @@ end
 
 
 return b end function a.e()
-local b=a.load'c'
-local d=b.New
-local e=b.Tween
-
-local f={
-Size=UDim2.new(0,300,1,-156),
-SizeLower=UDim2.new(0,300,1,-56),
-UICorner=18,
-UIPadding=14,
-
-Holder=nil,
-NotificationIndex=0,
-Notifications={}
-}
-
-function f.Init(g)
-local h={
-Lower=false
-}
-
-function h.SetLower(j)
-h.Lower=j
-h.Frame.Size=j and f.SizeLower or f.Size
-end
-
-h.Frame=d("Frame",{
-Position=UDim2.new(1,-29,0,56),
-AnchorPoint=Vector2.new(1,0),
-Size=f.Size,
-Parent=g,
-BackgroundTransparency=1,
-
-
-
-
-},{
-d("UIListLayout",{
-HorizontalAlignment="Center",
-SortOrder="LayoutOrder",
-VerticalAlignment="Bottom",
-Padding=UDim.new(0,8),
-}),
-d("UIPadding",{
-PaddingBottom=UDim.new(0,29)
-})
-})
-return h
-end
-
-function f.New(g)
-local h={
-Title=g.Title or"Notification",
-Content=g.Content or nil,
-Icon=g.Icon or nil,
-IconThemed=g.IconThemed,
-Background=g.Background,
-BackgroundImageTransparency=g.BackgroundImageTransparency,
-Duration=g.Duration or 5,
-Buttons=g.Buttons or{},
-CanClose=g.CanClose~=false,
-UIElements={},
-Closed=false,
-}
-
-
-
-f.NotificationIndex=f.NotificationIndex+1
-f.Notifications[f.NotificationIndex]=h
-
-
-
-
-
-
-
-
-
-local j
-
-if h.Icon then
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-j=b.Image(
-h.Icon,
-h.Title..":"..h.Icon,
-0,
-g.Window,
-"Notification",
-h.IconThemed
-)
-j.Size=UDim2.new(0,26,0,26)
-j.Position=UDim2.new(0,f.UIPadding,0,f.UIPadding)
-
-end
-
-local l
-if h.CanClose then
-l=d("ImageButton",{
-Image=b.Icon"x"[1],
-ImageRectSize=b.Icon"x"[2].ImageRectSize,
-ImageRectOffset=b.Icon"x"[2].ImageRectPosition,
-BackgroundTransparency=1,
-Size=UDim2.new(0,16,0,16),
-Position=UDim2.new(1,-f.UIPadding,0,f.UIPadding),
-AnchorPoint=Vector2.new(1,0),
-ThemeTag={
-ImageColor3="Text"
-},
-ImageTransparency=.4,
-},{
-d("TextButton",{
-Size=UDim2.new(1,8,1,8),
-BackgroundTransparency=1,
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-Text="",
-})
-})
-end
-
-local m=b.NewRoundFrame(f.UICorner,"Squircle",{
-Size=UDim2.new(0,0,1,0),
-ThemeTag={
-ImageTransparency="NotificationDurationTransparency",
-ImageColor3="NotificationDuration",
-},
-
-})
-
-local p=d("Frame",{
-Size=UDim2.new(1,
-h.Icon and-28-f.UIPadding or 0,
-1,0),
-Position=UDim2.new(1,0,0,0),
-AnchorPoint=Vector2.new(1,0),
-BackgroundTransparency=1,
-AutomaticSize="Y",
-},{
-d("UIPadding",{
-PaddingTop=UDim.new(0,f.UIPadding),
-PaddingLeft=UDim.new(0,f.UIPadding),
-PaddingRight=UDim.new(0,f.UIPadding),
-PaddingBottom=UDim.new(0,f.UIPadding),
-}),
-d("TextLabel",{
-AutomaticSize="Y",
-Size=UDim2.new(1,-30-f.UIPadding,0,0),
-TextWrapped=true,
-TextXAlignment="Left",
-RichText=true,
-BackgroundTransparency=1,
-TextSize=18,
-ThemeTag={
-TextColor3="NotificationTitle",
-TextTransparency="NotificationTitleTransparency",
-},
-Text=h.Title,
-FontFace=Font.new(b.Font,Enum.FontWeight.SemiBold)
-}),
-d("UIListLayout",{
-Padding=UDim.new(0,f.UIPadding/3)
-})
-})
-
-if h.Content then
-d("TextLabel",{
-AutomaticSize="Y",
-Size=UDim2.new(1,0,0,0),
-TextWrapped=true,
-TextXAlignment="Left",
-RichText=true,
-BackgroundTransparency=1,
-
-TextSize=15,
-ThemeTag={
-TextColor3="NotificationContent",
-TextTransparency="NotificationContentTransparency",
-},
-Text=h.Content,
-FontFace=Font.new(b.Font,Enum.FontWeight.Medium),
-Parent=p
-})
-end
-
-
-local r=b.NewRoundFrame(f.UICorner,"Squircle",{
-Size=UDim2.new(1,0,0,0),
-Position=UDim2.new(2,0,1,0),
-AnchorPoint=Vector2.new(0,1),
-AutomaticSize="Y",
-ImageTransparency=.05,
-ThemeTag={
-ImageColor3="Notification"
-},
-
-},{
-b.NewRoundFrame(f.UICorner,"Glass-1",{
-Size=UDim2.new(1,0,1,0),
-ThemeTag={
-ImageColor3="NotificationBorder",
-ImageTransparency="NotificationBorderTransparency",
-},
-}),
-d("Frame",{
-Size=UDim2.new(1,0,1,0),
-BackgroundTransparency=1,
-Name="DurationFrame",
-},{
-d("Frame",{
-Size=UDim2.new(1,0,1,0),
-BackgroundTransparency=1,
-ClipsDescendants=true,
-},{
-m,
-}),
-
-
-
-
-
-}),
-d("ImageLabel",{
-Name="Background",
-Image=h.Background,
-BackgroundTransparency=1,
-Size=UDim2.new(1,0,1,0),
-ScaleType="Crop",
-ImageTransparency=h.BackgroundImageTransparency
-
-},{
-d("UICorner",{
-CornerRadius=UDim.new(0,f.UICorner),
-})
-}),
-
-p,
-j,l,
-})
-
-local u=d("Frame",{
-BackgroundTransparency=1,
-Size=UDim2.new(1,0,0,0),
-Parent=g.Holder
-},{
-r
-})
-
-function h.Close(v)
-if not h.Closed then
-h.Closed=true
-e(u,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-e(r,0.55,{Position=UDim2.new(2,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-task.wait(.45)
-u:Destroy()
-end
-end
-
-task.spawn(function()
-task.wait()
-e(u,0.45,{Size=UDim2.new(
-1,
-0,
-0,
-r.AbsoluteSize.Y
-)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-e(r,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-if h.Duration then
-m.Size=UDim2.new(0,r.DurationFrame.AbsoluteSize.X,1,0)
-e(r.DurationFrame.Frame,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
-task.wait(h.Duration)
-h:Close()
-end
-end)
-
-if l then
-b.AddSignal(l.TextButton.MouseButton1Click,function()
-h:Close()
-end)
-end
-
-
-return h
-end
-
-return f end function a.f()
+    local b=a.load'c'
+    local d=b.New
+    local e=b.Tween
+
+    local f={
+        Size=UDim2.new(0,300,1,-156),
+        SizeLower=UDim2.new(0,300,1,-56),
+        UICorner=18,
+        UIPadding=14,
+        Holder=nil,
+        NotificationIndex=0,
+        Notifications={}
+    }
+
+    function f.Init(g)
+        local h={
+            Lower=false,
+            Side="right" -- 默认位置
+        }
+
+        h.Frame=d("Frame",{
+            Position=UDim2.new(1,-29,0,56),
+            AnchorPoint=Vector2.new(1,0),
+            Size=f.Size,
+            Parent=g,
+            BackgroundTransparency=1,
+        },{
+            d("UIListLayout",{
+                HorizontalAlignment="Center",
+                SortOrder="LayoutOrder",
+                VerticalAlignment="Bottom",
+                Padding=UDim.new(0,8),
+            }),
+            d("UIPadding",{
+                PaddingBottom=UDim.new(0,29)
+            })
+        })
+
+        -- 设置通知显示位置的方法
+        function h.SetSide(side)
+            h.Side = side:lower()
+            if h.Side == "left" then
+                h.Frame.Position = UDim2.new(0, 29, 0, 56)
+                h.Frame.AnchorPoint = Vector2.new(0, 0)
+            else
+                h.Frame.Position = UDim2.new(1, -29, 0, 56)
+                h.Frame.AnchorPoint = Vector2.new(1, 0)
+            end
+        end
+
+        function h.SetLower(j)
+            h.Lower=j
+            h.Frame.Size=j and f.SizeLower or f.Size
+        end
+
+        return h
+    end
+
+    function f.New(g)
+        local h={
+            Title=g.Title or"Notification",
+            Content=g.Content or nil,
+            Icon=g.Icon or nil,
+            IconThemed=g.IconThemed,
+            Background=g.Background,
+            BackgroundImageTransparency=g.BackgroundImageTransparency,
+            Duration=g.Duration or 5,
+            Buttons=g.Buttons or{},
+            CanClose=g.CanClose~=false,
+            UIElements={},
+            Closed=false,
+        }
+
+        f.NotificationIndex=f.NotificationIndex+1
+        f.Notifications[f.NotificationIndex]=h
+
+        -- 获取当前全局位置
+        local currentSide = f.Holder.Side
+        if g.Position then currentSide = g.Position:lower() end
+
+        local j
+        if h.Icon then
+            j=b.Image(h.Icon, h.Title..":"..h.Icon, 0, g.Window, "Notification", h.IconThemed)
+            j.Size=UDim2.new(0,26,0,26)
+            j.Position=UDim2.new(0,f.UIPadding,0,f.UIPadding)
+        end
+
+        local l
+        if h.CanClose then
+            l=d("ImageButton",{
+                Image=b.Icon"x"[1],
+                ImageRectSize=b.Icon"x"[2].ImageRectSize,
+                ImageRectOffset=b.Icon"x"[2].ImageRectPosition,
+                BackgroundTransparency=1,
+                Size=UDim2.new(0,16,0,16),
+                Position=UDim2.new(1,-f.UIPadding,0,f.UIPadding),
+                AnchorPoint=Vector2.new(1,0),
+                ThemeTag={ImageColor3="Text"},
+                ImageTransparency=.4,
+            },{
+                d("TextButton",{
+                    Size=UDim2.new(1,8,1,8),
+                    BackgroundTransparency=1,
+                    AnchorPoint=Vector2.new(0.5,0.5),
+                    Position=UDim2.new(0.5,0,0.5,0),
+                    Text="",
+                })
+            })
+        end
+
+        local m=b.NewRoundFrame(f.UICorner,"Squircle",{
+            Size=UDim2.new(0,300,1,0),
+            ThemeTag={ImageTransparency="NotificationDurationTransparency",ImageColor3="NotificationDuration"},
+        })
+
+        local p=d("Frame",{
+            Size=UDim2.new(1,h.Icon and-28-f.UIPadding or 0,1,0),
+            Position=UDim2.new(1,0,0,0),
+            AnchorPoint=Vector2.new(1,0),
+            BackgroundTransparency=1,
+            AutomaticSize="Y",
+        },{
+            d("UIPadding",{PaddingTop=UDim.new(0,f.UIPadding),PaddingLeft=UDim.new(0,f.UIPadding),PaddingRight=UDim.new(0,f.UIPadding),PaddingBottom=UDim.new(0,f.UIPadding)}),
+            d("TextLabel",{AutomaticSize="Y",Size=UDim2.new(1,-30-f.UIPadding,0,0),TextWrapped=true,TextXAlignment="Left",RichText=true,BackgroundTransparency=1,TextSize=18,ThemeTag={TextColor3="NotificationTitle",TextTransparency="NotificationTitleTransparency"},Text=h.Title,FontFace=Font.new(b.Font,Enum.FontWeight.SemiBold)}),
+            d("UIListLayout",{Padding=UDim.new(0,f.UIPadding/3)})
+        })
+
+        if h.Content then
+            d("TextLabel",{AutomaticSize="Y",Size=UDim2.new(1,0,0,0),TextWrapped=true,TextXAlignment="Left",RichText=true,BackgroundTransparency=1,TextSize=15,ThemeTag={TextColor3="NotificationContent",TextTransparency="NotificationContentTransparency"},Text=h.Content,FontFace=Font.new(b.Font,Enum.FontWeight.Medium),Parent=p})
+        end
+
+        -- 根据位置设置滑入方向
+        local startX = (currentSide == "left") and -2 or 2
+
+        local r=b.NewRoundFrame(f.UICorner,"Squircle",{
+            Size=UDim2.new(1,0,0,0),
+            Position=UDim2.new(startX,0,1,0),
+            AnchorPoint=Vector2.new(0,1),
+            AutomaticSize="Y",
+            ImageTransparency=.05,
+            ThemeTag={ImageColor3="Notification"},
+        },{
+            b.NewRoundFrame(f.UICorner,"Glass-1",{Size=UDim2.new(1,0,1,0),ThemeTag={ImageColor3="NotificationBorder",ImageTransparency="NotificationBorderTransparency"}}),
+            d("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Name="DurationFrame"},{d("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,ClipsDescendants=true},{m})}),
+            d("ImageLabel",{Name="Background",Image=h.Background,BackgroundTransparency=1,Size=UDim2.new(1,0,1,0),ScaleType="Crop",ImageTransparency=h.BackgroundImageTransparency},{d("UICorner",{CornerRadius=UDim.new(0,f.UICorner)})}),
+            p, j, l
+        })
+
+        local u=d("Frame",{BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),Parent=f.Holder.Frame},{r})
+
+        function h.Close(v)
+            if not h.Closed then
+                h.Closed=true
+                local exitX = (currentSide == "left") and -2 or 2
+                e(u,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+                e(r,0.55,{Position=UDim2.new(exitX,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+                task.wait(.45)
+                u:Destroy()
+            end
+        end
+
+        task.spawn(function()
+            task.wait()
+            e(u,0.45,{Size=UDim2.new(1,0,0,r.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+            e(r,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+            if h.Duration then
+                m.Size=UDim2.new(0,r.AbsoluteSize.X,1,0)
+                e(m,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
+                task.wait(h.Duration)
+                h:Close()
+            end
+        end)
+
+        if l then b.AddSignal(l.TextButton.MouseButton1Click,function() h:Close() end) end
+        return h
+    end
+    return f end function a.f()
 
 
 
