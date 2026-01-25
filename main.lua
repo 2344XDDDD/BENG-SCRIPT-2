@@ -12742,55 +12742,43 @@ end
 local sidebarOpened = true
 local UIS = game:GetService("UserInputService")
 local draggingResizer = false
+local resizerHandle = am("TextButton", {
+    Name = "SidebarResizer",
+    Size = UDim2.new(0, 10, 1, -au.Topbar.Height),
+    Position = UDim2.new(0, au.SideBarWidth - 5, 0, au.Topbar.Height),
+    BackgroundTransparency = 1,
+    Text = "",
+    BorderSizePixel = 0,
+    Active = true,
+    ZIndex = 5000,
+    Parent = au.UIElements.Main.Main
+})
+
 au.ToggleSidebar = function()
     sidebarOpened = not sidebarOpened
     local targetWidth = sidebarOpened and au.SideBarWidth or 0
     local animTime = 0.5
     local easing = Enum.EasingStyle.Quint
-    
     an(au.UIElements.SideBarContainer, animTime, {
         Size = UDim2.new(0, targetWidth, 1, au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)
     }, easing, Enum.EasingDirection.Out):Play()
-    
     an(au.UIElements.MainBar, animTime, {
         Size = UDim2.new(1, -targetWidth, 1, -au.Topbar.Height)
     }, easing, Enum.EasingDirection.Out):Play()
-    
     if aB then
         an(aB, animTime, {
             Size = UDim2.new(0, math.max(0, targetWidth - (au.UIPadding/2)), 0, 42+(au.UIPadding))
         }, easing, Enum.EasingDirection.Out):Play()
         aB.ClipsDescendants = true
     end
-    
-    local resizer = au.UIElements.Main.Main:FindFirstChild("SidebarResizer")
-    if resizer then
-        an(resizer, animTime, {
-            Position = UDim2.new(0, targetWidth - 2, 0, au.Topbar.Height),
-            ImageTransparency = sidebarOpened and 1 or 1
+    resizerHandle.Visible = sidebarOpened
+    if sidebarOpened then
+        an(resizerHandle, animTime, {
+            Position = UDim2.new(0, au.SideBarWidth - 5, 0, au.Topbar.Height)
         }, easing, Enum.EasingDirection.Out):Play()
-        resizer.Visible = sidebarOpened
     end
 end
 
-local resizerHandle = am("ImageButton", {
-    Name = "SidebarResizer",
-    Size = UDim2.new(0, 6, 1, -au.Topbar.Height),
-    Position = UDim2.new(0, au.SideBarWidth - 3, 0, au.Topbar.Height),
-    BackgroundTransparency = 1,
-    Image = "",
-    ZIndex = 100,
-    Parent = au.UIElements.Main.Main
-})
-
-al.AddSignal(resizerHandle.MouseEnter, function()
-    an(resizerHandle, 0.2, {BackgroundTransparency = 0.8, BackgroundColor3 = Color3.new(1,1,1)}):Play()
-end)
-al.AddSignal(resizerHandle.MouseLeave, function()
-    if not draggingResizer then
-        an(resizerHandle, 0.2, {BackgroundTransparency = 1}):Play()
-    end
-end)
 al.AddSignal(resizerHandle.InputBegan, function(input)
     if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and sidebarOpened then
         draggingResizer = true
@@ -12802,11 +12790,12 @@ al.AddSignal(UIS.InputChanged, function(input)
         local mousePos = input.Position.X
         local windowPos = au.UIElements.Main.AbsolutePosition.X
         local relativeX = (mousePos - windowPos) / au.WindUI.UIScale 
-        local newWidth = math.clamp(relativeX, 150, 400)
+        local newWidth = math.clamp(relativeX, 150, 500)
         au.SideBarWidth = newWidth
         au.UIElements.SideBarContainer.Size = UDim2.new(0, newWidth, 1, au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)
         au.UIElements.MainBar.Size = UDim2.new(1, -newWidth, 1, -au.Topbar.Height)
-        resizerHandle.Position = UDim2.new(0, newWidth - 3, 0, au.Topbar.Height)
+        resizerHandle.Position = UDim2.new(0, newWidth - 5, 0, au.Topbar.Height)
+        
         if aB then
             aB.Size = UDim2.new(0, newWidth - (au.UIPadding/2), 0, 42+(au.UIPadding))
         end
@@ -12816,14 +12805,11 @@ end)
 al.AddSignal(UIS.InputEnded, function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         draggingResizer = false
-        an(resizerHandle, 0.2, {BackgroundTransparency = 1}):Play()
     end
 end)
-
 au:CreateTopbarButton("SidebarToggle", "menu", function()
     au.ToggleSidebar()
 end, 990, true, Color3.fromRGB(255, 255, 255))
-
 function au.DisableTopbarButtons(M,N)
     for O,P in next,N do
         for Q,R in next,au.TopBarButtons do
