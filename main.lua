@@ -5283,7 +5283,7 @@ Name="TitleFrame",
         PaddingRight=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
         PaddingBottom=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
     })
-    ag.UIElements.TextPadding = textPadding
+    ag.UIElements.TextPadding = textPadding 
     return textPadding
 end)(),
 ab("UIListLayout",{
@@ -6337,34 +6337,28 @@ al.Position=UDim2.new(1,0,ah.Window.NewElements and 0 or 0.5,0)
 function ai.Set(an,ao,ap,aq)
     if aj then
         am:Set(ao,ap,aq or false)
-        
-        -- [开始添加：文字右移逻辑]
         if ah.Animation then
             task.spawn(function()
                 pcall(function()
-                    local targetFrame = ai.ToggleFrame
-                    if targetFrame and targetFrame.UIElements and targetFrame.UIElements.TextPadding then
-                        local padding = targetFrame.UIElements.TextPadding
-                        -- 计算基础边距 (WindUI 默认逻辑)
-                        local base = (ah.Window.NewElements and ah.Window.ElementConfig.UIPadding/2 or 0)
-                        -- 开启时向右偏移 6 像素，关闭时回到 base
-                        local targetOffset = base + (ao and 6 or 0)
-                        
-                        aa.Tween(padding, 0.25, {
+                    local elements = ai.ToggleFrame and ai.ToggleFrame.UIElements
+                    if elements and elements.TextPadding then
+                        local paddingObj = elements.TextPadding
+                        local config = ah.Window and ah.Window.ElementConfig
+                        local basePadding = config and (config.UIPadding / 2) or 0
+                        local targetOffset = basePadding + (ao and 10 or 0)
+                        aa.Tween(paddingObj, 0.3, {
                             PaddingLeft = UDim.new(0, targetOffset)
                         }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                     end
                 end)
             end)
         end
-        -- [结束添加]
 
         ak=ao
         ai.Value=ao
     end
 end
 
--- 初始化调用
 ai:Set(ak,false,ah.Window.NewElements)
 
 if ah.Window.NewElements and am.Animate then
