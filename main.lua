@@ -4,7 +4,7 @@
     | |/ |/ / / _ \/ _  / /_/ // /  
     |__/|__/_/_//_/\_,_/\____/___/
     
-    v1.6.64  |  2026-01-23  |  Roblox UI Library for scripts
+    v1.6.69  |  2026-01-25  |  Roblox UI Library for scripts
     
     To view the source code, see the `src/` folder on the official GitHub repository.
     
@@ -5862,10 +5862,8 @@ return ag
 end end function a.C()
 local aa=a.load'c'
 local ab=aa.New
-
 local ac={}
-
-local ad=a.load'l'.New
+local ad=a.load'l'.New 
 
 function ac.New(ae,af)
 af.Hover=false
@@ -5877,15 +5875,14 @@ local ag={
 __type="Paragraph",
 Title=af.Title or"Paragraph",
 Desc=af.Desc or nil,
-
 Locked=af.Locked or false,
 }
 local ah=a.load'B'(af)
-
 ag.ParagraphFrame=ah
+
 if af.Buttons and#af.Buttons>0 then
 local ai=ab("Frame",{
-Size=UDim2.new(1,0,0,38),
+Size=UDim2.new(1,0,0,0),
 BackgroundTransparency=1,
 AutomaticSize="Y",
 Parent=ah.UIElements.Container
@@ -5896,18 +5893,13 @@ FillDirection="Vertical",
 })
 })
 
-
 for aj,ak in next,af.Buttons do
 local al=ad(ak.Title,ak.Icon,ak.Callback,ak.Variant or "Secondary",ai,nil,nil,af.Window.NewElements and 999 or 10)
 al.Size=UDim2.new(1,0,0,38)
-
 end
 end
-
 return ag.__type,ag
-
 end
-
 return ac end function a.D()
 local aa=a.load'c'local ab=
 aa.New
@@ -6683,19 +6675,20 @@ au,
 al.UIElements.SliderIcon,
 av,
 af("TextBox",{
-Size=UDim2.new(0,al.TextBoxWidth,0,0),
-TextXAlignment="Left",
-Text=FormatValue(ap),
-ThemeTag={
-TextColor3="Text"
-},
-TextTransparency=.4,
-AutomaticSize="Y",
-TextSize=15,
-FontFace=Font.new(ae.Font,Enum.FontWeight.Medium),
-BackgroundTransparency=1,
-LayoutOrder=-1,
-Visible=al.IsTextbox,
+    Size=UDim2.new(0,al.TextBoxWidth,0,0),
+    TextXAlignment="Left",
+    Text=FormatValue(ap),
+    ThemeTag={
+        TextColor3="Text"
+    },
+    TextTransparency=.4,
+    AutomaticSize="Y",
+    TextSize=15,
+    FontFace=Font.new(ae.Font,Enum.FontWeight.Medium),
+    BackgroundTransparency=1,
+    BorderSizePixel=0,
+    LayoutOrder=-1,
+    Visible=al.IsTextbox,
 })
 })
 
@@ -9775,11 +9768,10 @@ end,
         local ap = al.TabCount
         ao.Index = ap
 
-        -- 创建文字内边距对象，用于动画偏移
         local textPadding = ah("UIPadding", {
             PaddingTop = UDim.new(0, ao.TitlePaddingY),
             PaddingBottom = UDim.new(0, ao.TitlePaddingY),
-            PaddingLeft = UDim.new(0, 0) -- 初始偏移为0
+            PaddingLeft = UDim.new(0, 0)
         })
         ao.UIElements.TextPadding = textPadding
 
@@ -9832,7 +9824,7 @@ end,
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
                 }, {
-                    textPadding -- 将Padding注入Label
+                    textPadding
                 }),
                 ah("UIPadding", {
                     PaddingTop = UDim.new(0, ao.TabPaddingY),
