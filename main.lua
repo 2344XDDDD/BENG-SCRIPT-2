@@ -13391,3 +13391,127 @@ end
 
 return ae
 
+-- ==========================================
+-- 启动屏逻辑 - 请放在 Window 创建之后
+-- ==========================================
+
+task.spawn(function()
+    task.wait(1) -- 运行 1 秒后开始显示
+
+    local Creator = WindUI.Creator
+    local Tween = Creator.Tween
+
+    -- 1. 全屏覆盖层
+    local Overlay = Creator.New("Frame", {
+        Name = "SplashOverlay",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 1, -- 初始透明
+        BorderSizePixel = 0,
+        ZIndex = 10000, -- 绝对置顶
+        Active = true,
+        Parent = WindUI.ScreenGui -- 覆盖整个 UI
+    }, {
+        Creator.New("UICorner", { CornerRadius = UDim.new(0, 0) }),
+        Creator.New("UIScale", { Scale = 1 })
+    })
+
+    -- 2. 中间圆角卡片
+    local SplashCard = Creator.NewRoundFrame(18, "Squircle", {
+        Size = UDim2.new(0, 340, 0, 160),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        ThemeTag = { ImageColor3 = "Dialog" }, -- 使用对话框背景色
+        ZIndex = 10001,
+        Parent = Overlay
+    }, {
+        Creator.New("UIScale", { Scale = 0 }), -- 初始缩小，用于放大动画
+        Creator.New("UIPadding", {
+            PaddingTop = UDim.new(0, 25),
+            PaddingLeft = UDim.new(0, 25),
+            PaddingRight = UDim.new(0, 25),
+            PaddingBottom = UDim.new(0, 25)
+        })
+    })
+
+    -- 3. 标题与描述
+    local Title = Creator.New("TextLabel", {
+        Text = "Security Check", -- 对应你图片的标题位置
+        Size = UDim2.new(1, 0, 0, 30),
+        TextSize = 22,
+        FontFace = Font.new(Creator.Font, Enum.FontWeight.Bold),
+        ThemeTag = { TextColor3 = "Text" },
+        TextXAlignment = "Center",
+        BackgroundTransparency = 1,
+        Parent = SplashCard
+    })
+
+    local Desc = Creator.New("TextLabel", {
+        Text = "Verifying required resources...", -- 对应描述
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 0, 35),
+        TextSize = 15,
+        TextTransparency = 0.4,
+        FontFace = Font.new(Creator.Font, Enum.FontWeight.Medium),
+        ThemeTag = { TextColor3 = "Text" },
+        TextXAlignment = "Center",
+        BackgroundTransparency = 1,
+        Parent = SplashCard
+    })
+
+    -- 4. 进度文字 (13 / 100)
+    local ProgressText = Creator.New("TextLabel", {
+        Text = "0 / 100 Kills",
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 1, -35),
+        TextSize = 14,
+        FontFace = Font.new(Creator.Font, Enum.FontWeight.Bold),
+        ThemeTag = { TextColor3 = "Text" },
+        TextXAlignment = "Right",
+        BackgroundTransparency = 1,
+        Parent = SplashCard
+    })
+
+    -- 5. 加载条背景
+    local BarBack = Creator.New("Frame", {
+        Size = UDim2.new(1, 0, 0, 10),
+        Position = UDim2.new(0, 0, 1, -10),
+        BackgroundColor3 = Color3.fromRGB(40, 40, 40), -- 深灰背景
+        BorderSizePixel = 0,
+        Parent = SplashCard
+    }, {
+        Creator.New("UICorner", { CornerRadius = UDim.new(1, 0) })
+    })
+
+    -- 6. 进度条填充 (蓝色)
+    local BarFill = Creator.New("Frame", {
+        Size = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 162, 255), -- 图片中的亮蓝色
+        BorderSizePixel = 0,
+        Parent = BarBack
+    }, {
+        Creator.New("UICorner", { CornerRadius = UDim.new(1, 0) })
+    })
+
+    -- [ 开始动画 ]
+    -- 覆盖层变黑 + 卡片放大弹出
+    Tween(Overlay, 0.5, { BackgroundTransparency = 0.2 }):Play()
+    Tween(SplashCard.UIScale, 0.6, { Scale = 1 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
+
+    -- 模拟进度加载
+    for i = 0, 100, 1 do
+        local speed = math.random(1, 5) / 100
+        task.wait(speed)
+        ProgressText.Text = i .. " / 100 Res"
+        Tween(BarFill, 0.1, { Size = UDim2.new(i/100, 0, 1, 0) }):Play()
+    end
+
+    task.wait(0.5)
+
+    -- [ 结束动画 ]
+    Tween(SplashCard.UIScale, 0.4, { Scale = 0 }, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
+    Tween(Overlay, 0.5, { BackgroundTransparency = 1 }):Play()
+
+    task.wait(0.5)
+    Overlay:Destroy() -- 加载完成，移除遮罩
+end)
