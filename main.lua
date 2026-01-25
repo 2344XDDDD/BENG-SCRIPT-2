@@ -4,7 +4,7 @@
     | |/ |/ / / _ \/ _  / /_/ // /  
     |__/|__/_/_//_/\_,_/\____/___/
     
-    v1.6.7  |  2026-01-27  |  Roblox UI Library for scripts
+    v1.6.71  |  2026-01-27  |  Roblox UI Library for scripts
     
     To view the source code, see the `src/` folder on the official GitHub repository.
     
@@ -11087,10 +11087,11 @@ PaddingRight=UDim.new(0,au.UIPadding/2),
 })
 
 au.UIElements.SideBarContainer=am("Frame",{
-Size=UDim2.new(0,au.SideBarWidth,1,au.User.Enabled and-au.Topbar.Height-42-(au.UIPadding*2)or-au.Topbar.Height),
-Position=UDim2.new(0,0,0,au.Topbar.Height),
-BackgroundTransparency=1,
-Visible=true,
+    Size=UDim2.new(0,au.SideBarWidth,1,au.User.Enabled and-au.Topbar.Height-42-(au.UIPadding*2) or-au.Topbar.Height),
+    Position=UDim2.new(0,0,0,au.Topbar.Height),
+    BackgroundTransparency=1,
+    Visible=true,
+    ClipsDescendants = true,
 },{
 am("Frame",{
 Name="Content",
@@ -12738,7 +12739,28 @@ end
 
 
 
-
+local sidebarOpened = true
+au.ToggleSidebar = function()
+    sidebarOpened = not sidebarOpened
+    local targetWidth = sidebarOpened and au.SideBarWidth or 0
+    local animTime = 0.5
+    local easing = Enum.EasingStyle.Quint
+    an(au.UIElements.SideBarContainer, animTime, {
+        Size = UDim2.new(0, targetWidth, 1, au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)
+    }, easing, Enum.EasingDirection.Out):Play()
+    an(au.UIElements.MainBar, animTime, {
+        Size = UDim2.new(1, -targetWidth, 1, -au.Topbar.Height)
+    }, easing, Enum.EasingDirection.Out):Play()
+    if aB then
+        an(aB, animTime, {
+            Size = UDim2.new(0, math.max(0, targetWidth - (au.UIPadding/2)), 0, 42+(au.UIPadding))
+        }, easing, Enum.EasingDirection.Out):Play()
+        aB.ClipsDescendants = true
+    end
+end
+au:CreateTopbarButton("SidebarToggle", "menu", function()
+    au.ToggleSidebar()
+end, 990)
 function au.DisableTopbarButtons(M,N)
 for O,P in next,N do
 for Q,R in next,au.TopBarButtons do
