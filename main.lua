@@ -9357,7 +9357,191 @@ end
 return ak.__type,ak
 end
 
-return af end function a.U()
+return af end function a.MS()
+    local aa = a.load'c'
+    local ab = aa.New
+    local ac = aa.Tween
+    local ad = aa.NewRoundFrame
+
+    local ae = {}
+
+    function ae.New(af, ag)
+        local sectionData = {
+            __type = "MultiSection",
+            Title = ag.Title or "Multi Section",
+            Sections = ag.Sections or {},
+            Opened = (ag.Opened == nil and true) or ag.Opened,
+            HeaderSize = 42,
+            IconSize = 18,
+            Pages = {},
+            CurrentSection = nil,
+            Expandable = true,
+        }
+
+        if #sectionData.Sections == 0 then return "MultiSection", {} end
+
+        local mainFrame, mainController = ad(ag.Window.ElementConfig.UICorner, "Squircle", {
+            Size = UDim2.new(1, 0, 0, 0),
+            BackgroundTransparency = 1,
+            Parent = ag.Parent,
+            ClipsDescendants = true,
+            ThemeTag = { ImageColor3 = "ElementBackground" },
+            ImageTransparency = 0.94,
+        }, nil, true)
+
+        local chevron = ab("Frame",{
+            Size = UDim2.new(0, sectionData.IconSize, 0, sectionData.IconSize),
+            BackgroundTransparency = 1,
+        },{
+            ab("ImageLabel",{
+                Name = "Arrow",
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+                Image = aa.Icon"chevron-down"[1],
+                ImageRectSize = aa.Icon"chevron-down"[2].ImageRectSize,
+                ImageRectOffset = aa.Icon"chevron-down"[2].ImageRectPosition,
+                ThemeTag = { ImageColor3 = "Icon" },
+                ImageTransparency = 0.5
+            })
+        })
+
+        local topBtn = ab("TextButton", {
+            Size = UDim2.new(1, 0, 0, sectionData.HeaderSize),
+            BackgroundTransparency = 1,
+            Text = "",
+        }, {
+            ab("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }),
+            ab("TextLabel", {
+                Text = sectionData.Title,
+                Size = UDim2.new(1, -40, 1, 0),
+                BackgroundTransparency = 1,
+                TextXAlignment = "Left",
+                FontFace = Font.new(aa.Font, Enum.FontWeight.SemiBold),
+                ThemeTag = { TextColor3 = "Text" },
+                TextSize = 15,
+            }),
+            chevron,
+            ab("UIListLayout", { FillDirection = "Horizontal", VerticalAlignment = "Center", Padding = UDim.new(0, 10) })
+        })
+        topBtn.Parent = mainFrame
+
+        local contentHolder = ab("Frame", {
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = "Y",
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 0, 0, sectionData.HeaderSize),
+            Visible = false
+        }, {
+            ab("UIListLayout", { FillDirection = "Vertical", SortOrder = "LayoutOrder" }),
+            ab("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) })
+        })
+        contentHolder.Parent = mainFrame
+
+        local navBar = ab("Frame", { Size = UDim2.new(1, 0, 0, 32), BackgroundTransparency = 1, Parent = contentHolder })
+        local navList = ab("ScrollingFrame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            ScrollBarThickness = 0,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
+            AutomaticCanvasSize = "X",
+            ScrollingDirection = "X",
+            Parent = navBar
+        }, {
+            ab("UIListLayout", { FillDirection = "Horizontal", Padding = UDim.new(0, 8), VerticalAlignment = "Center", HorizontalAlignment = "Center" })
+        })
+
+        local pageContainer = ab("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = "Y", BackgroundTransparency = 1, Parent = contentHolder })
+
+        local elementMod = ag.ElementsModule
+        local function Resize()
+            if not sectionData.Opened then return end
+            task.wait()
+            local targetHeight = sectionData.HeaderSize + (contentHolder.AbsoluteSize.Y / ag.UIScale)
+            ac(mainFrame, 0.35, { Size = UDim2.new(1, 0, 0, targetHeight) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        end
+
+        for i, name in ipairs(sectionData.Sections) do
+            local pFrame = ab("Frame", {
+                Name = name,
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = "Y",
+                BackgroundTransparency = 1,
+                Parent = pageContainer,
+                Visible = (i == 1)
+            }, {
+                ab("UIListLayout", { Padding = UDim.new(0, ag.Tab.Gap or 6), HorizontalAlignment = "Center" })
+            })
+
+            local pgObj = { 
+                Elements = {}, 
+                __type = "Group",
+                Index = i,
+                Window = ag.Window,
+                Tab = ag.Tab,
+                ElementsModule = elementMod,
+                WindUI = ag.WindUI,
+                UIScale = ag.UIScale,
+                ContainerFrame = pFrame
+            }
+            
+            elementMod.Load(pgObj, pFrame, elementMod.Elements, ag.Window, ag.WindUI, nil, elementMod, ag.UIScale, ag.Tab)
+            sectionData.Pages[name] = pgObj
+
+            local btn = ab("TextButton", {
+                Text = name,
+                Size = UDim2.new(0, 0, 0, 28),
+                AutomaticSize = "X",
+                FontFace = Font.new(aa.Font, i == 1 and Enum.FontWeight.Bold or Enum.FontWeight.Medium),
+                ThemeTag = { TextColor3 = "Text" },
+                TextTransparency = i == 1 and 0 or 0.5,
+                BackgroundTransparency = 1,
+                Parent = navList
+            }, {
+                ab("UIPadding", { PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) })
+            })
+
+            aa.AddSignal(btn.MouseButton1Click, function()
+                if sectionData.CurrentSection == name then return end
+                sectionData.CurrentSection = name
+                for k, v in pairs(sectionData.Pages) do v.ContainerFrame.Visible = (k == name) end
+                for _, b in ipairs(navList:GetChildren()) do
+                    if b:IsA"TextButton" then
+                        ac(b, 0.2, { TextTransparency = (b == btn and 0 or 0.5) }):Play()
+                        b.FontFace = Font.new(aa.Font, b == btn and Enum.FontWeight.Bold or Enum.FontWeight.Medium)
+                    end
+                end
+                Resize()
+            end)
+        end
+
+        sectionData.CurrentSection = sectionData.Sections[1]
+
+        function sectionData.Open()
+            sectionData.Opened = true
+            contentHolder.Visible = true
+            ac(chevron.Arrow, 0.3, { Rotation = 180 }, Enum.EasingStyle.Quint):Play()
+            Resize()
+        end
+
+        function sectionData.Close()
+            sectionData.Opened = false
+            ac(mainFrame, 0.3, { Size = UDim2.new(1, 0, 0, sectionData.HeaderSize) }, Enum.EasingStyle.Quint):Play()
+            ac(chevron.Arrow, 0.3, { Rotation = 0 }, Enum.EasingStyle.Quint):Play()
+            task.delay(0.3, function() if not sectionData.Opened then contentHolder.Visible = false end end)
+        end
+
+        aa.AddSignal(topBtn.MouseButton1Click, function()
+            if sectionData.Opened then sectionData.Close() else sectionData.Open() end
+        end)
+
+        if sectionData.Opened then task.spawn(sectionData.Open) end
+
+        setmetatable(sectionData.Pages, { __index = sectionData })
+        return "MultiSection", sectionData.Pages
+    end
+
+    return ae
+end function a.U()
 local aa=a.load'c'
 local ae=aa.New
 
@@ -9456,6 +9640,7 @@ Divider=a.load'K',
 Space=a.load'S',
 Image=a.load'T',
 Group=a.load'U',
+MultiSection = a.load'MS', 
 
 },
 Load=function(aa,ae,af,ah,aj,ak,al,am,an)
@@ -12858,43 +13043,6 @@ ae.Services
 
 local ap=ae.Creator
 
-function ae:AddMarqueeColor(colorSeq)
-    if typeof(colorSeq) == "ColorSequence" then
-        table.insert(self.MarqueeColors, colorSeq)
-    end
-end
-
-local function injectMarquee(targetFrame)
-    if not targetFrame or targetFrame:FindFirstChild("MarqueeStroke") then return end
-    
-    local stroke = Instance.new("UIStroke")
-    stroke.Name = "MarqueeStroke"
-    stroke.Thickness = 2.5
-    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
-    stroke.Color = Color3.new(1, 1, 1)
-    stroke.Parent = targetFrame
-
-    local gradient = Instance.new("UIGradient")
-    gradient.Name = "MarqueeGradient"
-
-    local pool = ae.MarqueeColors
-    gradient.Color = pool[math.random(1, #pool)]
-    gradient.Parent = stroke
-    
-    table.insert(ae.activeGradients, gradient)
-end
-
-game:GetService("RunService").RenderStepped:Connect(function(dt)
-    for i = #ae.activeGradients, 1, -1 do
-        local grad = ae.activeGradients[i]
-        if grad and grad.Parent then
-            grad.Rotation = (grad.Rotation + 80 * dt) % 360
-        else
-            table.remove(ae.activeGradients, i)
-        end
-    end
-end)
-
 local aq=ap.New local ar=
 ap.Tween
 
@@ -13113,11 +13261,6 @@ ae:SetLanguage(ap.Language)
 
 
 function ae.CreateWindow(ax,ay)
-    local f = az(ay)
-    if f and f.UIElements and f.UIElements.Main then
-        injectMarquee(f.UIElements.Main)
-    end
-    ae.Window = f
 local az=a.load'_'
 
 if not aa:IsStudio()and writefile then
