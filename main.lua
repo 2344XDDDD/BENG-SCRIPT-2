@@ -12761,48 +12761,56 @@ end)
 
 
 
+
 local G=0
 local H=0.4
 local J
 local L=0
 
 function onDoubleClick()
-au:SetToTheCenter()
+    au:SetToTheCenter()
+end
+
+function onTripleClick()
+    at.WindUI:Notify({
+        Title = "Notification",
+        Content = "不处",
+        Duration = 3,
+    })
 end
 
 l.Frame.MouseButton1Up:Connect(function()
-local M=tick()
-local N=au.Position
+    local M=tick()
+    local N=au.Position
 
-L=L+1
+    L=L+1
 
-if L==1 then
-G=M
-J=N
+    if L==1 then
+        G=M
+        J=N
 
-task.spawn(function()
-task.wait(H)
-if L==1 then
-L=0
-J=nil
-end
+        task.spawn(function()
+            task.wait(H)
+            if L > 0 then
+                L=0
+                J=nil
+            end
+        end)
+
+    elseif L==2 then
+        if M-G<=H and N==J then
+            onDoubleClick()
+        end
+
+    elseif L==3 then
+        if M-G<=H then
+            onTripleClick()
+        end
+        L=0
+        J=nil
+        G=0
+    end
 end)
-
-elseif L==2 then
-if M-G<=H and N==J then
-onDoubleClick()
-end
-
-L=0
-J=nil
-G=0
-else
-L=1
-G=M
-J=N
-end
-end)
-
 
 
 
