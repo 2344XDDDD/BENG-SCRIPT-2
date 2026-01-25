@@ -12740,20 +12740,6 @@ end
 
 
 local sidebarOpened = true
-local UIS = game:GetService("UserInputService")
-local draggingResizer = false
-local resizerHandle = am("TextButton", {
-    Name = "SidebarResizer",
-    Size = UDim2.new(0, 10, 1, -au.Topbar.Height),
-    Position = UDim2.new(0, au.SideBarWidth - 5, 0, au.Topbar.Height),
-    BackgroundTransparency = 0.7,
-    Text = "",
-    BorderSizePixel = 0,
-    Active = true,
-    ZIndex = 5000,
-    Parent = au.UIElements.Main.Main
-})
-
 au.ToggleSidebar = function()
     sidebarOpened = not sidebarOpened
     local targetWidth = sidebarOpened and au.SideBarWidth or 0
@@ -12771,53 +12757,18 @@ au.ToggleSidebar = function()
         }, easing, Enum.EasingDirection.Out):Play()
         aB.ClipsDescendants = true
     end
-    resizerHandle.Visible = sidebarOpened
-    if sidebarOpened then
-        an(resizerHandle, animTime, {
-            Position = UDim2.new(0, au.SideBarWidth - 5, 0, au.Topbar.Height)
-        }, easing, Enum.EasingDirection.Out):Play()
-    end
 end
-
-al.AddSignal(resizerHandle.InputBegan, function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and sidebarOpened then
-        draggingResizer = true
-    end
-end)
-
-al.AddSignal(UIS.InputChanged, function(input)
-    if draggingResizer and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local mousePos = input.Position.X
-        local windowPos = au.UIElements.Main.AbsolutePosition.X
-        local relativeX = (mousePos - windowPos) / au.WindUI.UIScale 
-        local newWidth = math.clamp(relativeX, 150, 500)
-        au.SideBarWidth = newWidth
-        au.UIElements.SideBarContainer.Size = UDim2.new(0, newWidth, 1, au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)
-        au.UIElements.MainBar.Size = UDim2.new(1, -newWidth, 1, -au.Topbar.Height)
-        resizerHandle.Position = UDim2.new(0, newWidth - 5, 0, au.Topbar.Height)
-        
-        if aB then
-            aB.Size = UDim2.new(0, newWidth - (au.UIPadding/2), 0, 42+(au.UIPadding))
-        end
-    end
-end)
-
-al.AddSignal(UIS.InputEnded, function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        draggingResizer = false
-    end
-end)
 au:CreateTopbarButton("SidebarToggle", "menu", function()
     au.ToggleSidebar()
 end, 990, true, Color3.fromRGB(255, 255, 255))
 function au.DisableTopbarButtons(M,N)
-    for O,P in next,N do
-        for Q,R in next,au.TopBarButtons do
-            if R.Name==P then
-                R.Object.Visible=false
-            end
-        end
-    end
+for O,P in next,N do
+for Q,R in next,au.TopBarButtons do
+if R.Name==P then
+R.Object.Visible=false
+end
+end
+end
 end
 
 
