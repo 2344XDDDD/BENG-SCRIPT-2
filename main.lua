@@ -4,7 +4,9 @@
     | |/ |/ / / _ \/ _  / /_/ // /  
     |__/|__/_/_//_/\_,_/\____/___/
     
-    v1.6.7  |  2026-01-26  |  Roblox UI Library for scripts
+    v1.6.69  |  2026-01-25  |  Roblox UI Library for scripts
+    
+    To view the source code, see the `src/` folder on the official GitHub repository.
     
     Author: Footagesus (Footages, .ftgs, oftgs)
     Github: https://github.com/Footagesus/WindUI
@@ -11540,7 +11542,7 @@ CornerRadius=UDim.new(0,au.UICorner)
 au.UIElements.SideBarContainer,
 au.UIElements.MainBar,
 
-am("TextLabel",{Name="Footer",Text="WindUI Forked by orialdev | 1.0.0",TextSize=13,TextTransparency=0.7,TextXAlignment="Right",BackgroundTransparency=1,Position=UDim2.new(1,-14,1,-14),AnchorPoint=Vector2.new(1,1),Size=UDim2.new(0,0,0,0),AutomaticSize="XY",ThemeTag={TextColor3="Text",},FontFace=Font.new(al.Font,Enum.FontWeight.Medium)}),
+am("TextLabel",{Name="Footer",Text="Script by:BENG | 1.6.7 - UI",TextSize=13,TextTransparency=0.7,TextXAlignment="Right",BackgroundTransparency=1,Position=UDim2.new(1,-14,1,-14),AnchorPoint=Vector2.new(1,1),Size=UDim2.new(0,0,0,0),AutomaticSize="XY",ThemeTag={TextColor3="Text",},FontFace=Font.new(al.Font,Enum.FontWeight.Medium)}),
 
 aB,
 
