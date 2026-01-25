@@ -1214,36 +1214,39 @@ return b end function a.e()
     function f.Init(g)
         local h={
             Lower=false,
-            Side="right" -- 默认位置
+            Side="right" 
         }
 
+        local listLayout = d("UIListLayout",{
+            HorizontalAlignment="Right",
+            SortOrder="LayoutOrder",
+            VerticalAlignment="Bottom",
+            Padding=UDim.new(0,8),
+        })
+
         h.Frame=d("Frame",{
-            Position=UDim2.new(1,-29,0,56),
-            AnchorPoint=Vector2.new(1,0),
+            Position=UDim2.new(1, -29, 0, 56),
+            AnchorPoint=Vector2.new(1, 0),
             Size=f.Size,
             Parent=g,
             BackgroundTransparency=1,
         },{
-            d("UIListLayout",{
-                HorizontalAlignment="Center",
-                SortOrder="LayoutOrder",
-                VerticalAlignment="Bottom",
-                Padding=UDim.new(0,8),
-            }),
+            listLayout,
             d("UIPadding",{
-                PaddingBottom=UDim.new(0,29)
+                PaddingBottom=UDim.new(0, 29)
             })
         })
 
-        -- 设置通知显示位置的方法
         function h.SetSide(side)
             h.Side = side:lower()
             if h.Side == "left" then
                 h.Frame.Position = UDim2.new(0, 29, 0, 56)
                 h.Frame.AnchorPoint = Vector2.new(0, 0)
+                listLayout.HorizontalAlignment = "Left"
             else
                 h.Frame.Position = UDim2.new(1, -29, 0, 56)
                 h.Frame.AnchorPoint = Vector2.new(1, 0)
+                listLayout.HorizontalAlignment = "Right"
             end
         end
 
@@ -1273,7 +1276,6 @@ return b end function a.e()
         f.NotificationIndex=f.NotificationIndex+1
         f.Notifications[f.NotificationIndex]=h
 
-        -- 获取当前全局位置
         local currentSide = f.Holder.Side
         if g.Position then currentSide = g.Position:lower() end
 
@@ -1328,13 +1330,12 @@ return b end function a.e()
             d("TextLabel",{AutomaticSize="Y",Size=UDim2.new(1,0,0,0),TextWrapped=true,TextXAlignment="Left",RichText=true,BackgroundTransparency=1,TextSize=15,ThemeTag={TextColor3="NotificationContent",TextTransparency="NotificationContentTransparency"},Text=h.Content,FontFace=Font.new(b.Font,Enum.FontWeight.Medium),Parent=p})
         end
 
-        -- 根据位置设置滑入方向
-        local startX = (currentSide == "left") and -2 or 2
+        local startX = (currentSide == "left") and -1.5 or 1.5
 
         local r=b.NewRoundFrame(f.UICorner,"Squircle",{
             Size=UDim2.new(1,0,0,0),
-            Position=UDim2.new(startX,0,1,0),
-            AnchorPoint=Vector2.new(0,1),
+            Position=UDim2.new(startX, 0, 0, 0),
+            AnchorPoint=Vector2.new(0, 0),
             AutomaticSize="Y",
             ImageTransparency=.05,
             ThemeTag={ImageColor3="Notification"},
@@ -1345,14 +1346,19 @@ return b end function a.e()
             p, j, l
         })
 
-        local u=d("Frame",{BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),Parent=f.Holder.Frame},{r})
+        local u=d("Frame",{
+            BackgroundTransparency=1,
+            Size=UDim2.new(1,0,0,0),
+            ClipsDescendants = false,
+            Parent=f.Holder.Frame
+        },{r})
 
         function h.Close(v)
             if not h.Closed then
                 h.Closed=true
-                local exitX = (currentSide == "left") and -2 or 2
+                local exitX = (currentSide == "left") and -1.5 or 1.5
                 e(u,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-                e(r,0.55,{Position=UDim2.new(exitX,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+                e(r,0.55,{Position=UDim2.new(exitX, 0, 0, 0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
                 task.wait(.45)
                 u:Destroy()
             end
@@ -1361,7 +1367,7 @@ return b end function a.e()
         task.spawn(function()
             task.wait()
             e(u,0.45,{Size=UDim2.new(1,0,0,r.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-            e(r,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+            e(r,0.45,{Position=UDim2.new(0, 0, 0, 0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             if h.Duration then
                 m.Size=UDim2.new(0,r.AbsoluteSize.X,1,0)
                 e(m,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
@@ -5276,21 +5282,17 @@ ag.Justify=="Between"and(ao and-am-ag.UIPadding or-am)or 0,
 ),
 Name="TitleFrame",
 },{
-(function()
-    local textPadding = ab("UIPadding",{
-        PaddingTop=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
-        PaddingLeft=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
-        PaddingRight=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
-        PaddingBottom=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
-    })
-    ag.UIElements.TextPadding = textPadding 
-    return textPadding
-end)(),
+ab("UIPadding",{
+PaddingTop=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
+PaddingLeft=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
+PaddingRight=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
+PaddingBottom=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
+}),
 ab("UIListLayout",{
-    Padding=UDim.new(0,6),
-    FillDirection="Vertical",
-    VerticalAlignment="Center",
-    HorizontalAlignment="Left",
+Padding=UDim.new(0,6),
+FillDirection="Vertical",
+VerticalAlignment="Center",
+HorizontalAlignment="Left",
 }),
 ap,
 aq
@@ -6335,39 +6337,22 @@ al.AnchorPoint=Vector2.new(1,ah.Window.NewElements and 0 or 0.5)
 al.Position=UDim2.new(1,0,ah.Window.NewElements and 0 or 0.5,0)
 
 function ai.Set(an,ao,ap,aq)
-    if aj then
-        am:Set(ao,ap,aq or false)
-        if ah.Animation then
-            task.spawn(function()
-                pcall(function()
-                    local elements = ai.ToggleFrame and ai.ToggleFrame.UIElements
-                    if elements and elements.TextPadding then
-                        local paddingObj = elements.TextPadding
-                        local config = ah.Window and ah.Window.ElementConfig
-                        local basePadding = config and (config.UIPadding / 2) or 0
-                        local targetOffset = basePadding + (ao and 10 or 0)
-                        aa.Tween(paddingObj, 0.3, {
-                            PaddingLeft = UDim.new(0, targetOffset)
-                        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-                    end
-                end)
-            end)
-        end
-
-        ak=ao
-        ai.Value=ao
-    end
+if aj then
+am:Set(ao,ap,aq or false)
+ak=ao
+ai.Value=ao
+end
 end
 
 ai:Set(ak,false,ah.Window.NewElements)
 
+
 if ah.Window.NewElements and am.Animate then
-    aa.AddSignal(ai.ToggleFrame.UIElements.Main.InputBegan,function(an)
-        if not ah.Window.IsToggleDragging and (an.UserInputType==Enum.UserInputType.MouseButton1 or an.UserInputType==Enum.UserInputType.Touch) then
-            am:Animate(an,ai)
-        end
-    end)
+aa.AddSignal(ai.ToggleFrame.UIElements.Main.InputBegan,function(an)
+if not ah.Window.IsToggleDragging and an.UserInputType==Enum.UserInputType.MouseButton1 or an.UserInputType==Enum.UserInputType.Touch then
+am:Animate(an,ai)
 end
+end)
 
 
 
