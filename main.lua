@@ -4,7 +4,7 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.72 | by:Footagesus | Script by:BENG  | UI 1.6.3
+    V1.6.72 | by:Footagesus | Script by:BENG  | UI 1.6.7
     https://bengscript.lol
 
     This UI cannot be used illegally - it cannot be distributed for use with scripts created by us, or used in collaboration with us. This script GUI cannot be used with any script we have created!
