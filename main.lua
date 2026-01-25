@@ -5776,78 +5776,44 @@ aa.New
 
 local ac={}
 
-function ac.New(ad, ae)
-    local af = {
-        __type = "Button",
-        Title = ae.Title or "Button",
-        Desc = ae.Desc or nil,
-        Icon = ae.Icon or "mouse-pointer-click",
-        IconThemed = ae.IconThemed or false,
-        Color = ae.Color,
-        Justify = ae.Justify or "Between",
-        IconAlign = ae.IconAlign or "Right",
-        Locked = ae.Locked or false,
-        LockedTitle = ae.LockedTitle,
-        Callback = ae.Callback or function() end,
-        Keybinding = ae.Keybinding or false,
-        Value = ae.Value or "F", 
-        Picking = false,
-        UIElements = {}
-    }
+function ac.New(ad,ae)
+local af={
+__type="Button",
+Title=ae.Title or"Button",
+Desc=ae.Desc or nil,
+Icon=ae.Icon or"mouse-pointer-click",
+IconThemed=ae.IconThemed or false,
+Color=ae.Color,
+Justify=ae.Justify or"Between",
+IconAlign=ae.IconAlign or"Right",
+Locked=ae.Locked or false,
+LockedTitle=ae.LockedTitle,
+Callback=ae.Callback or function()end,
+UIElements={}
+}
 
-    local ag = true
+local ag=true
 
-    af.ButtonFrame = a.load'B'{
-        Title = af.Title,
-        Desc = af.Desc,
-        Parent = ae.Parent,
-        Window = ae.Window,
-        Color = af.Color,
-        Justify = af.Justify,
-        TextOffset = (af.Keybinding and 80 or 20),
-        Hover = true,
-        Scalable = true,
-        Tab = ae.Tab,
-        Index = ae.Index,
-        ElementTable = af,
-        ParentConfig = ae,
-        Size = ae.Size,
-    }
+af.ButtonFrame=a.load'B'{
+Title=af.Title,
+Desc=af.Desc,
+Parent=ae.Parent,
 
-    if af.Keybinding then
-        local KeybindUI = a.load'v'.New(af.Value, nil, af.ButtonFrame.UIElements.Main, nil, ae.Window.NewElements and 12 or 10)
-        KeybindUI.Size = UDim2.new(0, 30 + KeybindUI.Frame.Frame.TextLabel.TextBounds.X, 0, 30)
-        KeybindUI.AnchorPoint = Vector2.new(1, 0.5)
-        KeybindUI.Position = UDim2.new(1, -45, 0.5, 0)
-        af.UIElements.KeyLabel = KeybindUI
-        aa.AddSignal(KeybindUI.MouseButton1Click, function()
-            if not af.Locked then
-                af.Picking = true
-                KeybindUI.Frame.Frame.TextLabel.Text = "..."
-                local connection
-                connection = game:GetService("UserInputService").InputBegan:Connect(function(input)
-                    local newKey = input.KeyCode.Name
-                    if input.UserInputType == Enum.UserInputType.Keyboard then
-                        af.Value = newKey
-                        KeybindUI.Frame.Frame.TextLabel.Text = newKey
-                        af.Picking = false
-                        connection:Disconnect()
-                    end
-                end)
-            end
-        end)
 
-        aa.AddSignal(game:GetService("UserInputService").InputBegan, function(input, processed)
-            if not processed and not af.Picking and input.KeyCode.Name == af.Value then
-                if ag and not af.Locked then
-                    af.ButtonFrame:Highlight()
-                    task.spawn(af.Callback)
-                end
-            end
-        end)
-    end
 
-    af.UIElements.ButtonIcon = aa.Image(af.Icon, af.Icon, 0, ae.Window.Folder, "Button", not af.Color and true or nil, af.IconThemed)
+
+Window=ae.Window,
+Color=af.Color,
+Justify=af.Justify,
+TextOffset=20,
+Hover=true,
+Scalable=true,
+Tab=ae.Tab,
+Index=ae.Index,
+ElementTable=af,
+ParentConfig=ae,
+Size=ae.Size,
+}
 
 
 
@@ -6293,68 +6259,37 @@ local ae=a.load'F'.New
 
 local af={}
 
-function af.New(ag, ah)
-    local ai = {
-        __type = "Toggle",
-        Title = ah.Title or "Toggle",
-        Desc = ah.Desc or nil,
-        Locked = ah.Locked or false,
-        LockedTitle = ah.LockedTitle,
-        Value = ah.Value,
-        Icon = ah.Icon or nil,
-        IconSize = ah.IconSize or 23,
-        Type = ah.Type or "Toggle",
-        Callback = ah.Callback or function() end,
-        Keybinding = ah.Keybinding or false,
-        BindValue = ah.ValueKey or "G",
-        Picking = false,
-        UIElements = {}
-    }
+function af.New(ag,ah)
+local ai={
+__type="Toggle",
+Title=ah.Title or"Toggle",
+Desc=ah.Desc or nil,
+Locked=ah.Locked or false,
+LockedTitle=ah.LockedTitle,
+Value=ah.Value,
+Icon=ah.Icon or nil,
+IconSize=ah.IconSize or 23,
+Type=ah.Type or"Toggle",
+Callback=ah.Callback or function()end,
+UIElements={}
+}
+ai.ToggleFrame=a.load'B'{
+Title=ai.Title,
+Desc=ai.Desc,
 
-    ai.ToggleFrame = a.load'B'{
-        Title = ai.Title,
-        Desc = ai.Desc,
-        Window = ah.Window,
-        Parent = ah.Parent,
-        TextOffset = (ai.Keybinding and 110 or 52), 
-        Hover = false,
-        Tab = ah.Tab,
-        Index = ah.Index,
-        ElementTable = ai,
-        ParentConfig = ah,
-    }
 
-    if ai.Keybinding then
-        local KeybindUI = a.load'v'.New(ai.BindValue, nil, ai.ToggleFrame.UIElements.Main, nil, ah.Window.NewElements and 12 or 10)
-        KeybindUI.AnchorPoint = Vector2.new(1, 0.5)
-        KeybindUI.Position = UDim2.new(1, -60, 0.5, 0)
-        ai.UIElements.KeyLabel = KeybindUI
 
-        aa.AddSignal(KeybindUI.MouseButton1Click, function()
-            if not ai.Locked then
-                ai.Picking = true
-                KeybindUI.Frame.Frame.TextLabel.Text = "..."
-                local conn
-                conn = game:GetService("UserInputService").InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.Keyboard then
-                        ai.BindValue = input.KeyCode.Name
-                        KeybindUI.Frame.Frame.TextLabel.Text = input.KeyCode.Name
-                        ai.Picking = false
-                        conn:Disconnect()
-                    end
-                end)
-            end
-        end)
 
-        aa.AddSignal(game:GetService("UserInputService").InputBegan, function(input, processed)
-            if not processed and not ai.Picking and input.KeyCode.Name == ai.BindValue then
-                if not ai.Locked then
-                    ai.ToggleFrame:Highlight()
-                    ai:Set(not ai.Value, true, ah.Window.NewElements)
-                end
-            end
-        end)
-    end
+Window=ah.Window,
+Parent=ah.Parent,
+TextOffset=(52),
+Hover=false,
+Tab=ah.Tab,
+Index=ah.Index,
+ElementTable=ai,
+ParentConfig=ah,
+}
+
 local aj=true
 
 if ai.Value==nil then
@@ -13455,3 +13390,115 @@ return f
 end
 
 return ae
+
+
+local function StartSplash(Window, WindUI)
+    task.wait(1)
+
+    local Creator = WindUI.Creator
+    local Tween = Creator.Tween
+
+    local Overlay = Creator.New("Frame", {
+        Name = "SplashOverlay",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ZIndex = 1000,
+        Active = true,
+        Parent = WindUI.ScreenGui
+    }, {
+        Creator.New("UICorner", { CornerRadius = UDim.new(0, Window.Radius) }),
+        Creator.New("UIScale", { Scale = 1 })
+    })
+
+    local SplashCard = Creator.NewRoundFrame(18, "Squircle", {
+        Size = UDim2.new(0, 320, 0, 180),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        ThemeTag = { ImageColor3 = "Background" },
+        ImageTransparency = 0,
+        ZIndex = 1001,
+        Parent = Overlay
+    }, {
+        Creator.New("UIScale", { Scale = 0 }),
+        Creator.New("UIPadding", {
+            PaddingTop = UDim.new(0, 20),
+            PaddingLeft = UDim.new(0, 20),
+            PaddingRight = UDim.new(0, 20),
+            PaddingBottom = UDim.new(0, 20)
+        })
+    })
+
+    local Title = Creator.New("TextLabel", {
+        Text = "loading...",
+        Size = UDim2.new(1, 0, 0, 25),
+        TextSize = 20,
+        FontFace = Font.new(Creator.Font, Enum.FontWeight.SemiBold),
+        ThemeTag = { TextColor3 = "Text" },
+        TextXAlignment = "Left",
+        BackgroundTransparency = 1,
+        Parent = SplashCard
+    })
+
+    local Desc = Creator.New("TextLabel", {
+        Text = "Validate Code - UI - Function...",
+        Size = UDim2.new(1, 0, 0, 40),
+        Position = UDim2.new(0, 0, 0, 30),
+        TextSize = 14,
+        TextTransparency = 0.4,
+        TextWrapped = true,
+        FontFace = Font.new(Creator.Font, Enum.FontWeight.Medium),
+        ThemeTag = { TextColor3 = "Text" },
+        TextXAlignment = "Left",
+        BackgroundTransparency = 1,
+        Parent = SplashCard
+    })
+
+    local ProgressText = Creator.New("TextLabel", {
+        Text = "0 / 100",
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 1, -35),
+        TextSize = 14,
+        FontFace = Font.new(Creator.Font, Enum.FontWeight.Bold),
+        ThemeTag = { TextColor3 = "Text" },
+        TextXAlignment = "Right",
+        BackgroundTransparency = 1,
+        Parent = SplashCard
+    })
+
+    local BarBack = Creator.New("Frame", {
+        Size = UDim2.new(1, 0, 0, 8),
+        Position = UDim2.new(0, 0, 1, -10),
+        BackgroundColor3 = Color3.fromRGB(45, 45, 45),
+        BorderSizePixel = 0,
+        Parent = SplashCard
+    }, {
+        Creator.New("UICorner", { CornerRadius = UDim.new(1, 0) })
+    })
+
+    local BarFill = Creator.New("Frame", {
+        Size = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 145, 255),
+        BorderSizePixel = 0,
+        Parent = BarBack
+    }, {
+        Creator.New("UICorner", { CornerRadius = UDim.new(1, 0) })
+    })
+
+    Tween(Overlay, 0.4, { BackgroundTransparency = 0.35 }):Play()
+    Tween(SplashCard.UIScale, 0.6, { Scale = 1 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
+
+    for i = 0, 100, 2 do
+        task.wait(0.03)
+        ProgressText.Text = i .. " / 100"
+        Tween(BarFill, 0.1, { Size = UDim2.new(i/100, 0, 1, 0) }):Play()
+    end
+
+    task.wait(0.5)
+    Tween(SplashCard.UIScale, 0.5, { Scale = 0 }, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
+    Tween(Overlay, 0.6, { BackgroundTransparency = 1 }):Play()
+
+    task.wait(0.6)
+    Overlay:Destroy()
+end
