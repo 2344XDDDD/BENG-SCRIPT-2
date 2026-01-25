@@ -12635,10 +12635,11 @@ end)
 
 
 
-local G=0
-local H=0.4
+local G = 0
+local H = 0.4
 local J
-local L=0
+local L = 0
+local doubleClickTimer = nil
 
 function onDoubleClick()
     au:SetToTheCenter()
@@ -12653,38 +12654,46 @@ function onTripleClick()
 end
 
 l.Frame.MouseButton1Up:Connect(function()
-    local M=tick()
-    local N=au.Position
-
-    L=L+1
-
-    if L==1 then
-        G=M
-        J=N
-
+    local M = tick()
+    local N = au.Position
+    L = L + 1
+    if L == 1 then
+        G = M
+        J = N
         task.spawn(function()
             task.wait(H)
             if L > 0 then
-                L=0
-                J=nil
+                L = 0
+                J = nil
             end
         end)
 
-    elseif L==2 then
-        if M-G<=H and N==J then
-            onDoubleClick()
+    elseif L == 2 then
+        if M - G <= H and N == J then
+            if doubleClickTimer then task.cancel(doubleClickTimer) end
+            doubleClickTimer = task.delay(0.25, function() 
+                if L == 2 then
+                    onDoubleClick()
+                    L = 0
+                    J = nil
+                end
+            end)
         end
 
-    elseif L==3 then
-        if M-G<=H then
+    elseif L == 3 then
+        if M - G <= H then
+            if doubleClickTimer then
+                task.cancel(doubleClickTimer)
+                doubleClickTimer = nil
+            end
+            
             onTripleClick()
         end
-        L=0
-        J=nil
-        G=0
+        L = 0
+        J = nil
+        G = 0
     end
 end)
-
 
 
 
