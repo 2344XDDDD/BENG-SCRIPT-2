@@ -12858,6 +12858,43 @@ ae.Services
 
 local ap=ae.Creator
 
+function ae:AddMarqueeColor(colorSeq)
+    if typeof(colorSeq) == "ColorSequence" then
+        table.insert(self.MarqueeColors, colorSeq)
+    end
+end
+
+local function injectMarquee(targetFrame)
+    if not targetFrame or targetFrame:FindFirstChild("MarqueeStroke") then return end
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Name = "MarqueeStroke"
+    stroke.Thickness = 2.5
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+    stroke.Color = Color3.new(1, 1, 1)
+    stroke.Parent = targetFrame
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Name = "MarqueeGradient"
+
+    local pool = ae.MarqueeColors
+    gradient.Color = pool[math.random(1, #pool)]
+    gradient.Parent = stroke
+    
+    table.insert(ae.activeGradients, gradient)
+end
+
+game:GetService("RunService").RenderStepped:Connect(function(dt)
+    for i = #ae.activeGradients, 1, -1 do
+        local grad = ae.activeGradients[i]
+        if grad and grad.Parent then
+            grad.Rotation = (grad.Rotation + 80 * dt) % 360
+        else
+            table.remove(ae.activeGradients, i)
+        end
+    end
+end)
+
 local aq=ap.New local ar=
 ap.Tween
 
@@ -13076,6 +13113,11 @@ ae:SetLanguage(ap.Language)
 
 
 function ae.CreateWindow(ax,ay)
+    local f = az(ay)
+    if f and f.UIElements and f.UIElements.Main then
+        injectMarquee(f.UIElements.Main)
+    end
+    ae.Window = f
 local az=a.load'_'
 
 if not aa:IsStudio()and writefile then
