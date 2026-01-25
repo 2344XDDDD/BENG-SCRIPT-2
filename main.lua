@@ -1214,16 +1214,8 @@ return b end function a.e()
     function f.Init(g)
         local h={
             Lower=false,
-            Side="right" 
+            Side="right" -- 默认位置
         }
-
-        -- 创建布局并保存引用
-        local listLayout = d("UIListLayout",{
-            HorizontalAlignment="Right", -- 默认右侧
-            SortOrder="LayoutOrder",
-            VerticalAlignment="Bottom",
-            Padding=UDim.new(0,8),
-        })
 
         h.Frame=d("Frame",{
             Position=UDim2.new(1,-29,0,56),
@@ -1232,23 +1224,25 @@ return b end function a.e()
             Parent=g,
             BackgroundTransparency=1,
         },{
-            listLayout,
+            d("UIListLayout",{
+                HorizontalAlignment="Center",
+                SortOrder="LayoutOrder",
+                VerticalAlignment="Bottom",
+                Padding=UDim.new(0,8),
+            }),
             d("UIPadding",{
                 PaddingBottom=UDim.new(0,29)
             })
         })
 
-        -- 修复：设置侧边时同步修改布局对齐方式
         function h.SetSide(side)
             h.Side = side:lower()
             if h.Side == "left" then
                 h.Frame.Position = UDim2.new(0, 29, 0, 56)
                 h.Frame.AnchorPoint = Vector2.new(0, 0)
-                listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
             else
                 h.Frame.Position = UDim2.new(1, -29, 0, 56)
                 h.Frame.AnchorPoint = Vector2.new(1, 0)
-                listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
             end
         end
 
@@ -1332,14 +1326,12 @@ return b end function a.e()
             d("TextLabel",{AutomaticSize="Y",Size=UDim2.new(1,0,0,0),TextWrapped=true,TextXAlignment="Left",RichText=true,BackgroundTransparency=1,TextSize=15,ThemeTag={TextColor3="NotificationContent",TextTransparency="NotificationContentTransparency"},Text=h.Content,FontFace=Font.new(b.Font,Enum.FontWeight.Medium),Parent=p})
         end
 
-        -- 修复：根据位置设置起始 X 坐标
-        -- 左侧从 -1.2 滑入，右侧从 1.2 滑入
-        local startX = (currentSide == "left") and -1.2 or 1.2
+        local startX = (currentSide == "left") and -2 or 2
 
         local r=b.NewRoundFrame(f.UICorner,"Squircle",{
             Size=UDim2.new(1,0,0,0),
-            Position=UDim2.new(startX,0,0,0),
-            AnchorPoint=Vector2.new(0,0), -- 修复：锚点设为顶部，防止随高度增加而跳动
+            Position=UDim2.new(startX,0,1,0),
+            AnchorPoint=Vector2.new(0,1),
             AutomaticSize="Y",
             ImageTransparency=.05,
             ThemeTag={ImageColor3="Notification"},
@@ -1350,15 +1342,14 @@ return b end function a.e()
             p, j, l
         })
 
-        -- 容器 u 负责占用列表空间
         local u=d("Frame",{BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),Parent=f.Holder.Frame},{r})
 
         function h.Close(v)
             if not h.Closed then
                 h.Closed=true
-                local exitX = (currentSide == "left") and -1.2 or 1.2
+                local exitX = (currentSide == "left") and -2 or 2
                 e(u,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-                e(r,0.55,{Position=UDim2.new(exitX,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+                e(r,0.55,{Position=UDim2.new(exitX,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
                 task.wait(.45)
                 u:Destroy()
             end
@@ -1366,9 +1357,8 @@ return b end function a.e()
 
         task.spawn(function()
             task.wait()
-            -- 修复：同步展开容器高度和内容滑入
             e(u,0.45,{Size=UDim2.new(1,0,0,r.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-            e(r,0.45,{Position=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+            e(r,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             if h.Duration then
                 m.Size=UDim2.new(0,r.AbsoluteSize.X,1,0)
                 e(m,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
@@ -10054,7 +10044,6 @@ end,
     function al.SelectTab(am, an)
         if not al.Tabs[an].Locked then
             al.SelectedTab = an
-
             for ao, ap in next, al.Tabs do
                 if not ap.Locked then
                     af.SetThemeTag(ap.UIElements.Main, {
@@ -10068,8 +10057,6 @@ end,
                     af.SetThemeTag(ap.UIElements.Main.Frame.TextLabel, {
                         TextTransparency = "TabTextTransparency"
                     }, 0.15)
-                    
-                    -- [选中动画]：未选中的文字回到原位
                     if ap.UIElements.TextPadding then
                         af.Tween(ap.UIElements.TextPadding, 0.2, {
                             PaddingLeft = UDim.new(0, 0)
@@ -10084,50 +10071,47 @@ end,
                     ap.Selected = false
                 end
             end
-
-            -- [选中动画]：当前选中的文字向右偏移 6 像素
             local currentTab = al.Tabs[an]
             if currentTab.UIElements.TextPadding then
-                af.Tween(currentTab.UIElements.TextPadding, 0.2, {
+                af.Tween(currentTab.UIElements.TextPadding, 0.25, {
                     PaddingLeft = UDim.new(0, 6)
                 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             end
 
-            af.SetThemeTag(al.Tabs[an].UIElements.Main, {
+            af.SetThemeTag(currentTab.UIElements.Main, {
                 ImageTransparency = "TabBackgroundActiveTransparency"
             }, 0.15)
-            if al.Tabs[an].Border then
-                af.SetThemeTag(al.Tabs[an].UIElements.Main.Outline, {
+            if currentTab.Border then
+                af.SetThemeTag(currentTab.UIElements.Main.Outline, {
                     ImageTransparency = "TabBorderTransparencyActive"
                 }, 0.15)
             end
-            af.SetThemeTag(al.Tabs[an].UIElements.Main.Frame.TextLabel, {
+            af.SetThemeTag(currentTab.UIElements.Main.Frame.TextLabel, {
                 TextTransparency = "TabTextTransparencyActive"
             }, 0.15)
-            if al.Tabs[an].UIElements.Icon and not al.Tabs[an].IconColor then
-                af.SetThemeTag(al.Tabs[an].UIElements.Icon.ImageLabel, {
+            
+            if currentTab.UIElements.Icon and not currentTab.IconColor then
+                af.SetThemeTag(currentTab.UIElements.Icon.ImageLabel, {
                     ImageTransparency = "TabIconTransparencyActive"
                 }, 0.15)
             end
-            al.Tabs[an].Selected = true
-
+            currentTab.Selected = true
             task.spawn(function()
                 for ao, ap in next, al.Containers do
-                    ap.AnchorPoint = Vector2.new(0, 0.05)
                     ap.Visible = false
+                    ap.Position = UDim2.new(0, 0, 0, 20) 
                 end
-                al.Containers[an].Visible = true
-                local ao = game:GetService "TweenService"
-
-                local ap = TweenInfo.new(
-                    0.15,
-                    Enum.EasingStyle.Quart,
-                    Enum.EasingDirection.Out
-                )
-                local aq = ao:Create(al.Containers[an], ap, {
-                    AnchorPoint = Vector2.new(0, 0)
-                })
-                aq:Play()
+                local targetContainer = al.Containers[an]
+                targetContainer.Visible = true
+                local TS = game:GetService("TweenService")
+                local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+                TS:Create(targetContainer, tweenInfo, {
+                    Position = UDim2.new(0, 0, 0, 0)
+                }):Play()
+                if targetContainer:IsA("CanvasGroup") then
+                    targetContainer.GroupTransparency = 1
+                    TS:Create(targetContainer, tweenInfo, { GroupTransparency = 0 }):Play()
+                end
             end)
 
             al.OnChangeFunc(an)
@@ -11922,9 +11906,9 @@ local x
 al.Icon"minimize"
 al.Icon"maximize"
 
-au:CreateTopbarButton("Fullscreen",au.Topbar.ButtonsType=="Mac"and"rbxassetid://127426072704909"or"maximize",function()
-au:ToggleFullscreen()
-end,(au.Topbar.ButtonsType=="Default"and 998 or 999),true,Color3.fromHex"#60C762",au.Topbar.ButtonsType=="Mac"and 9 or nil)
+au:CreateTopbarButton("Fullscreen", au.Topbar.ButtonsType=="Mac" and "rbxassetid://127426072704909" or "expand", function()
+    au:ToggleFullscreen()
+end, (au.Topbar.ButtonsType=="Default" and 998 or 999), true, Color3.fromHex"#60C762", au.Topbar.ButtonsType=="Mac" and 9 or nil)
 
 function au.ToggleFullscreen(z)
 local A=au.IsFullscreen
