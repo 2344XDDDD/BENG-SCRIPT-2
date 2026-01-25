@@ -5276,21 +5276,17 @@ ag.Justify=="Between"and(ao and-am-ag.UIPadding or-am)or 0,
 ),
 Name="TitleFrame",
 },{
-(function()
-    local textPadding = ab("UIPadding",{
-        PaddingTop=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
-        PaddingLeft=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
-        PaddingRight=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
-        PaddingBottom=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
-    })
-    ag.UIElements.TextPadding = textPadding
-    return textPadding
-end)(),
+ab("UIPadding",{
+PaddingTop=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
+PaddingLeft=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
+PaddingRight=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ah),
+PaddingBottom=UDim.new(0,(af.Window.NewElements and ag.UIPadding/2 or 0)+ai),
+}),
 ab("UIListLayout",{
-    Padding=UDim.new(0,6),
-    FillDirection="Vertical",
-    VerticalAlignment="Center",
-    HorizontalAlignment="Left",
+Padding=UDim.new(0,6),
+FillDirection="Vertical",
+VerticalAlignment="Center",
+HorizontalAlignment="Left",
 }),
 ap,
 aq
@@ -6335,45 +6331,22 @@ al.AnchorPoint=Vector2.new(1,ah.Window.NewElements and 0 or 0.5)
 al.Position=UDim2.new(1,0,ah.Window.NewElements and 0 or 0.5,0)
 
 function ai.Set(an,ao,ap,aq)
-    if aj then
-        am:Set(ao,ap,aq or false)
-        
-        -- [开始添加：文字右移逻辑]
-        if ah.Animation then
-            task.spawn(function()
-                pcall(function()
-                    local targetFrame = ai.ToggleFrame
-                    if targetFrame and targetFrame.UIElements and targetFrame.UIElements.TextPadding then
-                        local padding = targetFrame.UIElements.TextPadding
-                        -- 计算基础边距 (WindUI 默认逻辑)
-                        local base = (ah.Window.NewElements and ah.Window.ElementConfig.UIPadding/2 or 0)
-                        -- 开启时向右偏移 6 像素，关闭时回到 base
-                        local targetOffset = base + (ao and 6 or 0)
-                        
-                        aa.Tween(padding, 0.25, {
-                            PaddingLeft = UDim.new(0, targetOffset)
-                        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-                    end
-                end)
-            end)
-        end
-        -- [结束添加]
-
-        ak=ao
-        ai.Value=ao
-    end
+if aj then
+am:Set(ao,ap,aq or false)
+ak=ao
+ai.Value=ao
+end
 end
 
--- 初始化调用
 ai:Set(ak,false,ah.Window.NewElements)
 
+
 if ah.Window.NewElements and am.Animate then
-    aa.AddSignal(ai.ToggleFrame.UIElements.Main.InputBegan,function(an)
-        if not ah.Window.IsToggleDragging and (an.UserInputType==Enum.UserInputType.MouseButton1 or an.UserInputType==Enum.UserInputType.Touch) then
-            am:Animate(an,ai)
-        end
-    end)
+aa.AddSignal(ai.ToggleFrame.UIElements.Main.InputBegan,function(an)
+if not ah.Window.IsToggleDragging and an.UserInputType==Enum.UserInputType.MouseButton1 or an.UserInputType==Enum.UserInputType.Touch then
+am:Animate(an,ai)
 end
+end)
 
 
 
