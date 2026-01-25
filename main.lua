@@ -12760,7 +12760,7 @@ au.ToggleSidebar = function()
 end
 au:CreateTopbarButton("SidebarToggle", "menu", function()
     au.ToggleSidebar()
-end, 990)
+end, 990, true, Color3.fromRGB(255, 255, 255))
 function au.DisableTopbarButtons(M,N)
 for O,P in next,N do
 for Q,R in next,au.TopBarButtons do
