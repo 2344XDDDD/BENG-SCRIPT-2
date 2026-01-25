@@ -12904,6 +12904,14 @@ math.clamp(ae.TransparencyValue,0,1)
 
 local aw=ae.NotificationModule.Init(ae.NotificationGui)
 
+ae.NotificationModule.Holder = aw
+
+function ae.SetNotificationPosition(ax, side)
+    if aw and aw.SetSide then
+        aw.SetSide(side)
+    end
+end
+
 function ae.Notify(ax,ay)
 ay.Holder=aw.Frame
 ay.Window=ae.Window
