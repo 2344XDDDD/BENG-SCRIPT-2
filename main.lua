@@ -5776,44 +5776,78 @@ aa.New
 
 local ac={}
 
-function ac.New(ad,ae)
-local af={
-__type="Button",
-Title=ae.Title or"Button",
-Desc=ae.Desc or nil,
-Icon=ae.Icon or"mouse-pointer-click",
-IconThemed=ae.IconThemed or false,
-Color=ae.Color,
-Justify=ae.Justify or"Between",
-IconAlign=ae.IconAlign or"Right",
-Locked=ae.Locked or false,
-LockedTitle=ae.LockedTitle,
-Callback=ae.Callback or function()end,
-UIElements={}
-}
+function ac.New(ad, ae)
+    local af = {
+        __type = "Button",
+        Title = ae.Title or "Button",
+        Desc = ae.Desc or nil,
+        Icon = ae.Icon or "mouse-pointer-click",
+        IconThemed = ae.IconThemed or false,
+        Color = ae.Color,
+        Justify = ae.Justify or "Between",
+        IconAlign = ae.IconAlign or "Right",
+        Locked = ae.Locked or false,
+        LockedTitle = ae.LockedTitle,
+        Callback = ae.Callback or function() end,
+        Keybinding = ae.Keybinding or false,
+        Value = ae.Value or "F", 
+        Picking = false,
+        UIElements = {}
+    }
 
-local ag=true
+    local ag = true
 
-af.ButtonFrame=a.load'B'{
-Title=af.Title,
-Desc=af.Desc,
-Parent=ae.Parent,
+    af.ButtonFrame = a.load'B'{
+        Title = af.Title,
+        Desc = af.Desc,
+        Parent = ae.Parent,
+        Window = ae.Window,
+        Color = af.Color,
+        Justify = af.Justify,
+        TextOffset = (af.Keybinding and 80 or 20),
+        Hover = true,
+        Scalable = true,
+        Tab = ae.Tab,
+        Index = ae.Index,
+        ElementTable = af,
+        ParentConfig = ae,
+        Size = ae.Size,
+    }
 
+    if af.Keybinding then
+        local KeybindUI = a.load'v'.New(af.Value, nil, af.ButtonFrame.UIElements.Main, nil, ae.Window.NewElements and 12 or 10)
+        KeybindUI.Size = UDim2.new(0, 30 + KeybindUI.Frame.Frame.TextLabel.TextBounds.X, 0, 30)
+        KeybindUI.AnchorPoint = Vector2.new(1, 0.5)
+        KeybindUI.Position = UDim2.new(1, -45, 0.5, 0)
+        af.UIElements.KeyLabel = KeybindUI
+        aa.AddSignal(KeybindUI.MouseButton1Click, function()
+            if not af.Locked then
+                af.Picking = true
+                KeybindUI.Frame.Frame.TextLabel.Text = "..."
+                local connection
+                connection = game:GetService("UserInputService").InputBegan:Connect(function(input)
+                    local newKey = input.KeyCode.Name
+                    if input.UserInputType == Enum.UserInputType.Keyboard then
+                        af.Value = newKey
+                        KeybindUI.Frame.Frame.TextLabel.Text = newKey
+                        af.Picking = false
+                        connection:Disconnect()
+                    end
+                end)
+            end
+        end)
 
+        aa.AddSignal(game:GetService("UserInputService").InputBegan, function(input, processed)
+            if not processed and not af.Picking and input.KeyCode.Name == af.Value then
+                if ag and not af.Locked then
+                    af.ButtonFrame:Highlight()
+                    task.spawn(af.Callback)
+                end
+            end
+        end)
+    end
 
-
-Window=ae.Window,
-Color=af.Color,
-Justify=af.Justify,
-TextOffset=20,
-Hover=true,
-Scalable=true,
-Tab=ae.Tab,
-Index=ae.Index,
-ElementTable=af,
-ParentConfig=ae,
-Size=ae.Size,
-}
+    af.UIElements.ButtonIcon = aa.Image(af.Icon, af.Icon, 0, ae.Window.Folder, "Button", not af.Color and true or nil, af.IconThemed)
 
 
 
@@ -6259,37 +6293,68 @@ local ae=a.load'F'.New
 
 local af={}
 
-function af.New(ag,ah)
-local ai={
-__type="Toggle",
-Title=ah.Title or"Toggle",
-Desc=ah.Desc or nil,
-Locked=ah.Locked or false,
-LockedTitle=ah.LockedTitle,
-Value=ah.Value,
-Icon=ah.Icon or nil,
-IconSize=ah.IconSize or 23,
-Type=ah.Type or"Toggle",
-Callback=ah.Callback or function()end,
-UIElements={}
-}
-ai.ToggleFrame=a.load'B'{
-Title=ai.Title,
-Desc=ai.Desc,
+function af.New(ag, ah)
+    local ai = {
+        __type = "Toggle",
+        Title = ah.Title or "Toggle",
+        Desc = ah.Desc or nil,
+        Locked = ah.Locked or false,
+        LockedTitle = ah.LockedTitle,
+        Value = ah.Value,
+        Icon = ah.Icon or nil,
+        IconSize = ah.IconSize or 23,
+        Type = ah.Type or "Toggle",
+        Callback = ah.Callback or function() end,
+        Keybinding = ah.Keybinding or false,
+        BindValue = ah.ValueKey or "G",
+        Picking = false,
+        UIElements = {}
+    }
 
+    ai.ToggleFrame = a.load'B'{
+        Title = ai.Title,
+        Desc = ai.Desc,
+        Window = ah.Window,
+        Parent = ah.Parent,
+        TextOffset = (ai.Keybinding and 110 or 52), 
+        Hover = false,
+        Tab = ah.Tab,
+        Index = ah.Index,
+        ElementTable = ai,
+        ParentConfig = ah,
+    }
 
+    if ai.Keybinding then
+        local KeybindUI = a.load'v'.New(ai.BindValue, nil, ai.ToggleFrame.UIElements.Main, nil, ah.Window.NewElements and 12 or 10)
+        KeybindUI.AnchorPoint = Vector2.new(1, 0.5)
+        KeybindUI.Position = UDim2.new(1, -60, 0.5, 0)
+        ai.UIElements.KeyLabel = KeybindUI
 
+        aa.AddSignal(KeybindUI.MouseButton1Click, function()
+            if not ai.Locked then
+                ai.Picking = true
+                KeybindUI.Frame.Frame.TextLabel.Text = "..."
+                local conn
+                conn = game:GetService("UserInputService").InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.Keyboard then
+                        ai.BindValue = input.KeyCode.Name
+                        KeybindUI.Frame.Frame.TextLabel.Text = input.KeyCode.Name
+                        ai.Picking = false
+                        conn:Disconnect()
+                    end
+                end)
+            end
+        end)
 
-Window=ah.Window,
-Parent=ah.Parent,
-TextOffset=(52),
-Hover=false,
-Tab=ah.Tab,
-Index=ah.Index,
-ElementTable=ai,
-ParentConfig=ah,
-}
-
+        aa.AddSignal(game:GetService("UserInputService").InputBegan, function(input, processed)
+            if not processed and not ai.Picking and input.KeyCode.Name == ai.BindValue then
+                if not ai.Locked then
+                    ai.ToggleFrame:Highlight()
+                    ai:Set(not ai.Value, true, ah.Window.NewElements)
+                end
+            end
+        end)
+    end
 local aj=true
 
 if ai.Value==nil then
