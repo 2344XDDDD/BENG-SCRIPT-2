@@ -1217,36 +1217,38 @@ return b end function a.e()
             Side="right" 
         }
 
+        -- 创建布局并保存引用
         local listLayout = d("UIListLayout",{
-            HorizontalAlignment="Right",
+            HorizontalAlignment="Right", -- 默认右侧
             SortOrder="LayoutOrder",
             VerticalAlignment="Bottom",
             Padding=UDim.new(0,8),
         })
 
         h.Frame=d("Frame",{
-            Position=UDim2.new(1, -29, 0, 56),
-            AnchorPoint=Vector2.new(1, 0),
+            Position=UDim2.new(1,-29,0,56),
+            AnchorPoint=Vector2.new(1,0),
             Size=f.Size,
             Parent=g,
             BackgroundTransparency=1,
         },{
             listLayout,
             d("UIPadding",{
-                PaddingBottom=UDim.new(0, 29)
+                PaddingBottom=UDim.new(0,29)
             })
         })
 
+        -- 修复：设置侧边时同步修改布局对齐方式
         function h.SetSide(side)
             h.Side = side:lower()
             if h.Side == "left" then
                 h.Frame.Position = UDim2.new(0, 29, 0, 56)
                 h.Frame.AnchorPoint = Vector2.new(0, 0)
-                listLayout.HorizontalAlignment = "Left"
+                listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
             else
                 h.Frame.Position = UDim2.new(1, -29, 0, 56)
                 h.Frame.AnchorPoint = Vector2.new(1, 0)
-                listLayout.HorizontalAlignment = "Right"
+                listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
             end
         end
 
@@ -1330,12 +1332,14 @@ return b end function a.e()
             d("TextLabel",{AutomaticSize="Y",Size=UDim2.new(1,0,0,0),TextWrapped=true,TextXAlignment="Left",RichText=true,BackgroundTransparency=1,TextSize=15,ThemeTag={TextColor3="NotificationContent",TextTransparency="NotificationContentTransparency"},Text=h.Content,FontFace=Font.new(b.Font,Enum.FontWeight.Medium),Parent=p})
         end
 
-        local startX = (currentSide == "left") and -1.5 or 1.5
+        -- 修复：根据位置设置起始 X 坐标
+        -- 左侧从 -1.2 滑入，右侧从 1.2 滑入
+        local startX = (currentSide == "left") and -1.2 or 1.2
 
         local r=b.NewRoundFrame(f.UICorner,"Squircle",{
             Size=UDim2.new(1,0,0,0),
-            Position=UDim2.new(startX, 0, 0, 0),
-            AnchorPoint=Vector2.new(0, 0),
+            Position=UDim2.new(startX,0,0,0),
+            AnchorPoint=Vector2.new(0,0), -- 修复：锚点设为顶部，防止随高度增加而跳动
             AutomaticSize="Y",
             ImageTransparency=.05,
             ThemeTag={ImageColor3="Notification"},
@@ -1346,19 +1350,15 @@ return b end function a.e()
             p, j, l
         })
 
-        local u=d("Frame",{
-            BackgroundTransparency=1,
-            Size=UDim2.new(1,0,0,0),
-            ClipsDescendants = false,
-            Parent=f.Holder.Frame
-        },{r})
+        -- 容器 u 负责占用列表空间
+        local u=d("Frame",{BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),Parent=f.Holder.Frame},{r})
 
         function h.Close(v)
             if not h.Closed then
                 h.Closed=true
-                local exitX = (currentSide == "left") and -1.5 or 1.5
+                local exitX = (currentSide == "left") and -1.2 or 1.2
                 e(u,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-                e(r,0.55,{Position=UDim2.new(exitX, 0, 0, 0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+                e(r,0.55,{Position=UDim2.new(exitX,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
                 task.wait(.45)
                 u:Destroy()
             end
@@ -1366,8 +1366,9 @@ return b end function a.e()
 
         task.spawn(function()
             task.wait()
+            -- 修复：同步展开容器高度和内容滑入
             e(u,0.45,{Size=UDim2.new(1,0,0,r.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-            e(r,0.45,{Position=UDim2.new(0, 0, 0, 0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+            e(r,0.45,{Position=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             if h.Duration then
                 m.Size=UDim2.new(0,r.AbsoluteSize.X,1,0)
                 e(m,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
