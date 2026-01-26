@@ -1244,88 +1244,6 @@ function Library:GetTextBounds(Text: string, Font: Font, Size: number, Width: nu
     return Bounds.X, Bounds.Y
 end
 
-local function AnimateSearchResize(TextBox: TextBox, Padding: number, Direction: "Left" | "Right")
-    local lastWidth = TextBox.AbsoluteSize.X
-
-    local function Update()
-        if not TextBox or not TextBox.Parent then return end
-
-        local X = Library:GetTextBounds(
-            TextBox.Text,
-            TextBox.FontFace,
-            TextBox.TextSize
-        )
-
-        local newWidth = X + Padding
-        if math.abs(newWidth - lastWidth) < 2 then return end
-
-        TextBox.AnchorPoint = (Direction == "Left")
-            and Vector2.new(1, 0.5)
-            or Vector2.new(0, 0.5)
-
-        TweenService:Create(
-            TextBox,
-            TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-            {
-                Size = UDim2.new(
-                    0,
-                    newWidth,
-                    TextBox.Size.Y.Scale,
-                    TextBox.Size.Y.Offset
-                )
-            }
-        ):Play()
-
-        lastWidth = newWidth
-    end
-
-    local function AnimateTabDescription(TextLabel: TextLabel)
-    local lastText = TextLabel.Text
-    local first = true
-
-    local gradient = Instance.new("UIGradient")
-    gradient.Rotation = 90
-    gradient.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 1),
-        NumberSequenceKeypoint.new(1, 0),
-    }
-    gradient.Parent = TextLabel
-
-    TextLabel:GetPropertyChangedSignal("Text"):Connect(function()
-        if first then
-            first = false
-            lastText = TextLabel.Text
-            return
-        end
-        if TextLabel.Text == lastText then return end
-        lastText = TextLabel.Text
-
-        local originalPos = TextLabel.Position
-        TextLabel.TextTransparency = 1
-        TextLabel.Position = originalPos - UDim2.fromOffset(0, 12)
-
-        TweenService:Create(
-            TextLabel,
-            TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-            {
-                TextTransparency = 0,
-                Position = originalPos
-            }
-        ):Play()
-
-        TweenService:Create(
-            gradient,
-            TweenInfo.new(0.35),
-            {
-                Transparency = NumberSequence.new(0)
-            }
-        ):Play()
-    end)
-end
-
-    TextBox:GetPropertyChangedSignal("Text"):Connect(Update)
-end
-
 function Library:MouseIsOverFrame(Frame: GuiObject, Mouse: Vector2): boolean
     local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize
     return Mouse.X >= AbsPos.X
@@ -6387,19 +6305,54 @@ function Library:CreateWindow(WindowInfo)
     end
 
     function Window:ShowTabInfo(Name, Description)
+        if CurrentTabLabel.Text == Name and CurrentTabDescription.Text == Description then
+            return
+        end
+
         CurrentTabLabel.Text = Name
         CurrentTabDescription.Text = Description
 
         if IsDefaultSearchbarSize then
-            SearchBox.Size = UDim2.fromScale(0.5, 1)
+            TweenService:Create(SearchBox, Library.TweenInfo, {
+                Size = UDim2.fromScale(0.5, 1)
+            }):Play()
         end
+
         CurrentTabInfo.Visible = true
+
+        CurrentTabInfo.Position = UDim2.fromOffset(0, -15) 
+        CurrentTabLabel.TextTransparency = 1
+        CurrentTabDescription.TextTransparency = 1
+        TweenService:Create(CurrentTabInfo, Library.TweenInfo, {
+            Position = UDim2.fromOffset(0, 0)
+        }):Play()
+
+        TweenService:Create(CurrentTabLabel, Library.TweenInfo, {
+            TextTransparency = 0
+        }):Play()
+
+        TweenService:Create(CurrentTabDescription, Library.TweenInfo, {
+            TextTransparency = 0.5
+        }):Play()
     end
+
     function Window:HideTabInfo()
-        CurrentTabInfo.Visible = false
         if IsDefaultSearchbarSize then
-            SearchBox.Size = UDim2.fromScale(1, 1)
+            TweenService:Create(SearchBox, Library.TweenInfo, {
+                Size = UDim2.fromScale(1, 1)
+            }):Play()
         end
+
+        local FadeTitle = TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1})
+        local FadeDesc = TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1})
+        
+        FadeTitle:Play()
+        FadeDesc:Play()
+        task.delay(Library.TweenInfo.Time, function()
+            if CurrentTabLabel.TextTransparency >= 1 then
+                CurrentTabInfo.Visible = false
+            end
+        end)
     end
 
     function Window:AddTab(...)
