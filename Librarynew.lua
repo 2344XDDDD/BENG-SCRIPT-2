@@ -6091,6 +6091,7 @@ function Library:CreateWindow(WindowInfo)
             Text = "",
             TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
+            TextTransparency = 1,
             Parent = CurrentTabInfo,
         })
 
@@ -6102,7 +6103,7 @@ function Library:CreateWindow(WindowInfo)
             TextWrapped = true,
             TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
-            TextTransparency = 0.5,
+            TextTransparency = 1,
             Parent = CurrentTabInfo,
         })
 
@@ -6329,20 +6330,55 @@ function Library:CreateWindow(WindowInfo)
         end
     end
 
+    local InfoAnimation = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
     function Window:ShowTabInfo(Name, Description)
+        if CurrentTabLabel.Text == Name and CurrentTabDescription.Text == Description and CurrentTabInfo.Visible then
+            return
+        end
+
         CurrentTabLabel.Text = Name
         CurrentTabDescription.Text = Description
 
-        if IsDefaultSearchbarSize then
-            SearchBox.Size = UDim2.fromScale(0.5, 1)
+        if not WindowInfo.DisableSearch then
+            local targetSize = IsDefaultSearchbarSize and UDim2.fromScale(0.5, 1) or WindowInfo.SearchbarSize
+            TweenService:Create(SearchBox, InfoAnimation, {Size = targetSize}):Play()
         end
         CurrentTabInfo.Visible = true
+        CurrentTabLabel.Position = UDim2.fromOffset(0, -15)
+        CurrentTabDescription.Position = UDim2.fromOffset(0, -10)
+        CurrentTabLabel.TextTransparency = 1
+        CurrentTabDescription.TextTransparency = 1
+
+        TweenService:Create(CurrentTabLabel, InfoAnimation, {
+            Position = UDim2.fromOffset(0, 0),
+            TextTransparency = 0
+        }):Play()
+
+        task.delay(0.05, function()
+            TweenService:Create(CurrentTabDescription, InfoAnimation, {
+                Position = UDim2.fromOffset(0, 0),
+                TextTransparency = 0.5
+            }):Play()
+        end)
     end
+
     function Window:HideTabInfo()
-        CurrentTabInfo.Visible = false
-        if IsDefaultSearchbarSize then
-            SearchBox.Size = UDim2.fromScale(1, 1)
+        if not CurrentTabInfo.Visible then return end
+
+        if not WindowInfo.DisableSearch then
+            TweenService:Create(SearchBox, InfoAnimation, {Size = UDim2.fromScale(1, 1)}):Play()
         end
+
+        local fade1 = TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1, Position = UDim2.fromOffset(0, 5)})
+        local fade2 = TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1, Position = UDim2.fromOffset(0, 5)})
+        
+        fade1:Play()
+        fade2:Play()
+
+        fade1.Completed:Once(function()
+            CurrentTabInfo.Visible = false
+        end)
     end
 
     function Window:AddTab(...)
