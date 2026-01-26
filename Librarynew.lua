@@ -5929,8 +5929,6 @@ function Library:CreateWindow(WindowInfo)
         })
         Library:MakeDraggable(MainFrame, TopBar, false, true)
 
-        
-
         --// Title
         TitleHolder = New("Frame", {
             BackgroundTransparency = 1,
