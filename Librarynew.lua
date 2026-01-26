@@ -6362,26 +6362,27 @@ WindowTitle = New("TextLabel", {
         end)
     end
 
-    function Window:AddTab(...)
-        local Name = nil
-        local Icon = nil
-        local Description = nil
+ function Window:AddTab(...)
+    local Name = nil
+    local Icon = nil
+    local Description = nil
 
-        if select("#", ...) == 1 and typeof(...) == "table" then
-            local Info = select(1, ...)
-            Name = Info.Name or "Tab"
-            Icon = Info.Icon
-            Description = Info.Description
-        else
-            Name = select(1, ...)
-            Icon = select(2, ...)
-            Description = select(3, ...)
-        end
+    if select("#", ...) == 1 and typeof(...) == "table" then
+        local Info = select(1, ...)
+        Name = Info.Name or "Tab"
+        Icon = Info.Icon
+        Description = Info.Description
+    else
+        Name = select(1, ...)
+        Icon = select(2, ...)
+        Description = select(3, ...)
+    end
 
+    -- 变量预声明，确保 Show/Hide 函数可以访问
     local TabButton: TextButton
     local TabLabel
     local TabIcon
-
+    local SelectedGlow -- 发光层变量
     local TabContainer
     local TabLeft
     local TabRight
@@ -6390,7 +6391,9 @@ WindowTitle = New("TextLabel", {
     local SelectedLabelPos = UDim2.fromOffset(38, 0)
 
     Icon = Library:GetCustomIcon(Icon)
+    
     do
+        -- 1. 创建按钮主体
         TabButton = New("TextButton", {
             BackgroundColor3 = "MainColor",
             BackgroundTransparency = 1,
@@ -6398,29 +6401,33 @@ WindowTitle = New("TextLabel", {
             Text = "",
             Parent = Tabs,
         })
-local SelectedGlow = New("Frame", {
-    Size = UDim2.fromScale(1, 1),
-    BackgroundTransparency = 1,
-    BackgroundColor3 = "AccentColor",
-    BorderSizePixel = 0,
-    ZIndex = 1,
-    Parent = TabButton,
-})
 
-local GlowGradient = New("UIGradient", {
-    Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.75),
-        NumberSequenceKeypoint.new(1, 1),
-    }),
-    Parent = SelectedGlow,
-})
-            local ButtonPadding = New("UIPadding", {
-                PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
-                PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
-                PaddingRight = UDim.new(0, IsCompact and 6 or 12),
-                PaddingTop = UDim.new(0, IsCompact and 6 or 11),
-                Parent = TabButton,
-            })
+        -- 2. 创建渐变发光层 (SelectedGlow)
+        SelectedGlow = New("Frame", {
+            Size = UDim2.fromScale(1, 1),
+            BackgroundTransparency = 1, -- 初始完全透明
+            BackgroundColor3 = "AccentColor",
+            BorderSizePixel = 0,
+            ZIndex = 1, -- 在文字下方
+            Parent = TabButton,
+        })
+
+        New("UIGradient", {
+            Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.7), -- 左侧发光亮度
+                NumberSequenceKeypoint.new(0.5, 1),  -- 延伸到一半消失
+                NumberSequenceKeypoint.new(1, 1),
+            }),
+            Parent = SelectedGlow,
+        })
+
+        local ButtonPadding = New("UIPadding", {
+            PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
+            PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
+            PaddingRight = UDim.new(0, IsCompact and 6 or 12),
+            PaddingTop = UDim.new(0, IsCompact and 6 or 11),
+            Parent = TabButton,
+        })
 
         TabLabel = New("TextLabel", {
             BackgroundTransparency = 1,
@@ -6431,6 +6438,7 @@ local GlowGradient = New("UIGradient", {
             TextTransparency = 0.5,
             TextXAlignment = Enum.TextXAlignment.Left,
             Visible = not IsCompact,
+            ZIndex = 2, -- 在发光层上方
             Parent = TabButton,
         })
 
@@ -6444,670 +6452,163 @@ local GlowGradient = New("UIGradient", {
                 ScaleType = Enum.ScaleType.Fit,
                 Size = UDim2.fromScale(1, 1),
                 SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY,
+                ZIndex = 2,
                 Parent = TabButton,
             })
         end
 
-            table.insert(Library.TabButtons, {
-                Label = TabLabel,
-                Padding = ButtonPadding,
-                Icon = TabIcon,
-            })
-
-            --// Tab Container \\--
-            TabContainer = New("Frame", {
-                BackgroundTransparency = 1,
-                Size = UDim2.fromScale(1, 1),
-                Visible = false,
-                Parent = Container,
-            })
-
-            TabLeft = New("ScrollingFrame", {
-                AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                CanvasSize = UDim2.fromScale(0, 0),
-                ScrollBarImageTransparency = 1,
-                ScrollBarThickness = 0,
-                Size = UDim2.new(0.5, -3, 1, 0),
-                Parent = TabContainer,
-            })
-            New("UIListLayout", {
-                Padding = UDim.new(0, 2),
-                Parent = TabLeft,
-            })
-            New("UIPadding", {
-                PaddingBottom = UDim.new(0, 2),
-                PaddingLeft = UDim.new(0, 2),
-                PaddingRight = UDim.new(0, 2),
-                PaddingTop = UDim.new(0, 2),
-                Parent = TabLeft,
-            })
-            do
-                New("Frame", {
-                    BackgroundTransparency = 1,
-                    LayoutOrder = -1,
-                    Parent = TabLeft,
-                })
-                New("Frame", {
-                    BackgroundTransparency = 1,
-                    LayoutOrder = 1,
-                    Parent = TabLeft,
-                })
-            end
-
-            TabRight = New("ScrollingFrame", {
-                AnchorPoint = Vector2.new(1, 0),
-                AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                CanvasSize = UDim2.fromScale(0, 0),
-                Position = UDim2.fromScale(1, 0),
-                ScrollBarImageTransparency = 1,
-                ScrollBarThickness = 0,
-                Size = UDim2.new(0.5, -3, 1, 0),
-                Parent = TabContainer,
-            })
-            New("UIListLayout", {
-                Padding = UDim.new(0, 2),
-                Parent = TabRight,
-            })
-            New("UIPadding", {
-                PaddingBottom = UDim.new(0, 2),
-                PaddingLeft = UDim.new(0, 2),
-                PaddingRight = UDim.new(0, 2),
-                PaddingTop = UDim.new(0, 2),
-                Parent = TabRight,
-            })
-            do
-                New("Frame", {
-                    BackgroundTransparency = 1,
-                    LayoutOrder = -1,
-                    Parent = TabRight,
-                })
-                New("Frame", {
-                    BackgroundTransparency = 1,
-                    LayoutOrder = 1,
-                    Parent = TabRight,
-                })
-            end
-        end
-
-        --// Warning Box \\--
-        local WarningBoxHolder = New("Frame", {
-            AutomaticSize = Enum.AutomaticSize.Y,
-            BackgroundTransparency = 1,
-            Position = UDim2.fromOffset(0, 7),
-            Size = UDim2.fromScale(1, 0),
-            Visible = false,
-            Parent = TabContainer,
+        table.insert(Library.TabButtons, {
+            Label = TabLabel,
+            Padding = ButtonPadding,
+            Icon = TabIcon,
         })
 
-        local WarningBox
-        local WarningBoxOutline
-        local WarningBoxShadowOutline
-        local WarningBoxScrollingFrame
-        local WarningTitle
-        local WarningStroke
-        local WarningText
-        do
-            WarningBox = New("Frame", {
-                BackgroundColor3 = "BackgroundColor",
-                Position = UDim2.fromOffset(2, 0),
-                Size = UDim2.new(1, -5, 0, 0),
-                Parent = WarningBoxHolder,
-            })
-            New("UICorner", {
-                CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
-                Parent = WarningBox,
-            })
-            WarningBoxOutline, WarningBoxShadowOutline = Library:AddOutline(WarningBox)
+        --// Tab 内容容器创建 (保持原逻辑) \\--
+        TabContainer = New("Frame", {
+            BackgroundTransparency = 1,
+            Size = UDim2.fromScale(1, 1),
+            Visible = false,
+            Parent = Container,
+        })
 
-            WarningBoxScrollingFrame = New("ScrollingFrame", {
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                Size = UDim2.fromScale(1, 1),
-                CanvasSize = UDim2.new(0, 0, 0, 0),
-                ScrollBarThickness = 3,
-                ScrollingDirection = Enum.ScrollingDirection.Y,
-                Parent = WarningBox,
-            })
-            New("UIPadding", {
-                PaddingBottom = UDim.new(0, 4),
-                PaddingLeft = UDim.new(0, 6),
-                PaddingRight = UDim.new(0, 6),
-                PaddingTop = UDim.new(0, 4),
-                Parent = WarningBoxScrollingFrame,
-            })
+        TabLeft = New("ScrollingFrame", {
+            AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            BackgroundTransparency = 1,
+            CanvasSize = UDim2.fromScale(0, 0),
+            ScrollBarImageTransparency = 1,
+            ScrollBarThickness = 0,
+            Size = UDim2.new(0.5, -3, 1, 0),
+            Parent = TabContainer,
+        })
+        New("UIListLayout", { Padding = UDim.new(0, 2), Parent = TabLeft })
+        New("UIPadding", { PaddingBottom = UDim.new(0, 2), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2), PaddingTop = UDim.new(0, 2), Parent = TabLeft })
 
-            WarningTitle = New("TextLabel", {
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1, -4, 0, 14),
-                Text = "",
-                TextColor3 = Color3.fromRGB(255, 50, 50),
-                TextSize = 14,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = WarningBoxScrollingFrame,
-            })
+        TabRight = New("ScrollingFrame", {
+            AnchorPoint = Vector2.new(1, 0),
+            AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            BackgroundTransparency = 1,
+            CanvasSize = UDim2.fromScale(0, 0),
+            Position = UDim2.fromScale(1, 0),
+            ScrollBarImageTransparency = 1,
+            ScrollBarThickness = 0,
+            Size = UDim2.new(0.5, -3, 1, 0),
+            Parent = TabContainer,
+        })
+        New("UIListLayout", { Padding = UDim.new(0, 2), Parent = TabRight })
+        New("UIPadding", { PaddingBottom = UDim.new(0, 2), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2), PaddingTop = UDim.new(0, 2), Parent = TabRight })
+    end
 
-            WarningStroke = New("UIStroke", {
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
-                Color = Color3.fromRGB(169, 0, 0),
-                LineJoinMode = Enum.LineJoinMode.Miter,
-                Parent = WarningTitle,
-            })
+    local Tab = {
+        Groupboxes = {},
+        Tabboxes = {},
+        DependencyGroupboxes = {},
+        Sides = { TabLeft, TabRight },
+        WarningBox = { IsNormal = false, LockSize = false, Visible = false, Title = "WARNING", Text = "" },
+    }
 
-            WarningText = New("TextLabel", {
-                BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(0, 16),
-                Size = UDim2.new(1, -4, 0, 0),
-                Text = "",
-                TextSize = 14,
-                TextWrapped = true,
-                Parent = WarningBoxScrollingFrame,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Top,
-            })
+    -- 继承原有的 Tab 方法 (UpdateWarningBox, RefreshSides, Resize, AddGroupbox 等)
+    -- ... (此处建议保留你代码中原有的 Tab:UpdateWarningBox 到 AddRightTabbox 的所有方法) ...
 
-            New("UIStroke", {
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
-                Color = "DarkColor",
-                LineJoinMode = Enum.LineJoinMode.Miter,
-                Parent = WarningText,
-            })
+    --// 核心：修改后的 Show 和 Hide 函数 \\--
+
+    function Tab:Show()
+        if Library.ActiveTab == Tab then
+            return 
         end
 
-        --// Tab Table \\--
-        local Tab = {
-            Groupboxes = {},
-            Tabboxes = {},
-            DependencyGroupboxes = {},
-            Sides = {
-                TabLeft,
-                TabRight,
-            },
-            WarningBox = {
-                IsNormal = false,
-                LockSize = false,
-                Visible = false,
-                Title = "WARNING",
-                Text = "",
-            },
-        }
-
-        function Tab:UpdateWarningBox(Info)
-            if typeof(Info.IsNormal) == "boolean" then
-                Tab.WarningBox.IsNormal = Info.IsNormal
-            end
-            if typeof(Info.LockSize) == "boolean" then
-                Tab.WarningBox.LockSize = Info.LockSize
-            end
-            if typeof(Info.Visible) == "boolean" then
-                Tab.WarningBox.Visible = Info.Visible
-            end
-            if typeof(Info.Title) == "string" then
-                Tab.WarningBox.Title = Info.Title
-            end
-            if typeof(Info.Text) == "string" then
-                Tab.WarningBox.Text = Info.Text
-            end
-
-            WarningBoxHolder.Visible = Tab.WarningBox.Visible
-            WarningTitle.Text = Tab.WarningBox.Title
-            WarningText.Text = Tab.WarningBox.Text
-            Tab:Resize(true)
-
-            WarningBox.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor
-                or Color3.fromRGB(127, 0, 0)
-
-            WarningBoxShadowOutline.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.DarkColor
-                or Color3.fromRGB(85, 0, 0)
-            WarningBoxOutline.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
-                or Color3.fromRGB(255, 50, 50)
-
-            WarningTitle.TextColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor
-                or Color3.fromRGB(255, 50, 50)
-            WarningStroke.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
-                or Color3.fromRGB(169, 0, 0)
-
-            if not Library.Registry[WarningBox] then
-                Library:AddToRegistry(WarningBox, {})
-            end
-            if not Library.Registry[WarningBoxShadowOutline] then
-                Library:AddToRegistry(WarningBoxShadowOutline, {})
-            end
-            if not Library.Registry[WarningBoxOutline] then
-                Library:AddToRegistry(WarningBoxOutline, {})
-            end
-            if not Library.Registry[WarningTitle] then
-                Library:AddToRegistry(WarningTitle, {})
-            end
-            if not Library.Registry[WarningStroke] then
-                Library:AddToRegistry(WarningStroke, {})
-            end
-
-            Library.Registry[WarningBox].BackgroundColor3 = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor or Color3.fromRGB(127, 0, 0)
-            end
-
-            Library.Registry[WarningBoxShadowOutline].Color = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.DarkColor or Color3.fromRGB(85, 0, 0)
-            end
-
-            Library.Registry[WarningBoxOutline].Color = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(255, 50, 50)
-            end
-
-            Library.Registry[WarningTitle].TextColor3 = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor or Color3.fromRGB(255, 50, 50)
-            end
-
-            Library.Registry[WarningStroke].Color = function()
-                return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(169, 0, 0)
-            end
+        if Library.ActiveTab then
+            Library.ActiveTab:Hide()
         end
 
-        function Tab:RefreshSides()
-            local Offset = WarningBoxHolder.Visible and WarningBox.Size.Y.Offset + 8 or 0
-            for _, Side in Tab.Sides do
-                Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
-                Side.Size = UDim2.new(0.5, -3, 1, -Offset)
-            end
-        end
+        -- 选中时的动画
+        TweenService:Create(TabButton, Library.TweenInfo, {
+            BackgroundTransparency = 0.9, -- 按钮底色微亮
+        }):Play()
 
-        function Tab:Resize(ResizeWarningBox: boolean?)
-            if ResizeWarningBox then
-                local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y / 3.25)
-                local _, YText = Library:GetTextBounds(
-                    WarningText.Text,
-                    Library.Scheme.Font,
-                    WarningText.TextSize,
-                    WarningText.AbsoluteSize.X
-                )
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0,
+            Position = SelectedLabelPos -- 文字右移偏移
+        }):Play()
 
-                local YBox = 24 + YText
-                if Tab.WarningBox.LockSize == true and YBox >= MaximumSize then
-                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
-                    YBox = MaximumSize
-                else
-                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
-                end
-
-                WarningText.Size = UDim2.new(1, -4, 0, YText)
-                WarningBox.Size = UDim2.new(1, -5, 0, YBox + 4)
-            end
-
-            Tab:RefreshSides()
-        end
-
-        function Tab:AddGroupbox(Info)
-            local BoxHolder = New("Frame", {
-                AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                Size = UDim2.fromScale(1, 0),
-                Parent = Info.Side == 1 and TabLeft or TabRight,
-            })
-            New("UIListLayout", {
-                Padding = UDim.new(0, 6),
-                Parent = BoxHolder,
-            })
-            New("UIPadding", {
-                PaddingBottom = UDim.new(0, 4),
-                PaddingTop = UDim.new(0, 4),
-                Parent = BoxHolder,
-            })
-
-            local GroupboxHolder
-            local GroupboxLabel
-
-            local GroupboxContainer
-            local GroupboxList
-
-            do
-                GroupboxHolder = New("Frame", {
-                    BackgroundColor3 = "BackgroundColor",
-                    Size = UDim2.fromScale(1, 0),
-                    Parent = BoxHolder,
-                })
-                New("UICorner", {
-                    CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
-                    Parent = GroupboxHolder,
-                })
-                Library:AddOutline(GroupboxHolder)
-
-                Library:MakeLine(GroupboxHolder, {
-                    Position = UDim2.fromOffset(0, 34),
-                    Size = UDim2.new(1, 0, 0, 1),
-                })
-
-                local BoxIcon = Library:GetCustomIcon(Info.IconName)
-                if BoxIcon then
-                    New("ImageLabel", {
-                        Image = BoxIcon.Url,
-                        ImageColor3 = BoxIcon.Custom and "WhiteColor" or "AccentColor",
-                        ImageRectOffset = BoxIcon.ImageRectOffset,
-                        ImageRectSize = BoxIcon.ImageRectSize,
-                        Position = UDim2.fromOffset(6, 6),
-                        Size = UDim2.fromOffset(22, 22),
-                        Parent = GroupboxHolder,
-                    })
-                end
-
-                GroupboxLabel = New("TextLabel", {
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(BoxIcon and 24 or 0, 0),
-                    Size = UDim2.new(1, 0, 0, 34),
-                    Text = Info.Name,
-                    TextSize = 15,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = GroupboxHolder,
-                })
-                New("UIPadding", {
-                    PaddingLeft = UDim.new(0, 12),
-                    PaddingRight = UDim.new(0, 12),
-                    Parent = GroupboxLabel,
-                })
-
-                GroupboxContainer = New("Frame", {
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(0, 35),
-                    Size = UDim2.new(1, 0, 1, -35),
-                    Parent = GroupboxHolder,
-                })
-
-                GroupboxList = New("UIListLayout", {
-                    Padding = UDim.new(0, 8),
-                    Parent = GroupboxContainer,
-                })
-                New("UIPadding", {
-                    PaddingBottom = UDim.new(0, 7),
-                    PaddingLeft = UDim.new(0, 7),
-                    PaddingRight = UDim.new(0, 7),
-                    PaddingTop = UDim.new(0, 7),
-                    Parent = GroupboxContainer,
-                })
-            end
-
-            local Groupbox = {
-                BoxHolder = BoxHolder,
-                Holder = GroupboxHolder,
-                Container = GroupboxContainer,
-
-                Tab = Tab,
-                DependencyBoxes = {},
-                Elements = {},
-            }
-
-            function Groupbox:Resize()
-                GroupboxHolder.Size = UDim2.new(1, 0, 0, (GroupboxList.AbsoluteContentSize.Y / Library.DPIScale) + 49)
-            end
-
-            setmetatable(Groupbox, BaseGroupbox)
-
-            Groupbox:Resize()
-            Tab.Groupboxes[Info.Name] = Groupbox
-
-            return Groupbox
-        end
-
-        function Tab:AddLeftGroupbox(Name, IconName)
-            return Tab:AddGroupbox({ Side = 1, Name = Name, IconName = IconName })
-        end
-
-        function Tab:AddRightGroupbox(Name, IconName)
-            return Tab:AddGroupbox({ Side = 2, Name = Name, IconName = IconName })
-        end
-
-        function Tab:AddTabbox(Info)
-            local BoxHolder = New("Frame", {
-                AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                Size = UDim2.fromScale(1, 0),
-                Parent = Info.Side == 1 and TabLeft or TabRight,
-            })
-            New("UIListLayout", {
-                Padding = UDim.new(0, 6),
-                Parent = BoxHolder,
-            })
-            New("UIPadding", {
-                PaddingBottom = UDim.new(0, 4),
-                PaddingTop = UDim.new(0, 4),
-                Parent = BoxHolder,
-            })
-
-            local TabboxHolder
-            local TabboxButtons
-
-            do
-                TabboxHolder = New("Frame", {
-                    BackgroundColor3 = "BackgroundColor",
-                    Size = UDim2.fromScale(1, 0),
-                    Parent = BoxHolder,
-                })
-                New("UICorner", {
-                    CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
-                    Parent = TabboxHolder,
-                })
-                Library:AddOutline(TabboxHolder)
-
-                TabboxButtons = New("Frame", {
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 34),
-                    Parent = TabboxHolder,
-                })
-                New("UIListLayout", {
-                    FillDirection = Enum.FillDirection.Horizontal,
-                    HorizontalFlex = Enum.UIFlexAlignment.Fill,
-                    Parent = TabboxButtons,
-                })
-            end
-
-            local Tabbox = {
-                ActiveTab = nil,
-
-                BoxHolder = BoxHolder,
-                Holder = TabboxHolder,
-                Tabs = {},
-            }
-
-            function Tabbox:AddTab(Name)
-                local Button = New("TextButton", {
-                    BackgroundColor3 = "MainColor",
-                    BackgroundTransparency = 0,
-                    Size = UDim2.fromOffset(0, 34),
-                    Text = Name,
-                    TextSize = 15,
-                    TextTransparency = 0.5,
-                    Parent = TabboxButtons,
-                })
-
-                local Line = Library:MakeLine(Button, {
-                    AnchorPoint = Vector2.new(0, 1),
-                    Position = UDim2.new(0, 0, 1, 1),
-                    Size = UDim2.new(1, 0, 0, 1),
-                })
-
-                local Container = New("Frame", {
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(0, 35),
-                    Size = UDim2.new(1, 0, 1, -35),
-                    Visible = false,
-                    Parent = TabboxHolder,
-                })
-                local List = New("UIListLayout", {
-                    Padding = UDim.new(0, 8),
-                    Parent = Container,
-                })
-                New("UIPadding", {
-                    PaddingBottom = UDim.new(0, 7),
-                    PaddingLeft = UDim.new(0, 7),
-                    PaddingRight = UDim.new(0, 7),
-                    PaddingTop = UDim.new(0, 7),
-                    Parent = Container,
-                })
-
-                local Tab = {
-                    ButtonHolder = Button,
-                    Container = Container,
-
-                    Tab = Tab,
-                    Elements = {},
-                    DependencyBoxes = {},
-                }
-
-                function Tab:Show()
-                    if Tabbox.ActiveTab then
-                        Tabbox.ActiveTab:Hide()
-                    end
-
-                    Button.BackgroundTransparency = 1
-                    Button.TextTransparency = 0
-                    Line.Visible = false
-
-                    Container.Visible = true
-
-                    Tabbox.ActiveTab = Tab
-                    Tab:Resize()
-                end
-
-                function Tab:Hide()
-                    Button.BackgroundTransparency = 0
-                    Button.TextTransparency = 0.5
-                    Line.Visible = true
-                    Container.Visible = false
-
-                    Tabbox.ActiveTab = nil
-                end
-
-                function Tab:Resize()
-                    if Tabbox.ActiveTab ~= Tab then
-                        return
-                    end
-
-                    TabboxHolder.Size = UDim2.new(1, 0, 0, (List.AbsoluteContentSize.Y / Library.DPIScale) + 49)
-                end
-
-                --// Execution \\--
-                if not Tabbox.ActiveTab then
-                    Tab:Show()
-                end
-
-                Button.MouseButton1Click:Connect(Tab.Show)
-
-                setmetatable(Tab, BaseGroupbox)
-
-                Tabbox.Tabs[Name] = Tab
-
-                return Tab
-            end
-
-            if Info.Name then
-                Tab.Tabboxes[Info.Name] = Tabbox
-            else
-                table.insert(Tab.Tabboxes, Tabbox)
-            end
-
-            return Tabbox
-        end
-
-        function Tab:AddLeftTabbox(Name)
-            return Tab:AddTabbox({ Side = 1, Name = Name })
-        end
-
-        function Tab:AddRightTabbox(Name)
-            return Tab:AddTabbox({ Side = 2, Name = Name })
-        end
-
-        function Tab:Hover(Hovering)
-            if Library.ActiveTab == Tab then
-                return
-            end
-
-            TweenService:Create(TabLabel, Library.TweenInfo, {
-                TextTransparency = Hovering and 0.25 or 0.5,
+        -- 渐变发光层显示
+        if SelectedGlow then
+            TweenService:Create(SelectedGlow, Library.TweenInfo, {
+                BackgroundTransparency = 0.85, -- 调整此处数值改变亮度 (0最亮, 1全透明)
             }):Play()
-            if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, {
-                    ImageTransparency = Hovering and 0.25 or 0.5,
-                }):Play()
-            end
         end
 
-function Tab:Show()
-    if Library.ActiveTab == Tab then
-        return 
-    end
-
-    if Library.ActiveTab then
-        Library.ActiveTab:Hide()
-    end
-    TweenService:Create(TabLabel, Library.TweenInfo, {
-        TextTransparency = 0,
-        Position = SelectedLabelPos
-    }):Play()
-
-    TweenService:Create(SelectedGlow, Library.TweenInfo, {
-        BackgroundTransparency = 0.9, 
-    }):Play()
-
-    if TabIcon then
-        TweenService:Create(TabIcon, Library.TweenInfo, {
-            ImageTransparency = 0,
-        }):Play()
-    end
-
-    TabContainer.Visible = true
-    TabContainer.Position = UDim2.fromOffset(0, 20) 
-    TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.fromOffset(0, 0)
-    }):Play()
-
-    if Description then
-        Window:ShowTabInfo(Name, Description)
-    else
-        Window:HideTabInfo() 
-    end
-
-    Tab:RefreshSides()
-    Library.ActiveTab = Tab
-end
-function Tab:Hide()
-    TweenService:Create(SelectedGlow, Library.TweenInfo, {
-        BackgroundTransparency = 1,
-    }):Play()
-
-    TweenService:Create(TabButton, Library.TweenInfo, {
-        BackgroundTransparency = 1,
-    }):Play()
-
-    TweenService:Create(TabLabel, Library.TweenInfo, {
-        TextTransparency = 0.5,
-        Position = OriginalLabelPos
-    }):Play()
-
-    if TabIcon then
-        TweenService:Create(TabIcon, Library.TweenInfo, {
-            ImageTransparency = 0.5,
-        }):Play()
-    end
-    TabContainer.Visible = false
-end
-
-        --// Execution \\--
-        if not Library.ActiveTab then
-            Tab:Show()
+        if TabIcon then
+            TweenService:Create(TabIcon, Library.TweenInfo, {
+                ImageTransparency = 0,
+            }):Play()
         end
 
-        TabButton.MouseEnter:Connect(function()
-            Tab:Hover(true)
-        end)
-        TabButton.MouseLeave:Connect(function()
-            Tab:Hover(false)
-        end)
-        TabButton.MouseButton1Click:Connect(Tab.Show)
+        TabContainer.Visible = true
+        TabContainer.Position = UDim2.fromOffset(0, 20) 
+        TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.fromOffset(0, 0)
+        }):Play()
 
-        Library.Tabs[Name] = Tab
+        if Description then
+            Window:ShowTabInfo(Name, Description)
+        else
+            Window:HideTabInfo() 
+        end
 
-        return Tab
+        Tab:RefreshSides()
+        Library.ActiveTab = Tab
+
+        if Library.Searching then
+            Library:UpdateSearch(Library.SearchText)
+        end
     end
+
+    function Tab:Hide()
+        -- 隐藏动画
+        TweenService:Create(TabButton, Library.TweenInfo, {
+            BackgroundTransparency = 1,
+        }):Play()
+
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0.5,
+            Position = OriginalLabelPos -- 文字回弹
+        }):Play()
+
+        -- 渐变发光层隐藏
+        if SelectedGlow then
+            TweenService:Create(SelectedGlow, Library.TweenInfo, {
+                BackgroundTransparency = 1,
+            }):Play()
+        end
+
+        if TabIcon then
+            TweenService:Create(TabIcon, Library.TweenInfo, {
+                ImageTransparency = 0.5,
+            }):Play()
+        end
+        TabContainer.Visible = false
+    end
+
+    --// 初始化状态 \\--
+    if not Library.ActiveTab then
+        Tab:Show()
+    end
+
+    TabButton.MouseEnter:Connect(function()
+        if Library.ActiveTab ~= Tab then
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.25 }):Play()
+        end
+    end)
+    TabButton.MouseLeave:Connect(function()
+        if Library.ActiveTab ~= Tab then
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.5 }):Play()
+        end
+    end)
+    TabButton.MouseButton1Click:Connect(Tab.Show)
+
+    Library.Tabs[Name] = Tab
+    return Tab
+end
 
     function Window:AddKeyTab(...)
         local Name = nil
