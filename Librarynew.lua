@@ -1298,6 +1298,34 @@ function Library:SafeCallback(Func: (...any) -> ...any, ...: any)
     return table.unpack(Result, 2, Result.n)
 end
 
+        local PanelIcon = Library:GetIcon("panel-left") or {Url = "rbxassetid://10888673669", ImageRectOffset = Vector2.zero, ImageRectSize = Vector2.zero}
+        local SidebarAnimating = false
+        local function ToggleSidebarWithAnimation()
+            if SidebarAnimating then return end
+            SidebarAnimating = true
+
+            local IsTargetCompact = not IsCompact
+            local TargetWidth = IsTargetCompact and WindowInfo.SidebarCompactWidth or LastExpandedWidth
+            local WidthValue = Instance.new("NumberValue")
+            WidthValue.Value = Window:GetSidebarWidth()
+            
+            local Tween = TweenService:Create(WidthValue, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Value = TargetWidth
+            })
+
+            local Connection = WidthValue:GetPropertyChangedSignal("Value"):Connect(function()
+                Window:SetSidebarWidth(WidthValue.Value)
+            end)
+
+            Tween.Completed:Connect(function()
+                Connection:Disconnect()
+                WidthValue:Destroy()
+                SidebarAnimating = false
+            end)
+
+            Tween:Play()
+        end
+
 function Library:MakeDraggable(UI: GuiObject, DragFrame: GuiObject, IgnoreToggled: boolean?, IsMainWindow: boolean?)
     local StartPos
     local FramePos
@@ -5929,6 +5957,35 @@ function Library:CreateWindow(WindowInfo)
         })
         Library:MakeDraggable(MainFrame, TopBar, false, true)
 
+        local SidebarAnimating = false
+
+local function ToggleSidebarWithAnimation()
+    if SidebarAnimating then return end
+    SidebarAnimating = true
+
+    local IsTargetCompact = not IsCompact
+    local TargetWidth = IsTargetCompact and WindowInfo.SidebarCompactWidth or LastExpandedWidth
+
+    local WidthValue = Instance.new("NumberValue")
+    WidthValue.Value = Window:GetSidebarWidth()
+    
+    local Tween = TweenService:Create(WidthValue, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Value = TargetWidth
+    })
+
+    local Connection = WidthValue:GetPropertyChangedSignal("Value"):Connect(function()
+        Window:SetSidebarWidth(WidthValue.Value)
+    end)
+
+    Tween.Completed:Connect(function()
+        Connection:Disconnect()
+        WidthValue:Destroy()
+        SidebarAnimating = false
+    end)
+
+    Tween:Play()
+end
+
         --// Title
         TitleHolder = New("Frame", {
             BackgroundTransparency = 1,
@@ -6007,20 +6064,40 @@ WindowTitle = New("TextLabel", {
             Parent = CurrentTabInfo,
         })
 
-        New("UIListLayout", {
-            FillDirection = Enum.FillDirection.Vertical,
-            HorizontalAlignment = Enum.HorizontalAlignment.Left,
-            VerticalAlignment = Enum.VerticalAlignment.Center,
-            Parent = CurrentTabInfo,
-        })
+New("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Left,
+    VerticalAlignment = Enum.VerticalAlignment.Center,
+    Padding = UDim.new(0, 8),
+    Parent = TitleHolder,
+})
 
-        New("UIPadding", {
-            PaddingBottom = UDim.new(0, 8),
-            PaddingLeft = UDim.new(0, 8),
-            PaddingRight = UDim.new(0, 8),
-            PaddingTop = UDim.new(0, 8),
-            Parent = CurrentTabInfo,
-        })
+New("UIPadding", {
+    PaddingLeft = UDim.new(0, 12),
+    Parent = TitleHolder
+})
+
+local SidebarToggleButton = New("ImageButton", {
+    Name = "SidebarToggle",
+    BackgroundTransparency = 1,
+    Size = UDim2.fromOffset(20, 20),
+    Image = PanelIcon.Url,
+    ImageRectOffset = PanelIcon.ImageRectOffset,
+    ImageRectSize = PanelIcon.ImageRectSize,
+    ImageColor3 = "FontColor",
+    ImageTransparency = 0.3,
+    LayoutOrder = -1,
+    Parent = TitleHolder,
+})
+
+SidebarToggleButton.MouseEnter:Connect(function()
+    TweenService:Create(SidebarToggleButton, Library.TweenInfo, {ImageTransparency = 0}):Play()
+end)
+SidebarToggleButton.MouseLeave:Connect(function()
+    TweenService:Create(SidebarToggleButton, Library.TweenInfo, {ImageTransparency = 0.3}):Play()
+end)
+
+SidebarToggleButton.MouseButton1Click:Connect(ToggleSidebarWithAnimation)
 
         CurrentTabLabel = New("TextLabel", {
             BackgroundTransparency = 1,
