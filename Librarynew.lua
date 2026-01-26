@@ -574,6 +574,7 @@ end
 
 local function CheckDepbox(Box, Search)
     local VisibleElements = 0
+    local BoxWasVisible = Box.Holder.Visible
 
     for _, ElementInfo in Box.Elements do
         if ElementInfo.Type == "Divider" then
@@ -594,21 +595,37 @@ local function CheckDepbox(Box, Search)
             else
                 ElementInfo.SubButton.Base.Visible = false
             end
+            
+            local WasVisible = ElementInfo.Holder.Visible
             ElementInfo.Holder.Visible = Visible
             if Visible then
                 VisibleElements += 1
+                if not WasVisible then
+                    ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+                    TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Position = UDim2.new(0, 0, 0, 0)
+                    }):Play()
+                end
             end
 
             continue
         end
 
-        --// Check if Search matches Element's Name and if Element is Visible
-        if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
-            ElementInfo.Holder.Visible = true
-            VisibleElements += 1
-        else
-            ElementInfo.Holder.Visible = false
-        end
+--// Check if Search matches Element's Name and if Element is Visible
+if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
+    local WasVisible = ElementInfo.Holder.Visible
+    ElementInfo.Holder.Visible = true
+    if not WasVisible then
+        ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+        TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, 0, 0, 0)
+        }):Play()
+    end
+    
+    VisibleElements += 1
+else
+    ElementInfo.Holder.Visible = false
+end
     end
 
     for _, Depbox in Box.DependencyBoxes do
@@ -620,6 +637,13 @@ local function CheckDepbox(Box, Search)
     end
 
     Box.Holder.Visible = VisibleElements > 0
+    if Box.Holder.Visible and not BoxWasVisible then
+        Box.Holder.Position = UDim2.new(0, 0, 0, 10)
+        TweenService:Create(Box.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, 0, 0, 0)
+        }):Play()
+    end
+    
     return VisibleElements
 end
 local function RestoreDepbox(Box)
@@ -654,6 +678,7 @@ local function ApplySearchToTab(Tab, Search)
     --// Loop through Groupboxes to get Elements Info
     for _, Groupbox in Tab.Groupboxes do
         local VisibleElements = 0
+        local GroupboxWasVisible = Groupbox.BoxHolder.Visible
 
         for _, ElementInfo in Groupbox.Elements do
             if ElementInfo.Type == "Divider" then
@@ -674,9 +699,17 @@ local function ApplySearchToTab(Tab, Search)
                 else
                     ElementInfo.SubButton.Base.Visible = false
                 end
+                
+                local WasVisible = ElementInfo.Holder.Visible
                 ElementInfo.Holder.Visible = Visible
                 if Visible then
                     VisibleElements += 1
+                    if not WasVisible then
+                        ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+                        TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Position = UDim2.new(0, 0, 0, 0)
+                        }):Play()
+                    end
                 end
 
                 continue
@@ -684,8 +717,15 @@ local function ApplySearchToTab(Tab, Search)
 
             --// Check if Search matches Element's Name and if Element is Visible
             if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
+                local WasVisible = ElementInfo.Holder.Visible
                 ElementInfo.Holder.Visible = true
                 VisibleElements += 1
+                if not WasVisible then
+                    ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+                    TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Position = UDim2.new(0, 0, 0, 0)
+                    }):Play()
+                end
             else
                 ElementInfo.Holder.Visible = false
             end
@@ -703,13 +743,24 @@ local function ApplySearchToTab(Tab, Search)
         if VisibleElements > 0 then
             Groupbox:Resize()
             HasVisible = true
+            if not GroupboxWasVisible then
+                Groupbox.BoxHolder.Position = UDim2.new(0, 0, 0, 10)
+                Groupbox.BoxHolder.Visible = true
+                TweenService:Create(Groupbox.BoxHolder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(0, 0, 0, 0)
+                }):Play()
+            else
+                Groupbox.BoxHolder.Visible = true
+            end
+        else
+            Groupbox.BoxHolder.Visible = false
         end
-        Groupbox.BoxHolder.Visible = VisibleElements > 0
     end
 
     for _, Tabbox in Tab.Tabboxes do
         local VisibleTabs = 0
         local VisibleElements = {}
+        local TabboxWasVisible = Tabbox.BoxHolder.Visible
 
         for _, SubTab in Tabbox.Tabs do
             VisibleElements[SubTab] = 0
@@ -733,9 +784,17 @@ local function ApplySearchToTab(Tab, Search)
                     else
                         ElementInfo.SubButton.Base.Visible = false
                     end
+                    
+                    local WasVisible = ElementInfo.Holder.Visible
                     ElementInfo.Holder.Visible = Visible
                     if Visible then
                         VisibleElements[SubTab] += 1
+                        if not WasVisible then
+                            ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+                            TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                                Position = UDim2.new(0, 0, 0, 0)
+                            }):Play()
+                        end
                     end
 
                     continue
@@ -743,8 +802,15 @@ local function ApplySearchToTab(Tab, Search)
 
                 --// Check if Search matches Element's Name and if Element is Visible
                 if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
+                    local WasVisible = ElementInfo.Holder.Visible
                     ElementInfo.Holder.Visible = true
                     VisibleElements[SubTab] += 1
+                    if not WasVisible then
+                        ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+                        TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Position = UDim2.new(0, 0, 0, 0)
+                        }):Play()
+                    end
                 else
                     ElementInfo.Holder.Visible = false
                 end
@@ -774,7 +840,137 @@ local function ApplySearchToTab(Tab, Search)
         end
 
         --// Update Tabbox Visibility if any visible
-        Tabbox.BoxHolder.Visible = VisibleTabs > 0
+        if VisibleTabs > 0 then
+            Tabbox.BoxHolder.Visible = true
+            HasVisible = true
+            if not TabboxWasVisible then
+                Tabbox.BoxHolder.Position = UDim2.new(0, 0, 0, 10)
+                TweenService:Create(Tabbox.BoxHolder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(0, 0, 0, 0)
+                }):Play()
+            end
+        else
+            Tabbox.BoxHolder.Visible = false
+        end
+    end
+
+    return HasVisible
+end
+
+        --// Update Groupbox Size and Visibility if found any element
+        if VisibleElements > 0 then
+            Groupbox:Resize()
+            HasVisible = true
+            
+            if not GroupboxWasVisible then
+                Groupbox.BoxHolder.Position = UDim2.new(0, 0, 0, 10)
+                Groupbox.BoxHolder.Visible = true
+                TweenService:Create(Groupbox.BoxHolder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(0, 0, 0, 0)
+                }):Play()
+            else
+                Groupbox.BoxHolder.Visible = true
+            end
+        else
+            Groupbox.BoxHolder.Visible = false
+        end
+    end
+
+    for _, Tabbox in Tab.Tabboxes do
+        local VisibleTabs = 0
+        local VisibleElements = {}
+        local TabboxWasVisible = Tabbox.BoxHolder.Visible
+
+        for _, SubTab in Tabbox.Tabs do
+            VisibleElements[SubTab] = 0
+
+            for _, ElementInfo in SubTab.Elements do
+                if ElementInfo.Type == "Divider" then
+                    ElementInfo.Holder.Visible = false
+                    continue
+                elseif ElementInfo.SubButton then
+                    --// Check if any of the Buttons Name matches with Search
+                    local Visible = false
+
+                    --// Check if Search matches Element's Name and if Element is Visible
+                    if ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
+                        Visible = true
+                    else
+                        ElementInfo.Base.Visible = false
+                    end
+                    if ElementInfo.SubButton.Text:lower():match(Search) and ElementInfo.SubButton.Visible then
+                        Visible = true
+                    else
+                        ElementInfo.SubButton.Base.Visible = false
+                    end
+                    
+                    local WasVisible = ElementInfo.Holder.Visible
+                    ElementInfo.Holder.Visible = Visible
+                    if Visible then
+                        VisibleElements[SubTab] += 1
+                        if not WasVisible then
+                            ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+                            TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                                Position = UDim2.new(0, 0, 0, 0)
+                            }):Play()
+                        end
+                    end
+
+                    continue
+                end
+
+                --// Check if Search matches Element's Name and if Element is Visible
+                if ElementInfo.Text and ElementInfo.Text:lower():match(Search) and ElementInfo.Visible then
+                    local WasVisible = ElementInfo.Holder.Visible
+                    ElementInfo.Holder.Visible = true
+                    VisibleElements[SubTab] += 1
+                    if not WasVisible then
+                        ElementInfo.Holder.Position = UDim2.new(0, 0, 0, 10)
+                        TweenService:Create(ElementInfo.Holder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Position = UDim2.new(0, 0, 0, 0)
+                        }):Play()
+                    end
+                else
+                    ElementInfo.Holder.Visible = false
+                end
+            end
+
+            for _, Depbox in SubTab.DependencyBoxes do
+                if not Depbox.Visible then
+                    continue
+                end
+
+                VisibleElements[SubTab] += CheckDepbox(Depbox, Search)
+            end
+        end
+
+        for SubTab, Visible in VisibleElements do
+            SubTab.ButtonHolder.Visible = Visible > 0
+            if Visible > 0 then
+                VisibleTabs += 1
+                HasVisible = true
+
+                if Tabbox.ActiveTab == SubTab then
+                    SubTab:Resize()
+                elseif Tabbox.ActiveTab and VisibleElements[Tabbox.ActiveTab] == 0 then
+                    SubTab:Show()
+                end
+            end
+        end
+
+        --// Update Tabbox Visibility if any visible
+        if VisibleTabs > 0 then
+            Tabbox.BoxHolder.Visible = true
+            HasVisible = true
+            if not TabboxWasVisible then
+                Tabbox.BoxHolder.Position = UDim2.new(0, 0, 0, 10)
+                TweenService:Create(Tabbox.BoxHolder, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(0, 0, 0, 0)
+                }):Play()
+            end
+        else
+            Tabbox.BoxHolder.Visible = false
+        end
     end
 
     return HasVisible
@@ -6995,40 +7191,39 @@ function Library:CreateWindow(WindowInfo)
         end
 
 function Tab:Show()
-            if Library.ActiveTab then
-                Library.ActiveTab:Hide()
-            end
+    if Library.ActiveTab then
+        Library.ActiveTab:Hide()
+    end
 
-            TweenService:Create(TabButton, Library.TweenInfo, {
-                BackgroundTransparency = 0,
-            }):Play()
-            TweenService:Create(TabLabel, Library.TweenInfo, {
-                TextTransparency = 0,
-            }):Play()
-            if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, {
-                    ImageTransparency = 0,
-                }):Play()
-            end
+    TweenService:Create(TabButton, Library.TweenInfo, {
+        BackgroundTransparency = 0,
+    }):Play()
+    TweenService:Create(TabLabel, Library.TweenInfo, {
+        TextTransparency = 0,
+    }):Play()
+    if TabIcon then
+        TweenService:Create(TabIcon, Library.TweenInfo, {
+            ImageTransparency = 0,
+        }):Play()
+    end
+    TabContainer.Visible = true
+    TabContainer.Position = UDim2.fromOffset(0, 20)
+    TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.fromOffset(0, 0)
+    }):Play()
 
-            TabContainer.Visible = true
-            TabContainer.Position = UDim2.fromOffset(0, 20) 
-            TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Position = UDim2.fromOffset(0, 0)
-            }):Play()
+    if Description then
+        Window:ShowTabInfo(Name, Description)
+    end
 
-            if Description then
-                Window:ShowTabInfo(Name, Description)
-            end
+    Tab:RefreshSides()
 
-            Tab:RefreshSides()
+    Library.ActiveTab = Tab
 
-            Library.ActiveTab = Tab
-
-            if Library.Searching then
-                Library:UpdateSearch(Library.SearchText)
-            end
-        end
+    if Library.Searching then
+        Library:UpdateSearch(Library.SearchText)
+    end
+end
         function Tab:Hide()
             TweenService:Create(TabButton, Library.TweenInfo, {
                 BackgroundTransparency = 1,
