@@ -1303,23 +1303,33 @@ end
         local function ToggleSidebarWithAnimation()
             if SidebarAnimating then return end
             SidebarAnimating = true
-
             local IsTargetCompact = not IsCompact
             local TargetWidth = IsTargetCompact and WindowInfo.SidebarCompactWidth or LastExpandedWidth
             local WidthValue = Instance.new("NumberValue")
-            WidthValue.Value = Window:GetSidebarWidth()
-            
+            WidthValue.Value = Tabs.Size.X.Offset
             local Tween = TweenService:Create(WidthValue, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
                 Value = TargetWidth
             })
 
             local Connection = WidthValue:GetPropertyChangedSignal("Value"):Connect(function()
-                Window:SetSidebarWidth(WidthValue.Value)
+                local Width = WidthValue.Value
+                DividerLine.Position = UDim2.fromOffset(Width, 0)
+                TitleHolder.Size = UDim2.new(0, Width, 1, 0)
+                RightWrapper.Size = UDim2.new(1, -Width - 57 - 1, 1, -16)
+                Tabs.Size = UDim2.new(0, Width, 1, -70)
+                Container.Size = UDim2.new(1, -Width - 1, 1, -70)
+                if WindowInfo.EnableCompacting then
+                    ApplyCompact() 
+                end
             end)
 
             Tween.Completed:Connect(function()
                 Connection:Disconnect()
                 WidthValue:Destroy()
+                IsCompact = IsTargetCompact
+                if not IsCompact then
+                    LastExpandedWidth = TargetWidth
+                end
                 SidebarAnimating = false
             end)
 
