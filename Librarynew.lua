@@ -6268,28 +6268,35 @@ WindowTitle = New("TextLabel", {
         end
     end
 
-        local InfoAnimation = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-
-    function Window:ShowTabInfo(Name, Description)
-        CurrentTabLabel.Text = Name
-        CurrentTabDescription.Text = Description
-
-        if not WindowInfo.DisableSearch then
-            local targetSize = IsDefaultSearchbarSize and UDim2.fromScale(0.5, 1) or WindowInfo.SearchbarSize
-            TweenService:Create(SearchBox, InfoAnimation, {Size = targetSize}):Play()
+local InfoAnimation = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+function Window:ShowTabInfo(Name, Description)
+    local hasDescription = Description and Description ~= ""
+    
+    CurrentTabLabel.Text = Name
+    CurrentTabDescription.Text = hasDescription and Description or ""
+    CurrentTabDescription.Visible = hasDescription
+    if not WindowInfo.DisableSearch then
+        local targetSize
+        if hasDescription then
+            targetSize = IsDefaultSearchbarSize and UDim2.fromScale(0.5, 1) or WindowInfo.SearchbarSize
+        else
+            targetSize = UDim2.fromScale(1, 1)
         end
+        
+        TweenService:Create(SearchBox, InfoAnimation, {Size = targetSize}):Play()
+    end
 
-        CurrentTabInfo.Visible = true
-        CurrentTabLabel.Position = UDim2.fromOffset(0, -15)
-        CurrentTabDescription.Position = UDim2.fromOffset(0, -10)
-        CurrentTabLabel.TextTransparency = 1
-        CurrentTabDescription.TextTransparency = 1
+    CurrentTabInfo.Visible = true
+    CurrentTabLabel.Position = UDim2.fromOffset(0, -15)
+    CurrentTabDescription.Position = UDim2.fromOffset(0, -10)
+    CurrentTabLabel.TextTransparency = 1
+    CurrentTabDescription.TextTransparency = 1
+    TweenService:Create(CurrentTabLabel, InfoAnimation, {
+        Position = UDim2.fromOffset(0, 0),
+        TextTransparency = 0
+    }):Play()
 
-        TweenService:Create(CurrentTabLabel, InfoAnimation, {
-            Position = UDim2.fromOffset(0, 0),
-            TextTransparency = 0
-        }):Play()
-
+    if hasDescription then
         task.delay(0.05, function()
             TweenService:Create(CurrentTabDescription, InfoAnimation, {
                 Position = UDim2.fromOffset(0, 0),
@@ -6297,23 +6304,22 @@ WindowTitle = New("TextLabel", {
             }):Play()
         end)
     end
+end
 
-    function Window:HideTabInfo()
-        if not WindowInfo.DisableSearch then
-            TweenService:Create(SearchBox, InfoAnimation, {Size = UDim2.fromScale(1, 1)}):Play()
-        end
-
-        local fade1 = TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1})
-        local fade2 = TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1})
-        
-        fade1:Play()
-        fade2:Play()
-        fade1.Completed:Once(function()
-            if not Library.ActiveTab or not Library.ActiveTab.Description then
-                CurrentTabInfo.Visible = false
-            end
-        end)
+function Window:HideTabInfo()
+    if not WindowInfo.DisableSearch then
+        TweenService:Create(SearchBox, InfoAnimation, {Size = UDim2.fromScale(1, 1)}):Play()
     end
+
+    local fade1 = TweenService:Create(CurrentTabLabel, InfoAnimation, {TextTransparency = 1, Position = UDim2.fromOffset(-10, 0)})
+    local fade2 = TweenService:Create(CurrentTabDescription, InfoAnimation, {TextTransparency = 1, Position = UDim2.fromOffset(-10, 0)})
+    
+    fade1:Play()
+    fade2:Play()
+    fade1.Completed:Once(function()
+        CurrentTabInfo.Visible = false
+    end)
+end
 
     function Window:HideTabInfo()
         if not CurrentTabInfo.Visible then return end
