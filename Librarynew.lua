@@ -7025,59 +7025,42 @@ local InfoFadeTask = nil
             end
         end
 
+local BaseX = Icon and 30 or 5 
+TabLabel.Position = UDim2.fromOffset(BaseX, 0)
+
+function Tab:RefreshSides()
+    local Offset = WarningBoxHolder.Visible and WarningBox.Size.Y.Offset + 8 or 0
+    for _, Side in Tab.Sides do
+        Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
+        Side.Size = UDim2.new(0.5, -3, 1, -Offset)
+    end
+end
+
 function Tab:Show()
-            if Library.ActiveTab then
-                Library.ActiveTab:Hide()
-            end
+    if Library.ActiveTab == Tab then return end
+    if Library.ActiveTab then Library.ActiveTab:Hide() end
 
-            TweenService:Create(TabButton, Library.TweenInfo, {
-                BackgroundTransparency = 0,
-            }):Play()
-            TweenService:Create(TabLabel, Library.TweenInfo, {
-                TextTransparency = 0,
-            }):Play()
-            if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, {
-                    ImageTransparency = 0,
-                }):Play()
-            end
+    TweenService:Create(TabButton, Library.TweenInfo, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(TabLabel, Library.TweenInfo, {TextTransparency = 0, Position = UDim2.fromOffset(BaseX + 6, 0)}):Play()
+    if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, {ImageTransparency = 0}):Play() end
 
-            TabContainer.Visible = true
-            TabContainer.Position = UDim2.fromOffset(0, 20) 
-            TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Position = UDim2.fromOffset(0, 0)
-            }):Play()
+    TabContainer.Visible = true
+    TabContainer.Position = UDim2.fromOffset(0, 20) 
+    TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.fromOffset(0, 0)}):Play()
 
-            if Description then
-                Window:ShowTabInfo(Name, Description)
-            end
+    if Description then Window:ShowTabInfo(Name, Description) else Window:HideTabInfo() end
 
-            Tab:RefreshSides()
+    Tab:RefreshSides()
+    Library.ActiveTab = Tab
+    if Library.Searching then Library:UpdateSearch(Library.SearchText) end
+end
 
-            Library.ActiveTab = Tab
-
-            if Library.Searching then
-                Library:UpdateSearch(Library.SearchText)
-            end
-        end
-        function Tab:Hide()
-            TweenService:Create(TabButton, Library.TweenInfo, {
-                BackgroundTransparency = 1,
-            }):Play()
-            TweenService:Create(TabLabel, Library.TweenInfo, {
-                TextTransparency = 0.5,
-            }):Play()
-            if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, {
-                    ImageTransparency = 0.5,
-                }):Play()
-            end
-            TabContainer.Visible = false
-
-            Window:HideTabInfo()
-
-            Library.ActiveTab = nil
-        end
+function Tab:Hide()
+    TweenService:Create(TabButton, Library.TweenInfo, {BackgroundTransparency = 1}):Play()
+    TweenService:Create(TabLabel, Library.TweenInfo, {TextTransparency = 0.5, Position = UDim2.fromOffset(BaseX, 0)}):Play()
+    if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, {ImageTransparency = 0.5}):Play() end
+    TabContainer.Visible = false
+end
 
         --// Execution \\--
         if not Library.ActiveTab then
