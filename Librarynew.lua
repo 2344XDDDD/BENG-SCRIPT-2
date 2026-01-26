@@ -3101,7 +3101,7 @@ function Funcs:AddLabel(...)
 
         local First = select(1, ...)
         local Second = select(2, ...)
-        
+
         if typeof(First) == "table" or typeof(Second) == "table" then
             local Params = typeof(First) == "table" and First or Second
 
@@ -7061,17 +7061,17 @@ WindowTitle = New("TextLabel", {
             end
         end
 
-    function Tab:Show()
+function Tab:Show()
         if Library.ActiveTab == Tab then
             return 
         end
-
         if Library.ActiveTab then
             Library.ActiveTab:Hide()
         end
         TweenService:Create(TabButton, Library.TweenInfo, {
             BackgroundTransparency = 0,
         }):Play()
+        
         TweenService:Create(TabLabel, Library.TweenInfo, {
             TextTransparency = 0,
             Position = SelectedLabelPos
@@ -7084,20 +7084,17 @@ WindowTitle = New("TextLabel", {
         end
 
         TabContainer.Visible = true
-        TabContainer.Position = UDim2.fromOffset(0, 20) 
-        TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        TabContainer.Position = UDim2.fromOffset(0, -30) 
+        TweenService:Create(TabContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
             Position = UDim2.fromOffset(0, 0)
         }):Play()
-
         if Description then
             Window:ShowTabInfo(Name, Description)
         else
             Window:HideTabInfo() 
         end
-
         Tab:RefreshSides()
         Library.ActiveTab = Tab
-
         if Library.Searching then
             Library:UpdateSearch(Library.SearchText)
         end
