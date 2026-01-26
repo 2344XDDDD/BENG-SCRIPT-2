@@ -6194,14 +6194,38 @@ WindowTitle = New("TextLabel", {
         })
 
         --// Footer
-        New("TextLabel", {
+        local FooterLabel = New("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(1, 1),
-            Text = WindowInfo.Footer,
+            Position = UDim2.fromOffset(0, -15),
+            Text = "Script loading version number...", 
             TextSize = 14,
-            TextTransparency = 0.5,
+            TextTransparency = 1, 
             Parent = BottomBar,
         })
+
+        TweenService:Create(FooterLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+            Position = UDim2.fromOffset(0, 0),
+            TextTransparency = 0.5
+        }):Play()
+
+        task.delay(2, function()
+            if not FooterLabel then return end
+            local fadeOut = TweenService:Create(FooterLabel, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                TextTransparency = 1,
+                Position = UDim2.fromOffset(0, 5)
+            })
+            
+            fadeOut:Play()
+            fadeOut.Completed:Once(function()
+                FooterLabel.Text = WindowInfo.Footer
+                FooterLabel.Position = UDim2.fromOffset(0, -15)
+                TweenService:Create(FooterLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                    Position = UDim2.fromOffset(0, 0),
+                    TextTransparency = 0.5
+                }):Play()
+            end)
+        end)
 
         --// Resize Button
         if WindowInfo.Resizable then
