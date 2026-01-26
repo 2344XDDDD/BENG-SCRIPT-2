@@ -6131,8 +6131,6 @@ WindowTitle = New("TextLabel", {
 
         --// Footer
         local FooterSteps = {
-            "Loading script...",
-            "Loading resources...",
             "Initialization in progress",
             "Finalising.",
             "successfully!"
