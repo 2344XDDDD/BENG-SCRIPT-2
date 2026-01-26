@@ -6336,13 +6336,11 @@ function Library:CreateWindow(WindowInfo)
         CurrentTabLabel.Text = Name
         CurrentTabDescription.Text = Description
 
-        -- 1. 搜索框缩小，为文字留出空间
         if not WindowInfo.DisableSearch then
             local targetSize = IsDefaultSearchbarSize and UDim2.fromScale(0.5, 1) or WindowInfo.SearchbarSize
             TweenService:Create(SearchBox, InfoAnimation, {Size = targetSize}):Play()
         end
 
-        -- 2. 描述文字动画
         CurrentTabInfo.Visible = true
         CurrentTabLabel.Position = UDim2.fromOffset(0, -15)
         CurrentTabDescription.Position = UDim2.fromOffset(0, -10)
@@ -6363,12 +6361,10 @@ function Library:CreateWindow(WindowInfo)
     end
 
     function Window:HideTabInfo()
-        -- 1. 搜索框恢复全长
         if not WindowInfo.DisableSearch then
             TweenService:Create(SearchBox, InfoAnimation, {Size = UDim2.fromScale(1, 1)}):Play()
         end
 
-        -- 2. 文字渐隐
         local fade1 = TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1})
         local fade2 = TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1})
         
@@ -6415,23 +6411,26 @@ function Library:CreateWindow(WindowInfo)
             Description = select(3, ...)
         end
 
-        local TabButton: TextButton
-        local TabLabel
-        local TabIcon
+    local TabButton: TextButton
+    local TabLabel
+    local TabIcon
 
-        local TabContainer
-        local TabLeft
-        local TabRight
+    local TabContainer
+    local TabLeft
+    local TabRight
 
-        Icon = Library:GetCustomIcon(Icon)
-        do
-            TabButton = New("TextButton", {
-                BackgroundColor3 = "MainColor",
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 40),
-                Text = "",
-                Parent = Tabs,
-            })
+    local OriginalLabelPos = UDim2.fromOffset(30, 0)
+    local SelectedLabelPos = UDim2.fromOffset(38, 0)
+
+    Icon = Library:GetCustomIcon(Icon)
+    do
+        TabButton = New("TextButton", {
+            BackgroundColor3 = "MainColor",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 40),
+            Text = "",
+            Parent = Tabs,
+        })
             local ButtonPadding = New("UIPadding", {
                 PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
                 PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
@@ -6440,31 +6439,31 @@ function Library:CreateWindow(WindowInfo)
                 Parent = TabButton,
             })
 
-            TabLabel = New("TextLabel", {
-                BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(30, 0),
-                Size = UDim2.new(1, -30, 1, 0),
-                Text = Name,
-                TextSize = 16,
-                TextTransparency = 0.5,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Visible = not IsCompact,
+        TabLabel = New("TextLabel", {
+            BackgroundTransparency = 1,
+            Position = OriginalLabelPos,
+            Size = UDim2.new(1, -30, 1, 0),
+            Text = Name,
+            TextSize = 16,
+            TextTransparency = 0.5,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Visible = not IsCompact,
+            Parent = TabButton,
+        })
+
+        if Icon then
+            TabIcon = New("ImageLabel", {
+                Image = Icon.Url,
+                ImageColor3 = Icon.Custom and "WhiteColor" or "AccentColor",
+                ImageRectOffset = Icon.ImageRectOffset,
+                ImageRectSize = Icon.ImageRectSize,
+                ImageTransparency = 0.5,
+                ScaleType = Enum.ScaleType.Fit,
+                Size = UDim2.fromScale(1, 1),
+                SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY,
                 Parent = TabButton,
             })
-
-            if Icon then
-                TabIcon = New("ImageLabel", {
-                    Image = Icon.Url,
-                    ImageColor3 = Icon.Custom and "WhiteColor" or "AccentColor",
-                    ImageRectOffset = Icon.ImageRectOffset,
-                    ImageRectSize = Icon.ImageRectSize,
-                    ImageTransparency = 0.5,
-                    ScaleType = Enum.ScaleType.Fit,
-                    Size = UDim2.fromScale(1, 1),
-                    SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY,
-                    Parent = TabButton,
-                })
-            end
+        end
 
             table.insert(Library.TabButtons, {
                 Label = TabLabel,
@@ -7049,74 +7048,64 @@ function Library:CreateWindow(WindowInfo)
             end
         end
 
-        function Tab:Show()
-            -- 【修复点】如果当前已经是激活状态，直接返回，防止重复触发导致隐藏
-            if Library.ActiveTab == Tab then
-                return 
-            end
-
-            if Library.ActiveTab then
-                Library.ActiveTab:Hide()
-            end
-
-            -- 背景渐变
-            TweenService:Create(TabButton, Library.TweenInfo, {
-                BackgroundTransparency = 0,
-            }):Play()
-
-            -- 文字渐变 + 【新增】向右移动动画
-            TweenService:Create(TabLabel, Library.TweenInfo, {
-                TextTransparency = 0,
-                Position = SelectedLabelPos -- 文字右移
-            }):Play()
-
-            if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, {
-                    ImageTransparency = 0,
-                }):Play()
-            end
-
-            TabContainer.Visible = true
-            TabContainer.Position = UDim2.fromOffset(0, 20) 
-            TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Position = UDim2.fromOffset(0, 0)
-            }):Play()
-
-            -- 显示描述信息（此时搜索框会自动缩小）
-            if Description then
-                Window:ShowTabInfo(Name, Description)
-            else
-                Window:HideTabInfo() -- 如果没描述，则恢复搜索框
-            end
-
-            Tab:RefreshSides()
-            Library.ActiveTab = Tab
-
-            if Library.Searching then
-                Library:UpdateSearch(Library.SearchText)
-            end
+    function Tab:Show()
+        if Library.ActiveTab == Tab then
+            return 
         end
-        function Tab:Hide()
-            TweenService:Create(TabButton, Library.TweenInfo, {
-                BackgroundTransparency = 1,
-            }):Play()
 
-            -- 文字半透 + 【新增】回弹到初始位置
-            TweenService:Create(TabLabel, Library.TweenInfo, {
-                TextTransparency = 0.5,
-                Position = OriginalLabelPos -- 文字回弹
-            }):Play()
-
-            if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, {
-                    ImageTransparency = 0.5,
-                }):Play()
-            end
-            TabContainer.Visible = false
-
-            -- 注意：这里不要直接在 Hide 里调用 HideTabInfo
-            -- 因为下一个 Tab:Show 会处理搜索框的状态
+        if Library.ActiveTab then
+            Library.ActiveTab:Hide()
         end
+        TweenService:Create(TabButton, Library.TweenInfo, {
+            BackgroundTransparency = 0,
+        }):Play()
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0,
+            Position = SelectedLabelPos
+        }):Play()
+
+        if TabIcon then
+            TweenService:Create(TabIcon, Library.TweenInfo, {
+                ImageTransparency = 0,
+            }):Play()
+        end
+
+        TabContainer.Visible = true
+        TabContainer.Position = UDim2.fromOffset(0, 20) 
+        TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.fromOffset(0, 0)
+        }):Play()
+
+        if Description then
+            Window:ShowTabInfo(Name, Description)
+        else
+            Window:HideTabInfo() 
+        end
+
+        Tab:RefreshSides()
+        Library.ActiveTab = Tab
+
+        if Library.Searching then
+            Library:UpdateSearch(Library.SearchText)
+        end
+    end
+    function Tab:Hide()
+        TweenService:Create(TabButton, Library.TweenInfo, {
+            BackgroundTransparency = 1,
+        }):Play()
+        
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0.5,
+            Position = OriginalLabelPos
+        }):Play()
+
+        if TabIcon then
+            TweenService:Create(TabIcon, Library.TweenInfo, {
+                ImageTransparency = 0.5,
+            }):Play()
+        end
+        TabContainer.Visible = false
+    end
 
         --// Execution \\--
         if not Library.ActiveTab then
