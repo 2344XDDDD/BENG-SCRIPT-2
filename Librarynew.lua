@@ -6130,14 +6130,45 @@ WindowTitle = New("TextLabel", {
         })
 
         --// Footer
-        New("TextLabel", {
+        local FooterSteps = {
+            "Loading script...",
+            "Loading resources...",
+            "Initialization in progress",
+            "Finalising.",
+            "successfully!"
+        }
+
+        local FooterLabel = New("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(1, 1),
-            Text = WindowInfo.Footer,
+            Text = FooterSteps[1],
             TextSize = 14,
             TextTransparency = 0.5,
             Parent = BottomBar,
         })
+
+        task.spawn(function()
+            for i = 2, #FooterSteps do
+                task.wait(1.5)
+                if FooterLabel and FooterLabel.Parent then
+                    local fadeOut = TweenService:Create(FooterLabel, TweenInfo.new(0.4), {TextTransparency = 1})
+                    fadeOut:Play()
+                    fadeOut.Completed:Wait()
+                    FooterLabel.Text = FooterSteps[i]
+                    TweenService:Create(FooterLabel, TweenInfo.new(0.4), {TextTransparency = 0.5}):Play()
+                end
+            end
+
+            task.wait(2)
+            if FooterLabel and FooterLabel.Parent then
+                local fadeOutFinal = TweenService:Create(FooterLabel, TweenInfo.new(0.5), {TextTransparency = 1})
+                fadeOutFinal:Play()
+                fadeOutFinal.Completed:Wait()
+                
+                FooterLabel.Text = WindowInfo.Footer
+                TweenService:Create(FooterLabel, TweenInfo.new(0.5), {TextTransparency = 0.5}):Play()
+            end
+        end)
 
         --// Resize Button
         if WindowInfo.Resizable then
