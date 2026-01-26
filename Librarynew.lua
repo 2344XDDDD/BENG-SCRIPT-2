@@ -6032,13 +6032,15 @@ function Library:CreateWindow(WindowInfo)
             20,
             TitleHolder.AbsoluteSize.X - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 6 or 0) - 12
         )
-        WindowTitle = New("TextLabel", {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, X, 1, 0),
-            Text = WindowInfo.Title,
-            TextSize = 20,
-            Parent = TitleHolder,
-        })
+WindowTitle = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(0, X, 1, 0),
+    Text = WindowInfo.Title,
+    TextSize = 16,
+    FontFace = Font.fromEnum(Enum.Font.GothamBold),
+    TextColor3 = Color3.new(1, 1, 1),
+    Parent = TitleHolder,
+})
 
         --// Top Right Bar
         RightWrapper = New("Frame", {
@@ -7093,7 +7095,7 @@ function Library:CreateWindow(WindowInfo)
         TweenService:Create(TabButton, Library.TweenInfo, {
             BackgroundTransparency = 1,
         }):Play()
-        
+
         TweenService:Create(TabLabel, Library.TweenInfo, {
             TextTransparency = 0.5,
             Position = OriginalLabelPos
