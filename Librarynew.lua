@@ -3257,7 +3257,7 @@ function Funcs:AddButton(...)
             Disabled = Info.Disabled,
             Visible = Info.Visible,
             Locked = false,
-            IsConfirming = false,
+            IsConfirming = false, -- 内部状态：是否正在显示确认文字
             Type = "Button",
         }
 
@@ -3275,37 +3275,36 @@ function Funcs:AddButton(...)
             Parent = Holder,
         })
 
-        local function CreateButton(BtnData)
+        --// 统一创建按钮结构的函数（包含动画层）
+        local function CreateButtonInternal(BtnObj)
             local Base = New("TextButton", {
-                Active = not BtnData.Disabled,
-                BackgroundColor3 = BtnData.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor,
+                Active = not BtnObj.Disabled,
+                BackgroundColor3 = BtnObj.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor,
                 Size = UDim2.fromScale(1, 1),
-                Text = "", 
-                ClipsDescendants = true, 
+                Text = "", -- 禁用原生Text，改用内部Label
+                ClipsDescendants = true, -- 实现掉落裁剪效果
                 Parent = Holder,
             })
 
-            -- 修复报错：直接传 Color3，然后注册到 Registry
             local Stroke = New("UIStroke", {
                 Color = Library.Scheme.OutlineColor,
-                Transparency = BtnData.Disabled and 0.5 or 0,
+                Transparency = BtnObj.Disabled and 0.5 or 0,
                 Parent = Base,
             })
-            Library:AddToRegistry(Base, { BackgroundColor3 = BtnData.Disabled and "BackgroundColor" or "MainColor" })
-            Library:AddToRegistry(Stroke, { Color = "OutlineColor" })
-
+            
+            -- 主文字标签
             local MainLabel = New("TextLabel", {
                 Size = UDim2.fromScale(1, 1),
                 Position = UDim2.fromScale(0, 0),
                 BackgroundTransparency = 1,
-                Text = BtnData.Text,
+                Text = BtnObj.Text,
                 TextSize = 14,
                 TextTransparency = 0.4,
-                TextColor3 = BtnData.Risky and Library.Scheme.RedColor or Library.Scheme.FontColor,
+                TextColor3 = BtnObj.Risky and Library.Scheme.RedColor or Library.Scheme.FontColor,
                 Parent = Base,
             })
-            Library:AddToRegistry(MainLabel, { TextColor3 = BtnData.Risky and "RedColor" or "FontColor" })
 
+            -- 确认文字标签（初始在上方不可见）
             local ConfirmLabel = New("TextLabel", {
                 Size = UDim2.fromScale(1, 1),
                 Position = UDim2.fromScale(0, -1),
@@ -3316,16 +3315,23 @@ function Funcs:AddButton(...)
                 TextColor3 = Library.Scheme.AccentColor,
                 Parent = Base,
             })
+
+            -- 注册主题
+            Library:AddToRegistry(Base, { BackgroundColor3 = BtnObj.Disabled and "BackgroundColor" or "MainColor" })
+            Library:AddToRegistry(Stroke, { Color = "OutlineColor" })
+            Library:AddToRegistry(MainLabel, { TextColor3 = BtnObj.Risky and "RedColor" or "FontColor" })
             Library:AddToRegistry(ConfirmLabel, { TextColor3 = "AccentColor" })
 
             return Base, Stroke, MainLabel, ConfirmLabel
         end
 
-        local function InitEvents(Btn, Base, Stroke, MainLabel, ConfirmLabel)
+        --// 统一初始化事件和动画逻辑
+        local function InitButtonLogic(Btn, Base, Stroke, MainLabel, ConfirmLabel)
             local function GetActiveLabel()
                 return Btn.IsConfirming and ConfirmLabel or MainLabel
             end
 
+            -- 悬浮动画：发白变亮
             Base.MouseEnter:Connect(function()
                 if Btn.Disabled then return end
                 TweenService:Create(GetActiveLabel(), Library.TweenInfo, { TextTransparency = 0 }):Play()
@@ -3336,6 +3342,7 @@ function Funcs:AddButton(...)
                 TweenService:Create(GetActiveLabel(), Library.TweenInfo, { TextTransparency = 0.4 }):Play()
             end)
 
+            -- 点击逻辑
             Base.MouseButton1Click:Connect(function()
                 if Btn.Disabled or Btn.Locked then return end
 
@@ -3344,41 +3351,45 @@ function Funcs:AddButton(...)
                         Btn.IsConfirming = true
                         Btn.Locked = true
 
+                        -- 1. 主文字向下划走
                         TweenService:Create(MainLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                             Position = UDim2.fromScale(0, 1),
                             TextTransparency = 1
                         }):Play()
 
+                        -- 2. 确认文字从顶部落下
                         ConfirmLabel.Position = UDim2.fromScale(0, -1)
                         ConfirmLabel.TextTransparency = 1
-                        local DropTween = TweenService:Create(ConfirmLabel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        local InAnim = TweenService:Create(ConfirmLabel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                             Position = UDim2.fromScale(0, 0),
                             TextTransparency = 0.4
                         })
-                        DropTween:Play()
-                        DropTween.Completed:Once(function() Btn.Locked = false end)
+                        InAnim:Play()
+                        InAnim.Completed:Once(function() Btn.Locked = false end)
 
-                        local Clicked = WaitForEvent(Base.MouseButton1Click, 2.0)
+                        -- 等待第二次点击或超时
+                        local Success = WaitForEvent(Base.MouseButton1Click, 2.0)
 
                         Btn.Locked = true
+                        -- 3. 确认文字向下划走
                         TweenService:Create(ConfirmLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                             Position = UDim2.fromScale(0, 1),
                             TextTransparency = 1
                         }):Play()
 
+                        -- 4. 主文字从顶部重新落下
                         MainLabel.Position = UDim2.fromScale(0, -1)
-                        local RecoverTween = TweenService:Create(MainLabel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        local OutAnim = TweenService:Create(MainLabel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                             Position = UDim2.fromScale(0, 0),
                             TextTransparency = 0.4
                         })
-                        RecoverTween:Play()
-
-                        RecoverTween.Completed:Once(function()
+                        OutAnim:Play()
+                        OutAnim.Completed:Once(function()
                             Btn.IsConfirming = false
                             Btn.Locked = false
                         end)
 
-                        if Clicked then Library:SafeCallback(Btn.Func) end
+                        if Success then Library:SafeCallback(Btn.Func) end
                     end
                 else
                     Library:SafeCallback(Btn.Func)
@@ -3386,10 +3397,12 @@ function Funcs:AddButton(...)
             end)
         end
 
-        local Base, Stroke, MainLabel, ConfirmLabel = CreateButton(Button)
+        -- 初始化主按钮
+        local Base, Stroke, MainLabel, ConfirmLabel = CreateButtonInternal(Button)
         Button.Base, Button.Stroke, Button.MainLabel, Button.ConfirmLabel = Base, Stroke, MainLabel, ConfirmLabel
-        InitEvents(Button, Base, Stroke, MainLabel, ConfirmLabel)
+        InitButtonLogic(Button, Base, Stroke, MainLabel, ConfirmLabel)
 
+        --// 处理嵌套 SubButton
         function Button:AddButton(...)
             local SubInfo = GetInfo(...)
             local SubBtn = {
@@ -3397,33 +3410,55 @@ function Funcs:AddButton(...)
                 Risky = SubInfo.Risky, Disabled = SubInfo.Disabled, Visible = SubInfo.Visible,
                 Locked = false, IsConfirming = false, Type = "SubButton",
             }
-            local SBase, SStroke, SMain, SConfirm = CreateButton(SubBtn)
-            InitEvents(SubBtn, SBase, SStroke, SMain, SConfirm)
+
+            local SBase, SStroke, SMain, SConfirm = CreateButtonInternal(SubBtn)
+            InitButtonLogic(SubBtn, SBase, SStroke, SMain, SConfirm)
+
+            function SubBtn:UpdateColors()
+                if Library.Unloaded then return end
+                SBase.BackgroundColor3 = SubBtn.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
+                SMain.TextTransparency = SubBtn.Disabled and 0.8 or 0.4
+                SStroke.Transparency = SubBtn.Disabled and 0.5 or 0
+                Library.Registry[SBase].BackgroundColor3 = SubBtn.Disabled and "BackgroundColor" or "MainColor"
+            end
 
             function SubBtn:SetDisabled(Disabled)
                 SubBtn.Disabled = Disabled
                 SBase.Active = not Disabled
-                SBase.BackgroundColor3 = Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
-                SMain.TextTransparency = Disabled and 0.8 or 0.4
-                SStroke.Transparency = Disabled and 0.5 or 0
+                SubBtn:UpdateColors()
             end
 
             function SubBtn:SetText(Text) SubBtn.Text = Text; SMain.Text = Text end
+            
+            SubBtn:UpdateColors()
             table.insert(Groupbox.Elements, SubBtn)
             return SubBtn
+        end
+
+        --// 主按钮公开函数
+        function Button:UpdateColors()
+            if Library.Unloaded then return end
+            Base.BackgroundColor3 = Button.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
+            MainLabel.TextTransparency = Button.Disabled and 0.8 or 0.4
+            Stroke.Transparency = Button.Disabled and 0.5 or 0
+            Library.Registry[Base].BackgroundColor3 = Button.Disabled and "BackgroundColor" or "MainColor"
         end
 
         function Button:SetDisabled(Disabled)
             Button.Disabled = Disabled
             Base.Active = not Disabled
-            Base.BackgroundColor3 = Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
-            MainLabel.TextTransparency = Disabled and 0.8 or 0.4
-            Stroke.Transparency = Disabled and 0.5 or 0
+            Button:UpdateColors()
+        end
+
+        function Button:SetVisible(Visible)
+            Button.Visible = Visible
+            Holder.Visible = Visible
+            Groupbox:Resize()
         end
 
         function Button:SetText(Text) Button.Text = Text; MainLabel.Text = Text end
-        function Button:SetVisible(Visible) Button.Visible = Visible; Holder.Visible = Visible; Groupbox:Resize() end
 
+        Button:UpdateColors()
         Groupbox:Resize()
         Button.Holder = Holder
         table.insert(Groupbox.Elements, Button)
