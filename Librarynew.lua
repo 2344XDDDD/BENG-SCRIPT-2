@@ -6149,7 +6149,7 @@ WindowTitle = New("TextLabel", {
 
         task.spawn(function()
             for i = 2, #FooterSteps do
-                task.wait(1.5)
+                task.wait(0.7)
                 if FooterLabel and FooterLabel.Parent then
                     local fadeOut = TweenService:Create(FooterLabel, TweenInfo.new(0.4), {TextTransparency = 1})
                     fadeOut:Play()
@@ -6159,7 +6159,7 @@ WindowTitle = New("TextLabel", {
                 end
             end
 
-            task.wait(2)
+            task.wait(1)
             if FooterLabel and FooterLabel.Parent then
                 local fadeOutFinal = TweenService:Create(FooterLabel, TweenInfo.new(0.5), {TextTransparency = 1})
                 fadeOutFinal:Play()
