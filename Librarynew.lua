@@ -3343,16 +3343,12 @@ function Funcs:AddButton(...)
                     if not Btn.IsConfirming then
                         Btn.IsConfirming = true
                         Btn.Locked = true
-
-                        -- 1. 等原来的 Text 下去
                         local mainOut = TweenService:Create(MainLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                             Position = UDim2.fromScale(0, 1),
                             TextTransparency = 1
                         })
                         mainOut:Play()
-                        mainOut.Completed:Wait() -- 关键：等待动画结束
-
-                        -- 2. 再让 Are you sure 上来（从顶部落下）
+                        mainOut.Completed:Wait()
                         ConfirmLabel.Position = UDim2.fromScale(0, -1)
                         ConfirmLabel.TextTransparency = 1
                         local confirmIn = TweenService:Create(ConfirmLabel, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -3362,20 +3358,15 @@ function Funcs:AddButton(...)
                         confirmIn:Play()
                         confirmIn.Completed:Wait()
                         Btn.Locked = false
-
-                        -- 等待确认或超时
                         local Success = WaitForEvent(Base.MouseButton1Click, 2.0)
 
                         Btn.Locked = true
-                        -- 3. 等 Are you sure 下去
                         local confirmOut = TweenService:Create(ConfirmLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                             Position = UDim2.fromScale(0, 1),
                             TextTransparency = 1
                         })
                         confirmOut:Play()
-                        confirmOut.Completed:Wait() -- 关键：等待动画结束
-
-                        -- 4. 原来的 Text 再从上面掉下来
+                        confirmOut.Completed:Wait()
                         MainLabel.Position = UDim2.fromScale(0, -1)
                         local mainIn = TweenService:Create(MainLabel, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                             Position = UDim2.fromScale(0, 0),
