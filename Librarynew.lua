@@ -3095,13 +3095,13 @@ do
         })
     end
 
-    function Funcs:AddLabel(...)
+function Funcs:AddLabel(...)
         local Data = {}
         local Addons = {}
 
         local First = select(1, ...)
         local Second = select(2, ...)
-
+        
         if typeof(First) == "table" or typeof(Second) == "table" then
             local Params = typeof(First) == "table" and First or Second
 
@@ -3109,12 +3109,14 @@ do
             Data.DoesWrap = Params.DoesWrap or false
             Data.Size = Params.Size or 14
             Data.Visible = Params.Visible or true
+            Data.Animation = Params.Animation or false
             Data.Idx = typeof(Second) == "table" and First or nil
         else
             Data.Text = First or ""
             Data.DoesWrap = Second or false
             Data.Size = 14
             Data.Visible = true
+            Data.Animation = false
             Data.Idx = select(3, ...) or nil
         end
 
@@ -3124,10 +3126,9 @@ do
         local Label = {
             Text = Data.Text,
             DoesWrap = Data.DoesWrap,
-
             Addons = Addons,
-
             Visible = Data.Visible,
+            Animation = Data.Animation,
             Type = "Label",
         }
 
@@ -3141,41 +3142,51 @@ do
             Parent = Container,
         })
 
+        local function ApplyTextUpdate(NewText)
+            if Label.Animation then
+                TextLabel.Position = UDim2.fromOffset(0, -10)
+                TextLabel.TextTransparency = 1
+                TextLabel.Text = NewText
+                TweenService:Create(TextLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                    Position = UDim2.fromOffset(0, 0),
+                    TextTransparency = 0
+                }):Play()
+            else
+                TextLabel.Text = NewText
+            end
+        end
+
         function Label:SetVisible(Visible: boolean)
             Label.Visible = Visible
-
             TextLabel.Visible = Label.Visible
             Groupbox:Resize()
         end
 
         function Label:SetText(Text: string)
             Label.Text = Text
-            TextLabel.Text = Text
+            ApplyTextUpdate(Text)
 
             if Label.DoesWrap then
-                local _, Y =
-                    Library:GetTextBounds(Label.Text, TextLabel.FontFace, TextLabel.TextSize, TextLabel.AbsoluteSize.X)
+                local _, Y = Library:GetTextBounds(Label.Text, TextLabel.FontFace, TextLabel.TextSize, TextLabel.AbsoluteSize.X)
                 TextLabel.Size = UDim2.new(1, 0, 0, Y + 4)
             end
 
             Groupbox:Resize()
         end
 
+        if Label.Animation then
+            ApplyTextUpdate(Data.Text)
+        end
+
         if Label.DoesWrap then
-            local _, Y =
-                Library:GetTextBounds(Label.Text, TextLabel.FontFace, TextLabel.TextSize, TextLabel.AbsoluteSize.X)
+            local _, Y = Library:GetTextBounds(Label.Text, TextLabel.FontFace, TextLabel.TextSize, TextLabel.AbsoluteSize.X)
             TextLabel.Size = UDim2.new(1, 0, 0, Y + 4)
 
             local Last = TextLabel.AbsoluteSize
             TextLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-                if TextLabel.AbsoluteSize == Last then
-                    return
-                end
-
-                local _, Y =
-                    Library:GetTextBounds(Label.Text, TextLabel.FontFace, TextLabel.TextSize, TextLabel.AbsoluteSize.X)
+                if TextLabel.AbsoluteSize == Last then return end
+                local _, Y = Library:GetTextBounds(Label.Text, TextLabel.FontFace, TextLabel.TextSize, TextLabel.AbsoluteSize.X)
                 TextLabel.Size = UDim2.new(1, 0, 0, Y + 4)
-
                 Last = TextLabel.AbsoluteSize
                 Groupbox:Resize()
             end)
@@ -6194,38 +6205,14 @@ WindowTitle = New("TextLabel", {
         })
 
         --// Footer
-        local FooterLabel = New("TextLabel", {
+        New("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(1, 1),
-            Position = UDim2.fromOffset(0, -15),
-            Text = "Script loading version number...", 
+            Text = WindowInfo.Footer,
             TextSize = 14,
-            TextTransparency = 1, 
+            TextTransparency = 0.5,
             Parent = BottomBar,
         })
-
-        TweenService:Create(FooterLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            Position = UDim2.fromOffset(0, 0),
-            TextTransparency = 0.5
-        }):Play()
-
-        task.delay(2, function()
-            if not FooterLabel then return end
-            local fadeOut = TweenService:Create(FooterLabel, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-                TextTransparency = 1,
-                Position = UDim2.fromOffset(0, 5)
-            })
-            
-            fadeOut:Play()
-            fadeOut.Completed:Once(function()
-                FooterLabel.Text = WindowInfo.Footer
-                FooterLabel.Position = UDim2.fromOffset(0, -15)
-                TweenService:Create(FooterLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                    Position = UDim2.fromOffset(0, 0),
-                    TextTransparency = 0.5
-                }):Play()
-            end)
-        end)
 
         --// Resize Button
         if WindowInfo.Resizable then
