@@ -6398,6 +6398,22 @@ WindowTitle = New("TextLabel", {
             Text = "",
             Parent = Tabs,
         })
+local SelectedGlow = New("Frame", {
+    Size = UDim2.fromScale(1, 1),
+    BackgroundTransparency = 1,
+    BackgroundColor3 = "AccentColor",
+    BorderSizePixel = 0,
+    ZIndex = 1,
+    Parent = TabButton,
+})
+
+local GlowGradient = New("UIGradient", {
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.75),
+        NumberSequenceKeypoint.new(1, 1),
+    }),
+    Parent = SelectedGlow,
+})
             local ButtonPadding = New("UIPadding", {
                 PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
                 PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
@@ -7015,64 +7031,65 @@ WindowTitle = New("TextLabel", {
             end
         end
 
-    function Tab:Show()
-        if Library.ActiveTab == Tab then
-            return 
-        end
-
-        if Library.ActiveTab then
-            Library.ActiveTab:Hide()
-        end
-        TweenService:Create(TabButton, Library.TweenInfo, {
-            BackgroundTransparency = 0,
-        }):Play()
-        TweenService:Create(TabLabel, Library.TweenInfo, {
-            TextTransparency = 0,
-            Position = SelectedLabelPos
-        }):Play()
-
-        if TabIcon then
-            TweenService:Create(TabIcon, Library.TweenInfo, {
-                ImageTransparency = 0,
-            }):Play()
-        end
-
-        TabContainer.Visible = true
-        TabContainer.Position = UDim2.fromOffset(0, 20) 
-        TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Position = UDim2.fromOffset(0, 0)
-        }):Play()
-
-        if Description then
-            Window:ShowTabInfo(Name, Description)
-        else
-            Window:HideTabInfo() 
-        end
-
-        Tab:RefreshSides()
-        Library.ActiveTab = Tab
-
-        if Library.Searching then
-            Library:UpdateSearch(Library.SearchText)
-        end
+function Tab:Show()
+    if Library.ActiveTab == Tab then
+        return 
     end
-    function Tab:Hide()
-        TweenService:Create(TabButton, Library.TweenInfo, {
-            BackgroundTransparency = 1,
-        }):Play()
 
-        TweenService:Create(TabLabel, Library.TweenInfo, {
-            TextTransparency = 0.5,
-            Position = OriginalLabelPos
-        }):Play()
-
-        if TabIcon then
-            TweenService:Create(TabIcon, Library.TweenInfo, {
-                ImageTransparency = 0.5,
-            }):Play()
-        end
-        TabContainer.Visible = false
+    if Library.ActiveTab then
+        Library.ActiveTab:Hide()
     end
+    TweenService:Create(TabLabel, Library.TweenInfo, {
+        TextTransparency = 0,
+        Position = SelectedLabelPos
+    }):Play()
+
+    TweenService:Create(SelectedGlow, Library.TweenInfo, {
+        BackgroundTransparency = 0.9, 
+    }):Play()
+
+    if TabIcon then
+        TweenService:Create(TabIcon, Library.TweenInfo, {
+            ImageTransparency = 0,
+        }):Play()
+    end
+
+    TabContainer.Visible = true
+    TabContainer.Position = UDim2.fromOffset(0, 20) 
+    TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.fromOffset(0, 0)
+    }):Play()
+
+    if Description then
+        Window:ShowTabInfo(Name, Description)
+    else
+        Window:HideTabInfo() 
+    end
+
+    Tab:RefreshSides()
+    Library.ActiveTab = Tab
+end
+function Tab:Hide()
+    TweenService:Create(SelectedGlow, Library.TweenInfo, {
+        BackgroundTransparency = 1,
+    }):Play()
+
+    TweenService:Create(TabButton, Library.TweenInfo, {
+        BackgroundTransparency = 1,
+    }):Play()
+
+    TweenService:Create(TabLabel, Library.TweenInfo, {
+        TextTransparency = 0.5,
+        Position = OriginalLabelPos
+    }):Play()
+
+    if TabIcon then
+        TweenService:Create(TabIcon, Library.TweenInfo, {
+            ImageTransparency = 0.5,
+        }):Play()
+    end
+    TabContainer.Visible = false
+end
 
         --// Execution \\--
         if not Library.ActiveTab then
