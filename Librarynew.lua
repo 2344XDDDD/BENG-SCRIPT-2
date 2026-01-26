@@ -1298,44 +1298,6 @@ function Library:SafeCallback(Func: (...any) -> ...any, ...: any)
     return table.unpack(Result, 2, Result.n)
 end
 
-        local PanelIcon = Library:GetIcon("panel-left") or {Url = "rbxassetid://10888673669", ImageRectOffset = Vector2.zero, ImageRectSize = Vector2.zero}
-        local SidebarAnimating = false
-        local function ToggleSidebarWithAnimation()
-            if SidebarAnimating then return end
-            SidebarAnimating = true
-            local IsTargetCompact = not IsCompact
-            local TargetWidth = IsTargetCompact and WindowInfo.SidebarCompactWidth or LastExpandedWidth
-            local WidthValue = Instance.new("NumberValue")
-            WidthValue.Value = Tabs.Size.X.Offset
-            local Tween = TweenService:Create(WidthValue, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                Value = TargetWidth
-            })
-
-            local Connection = WidthValue:GetPropertyChangedSignal("Value"):Connect(function()
-                local Width = WidthValue.Value
-                DividerLine.Position = UDim2.fromOffset(Width, 0)
-                TitleHolder.Size = UDim2.new(0, Width, 1, 0)
-                RightWrapper.Size = UDim2.new(1, -Width - 57 - 1, 1, -16)
-                Tabs.Size = UDim2.new(0, Width, 1, -70)
-                Container.Size = UDim2.new(1, -Width - 1, 1, -70)
-                if WindowInfo.EnableCompacting then
-                    ApplyCompact() 
-                end
-            end)
-
-            Tween.Completed:Connect(function()
-                Connection:Disconnect()
-                WidthValue:Destroy()
-                IsCompact = IsTargetCompact
-                if not IsCompact then
-                    LastExpandedWidth = TargetWidth
-                end
-                SidebarAnimating = false
-            end)
-
-            Tween:Play()
-        end
-
 function Library:MakeDraggable(UI: GuiObject, DragFrame: GuiObject, IgnoreToggled: boolean?, IsMainWindow: boolean?)
     local StartPos
     local FramePos
@@ -5967,35 +5929,6 @@ function Library:CreateWindow(WindowInfo)
         })
         Library:MakeDraggable(MainFrame, TopBar, false, true)
 
-        local SidebarAnimating = false
-
-local function ToggleSidebarWithAnimation()
-    if SidebarAnimating then return end
-    SidebarAnimating = true
-
-    local IsTargetCompact = not IsCompact
-    local TargetWidth = IsTargetCompact and WindowInfo.SidebarCompactWidth or LastExpandedWidth
-
-    local WidthValue = Instance.new("NumberValue")
-    WidthValue.Value = Window:GetSidebarWidth()
-    
-    local Tween = TweenService:Create(WidthValue, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        Value = TargetWidth
-    })
-
-    local Connection = WidthValue:GetPropertyChangedSignal("Value"):Connect(function()
-        Window:SetSidebarWidth(WidthValue.Value)
-    end)
-
-    Tween.Completed:Connect(function()
-        Connection:Disconnect()
-        WidthValue:Destroy()
-        SidebarAnimating = false
-    end)
-
-    Tween:Play()
-end
-
         --// Title
         TitleHolder = New("Frame", {
             BackgroundTransparency = 1,
@@ -6004,11 +5937,81 @@ end
         })
         New("UIListLayout", {
             FillDirection = Enum.FillDirection.Horizontal,
-            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            HorizontalAlignment = Enum.HorizontalAlignment.Left, -- 修改为左对齐
             VerticalAlignment = Enum.VerticalAlignment.Center,
             Padding = UDim.new(0, 6),
             Parent = TitleHolder,
         })
+        New("UIPadding", {
+            PaddingLeft = UDim.new(0, 10),
+            Parent = TitleHolder,
+        })
+
+        --// [添加] 侧边栏动画切换逻辑与按钮
+        local PanelIcon = Library:GetIcon("panel-left") or {Url = "rbxassetid://10888673669", ImageRectOffset = Vector2.zero, ImageRectSize = Vector2.zero}
+        local SidebarAnimating = false
+
+        -- 定义局部宽度设置函数，避免依赖还未创建的 Window 对象
+        local function SetSidebarWidthInternal(Width)
+            Width = math.clamp(Width, 48, MainFrame.Size.X.Offset - WindowInfo.MinContainerWidth - 1)
+            DividerLine.Position = UDim2.fromOffset(Width, 0)
+            TitleHolder.Size = UDim2.new(0, Width, 1, 0)
+            RightWrapper.Size = UDim2.new(1, -Width - 57 - 1, 1, -16)
+            Tabs.Size = UDim2.new(0, Width, 1, -70)
+            Container.Size = UDim2.new(1, -Width - 1, 1, -70)
+
+            -- 处理紧凑模式逻辑
+            if WindowInfo.EnableCompacting then
+                IsCompact = Width <= (WindowInfo.SidebarCompactWidth + 5)
+                WindowTitle.Visible = not IsCompact
+                if not WindowInfo.Icon then WindowIcon.Visible = IsCompact end
+                for _, Button in Library.TabButtons do
+                    if not Button.Icon then continue end
+                    Button.Label.Visible = not IsCompact
+                    Button.Padding.PaddingBottom = UDim.new(0, IsCompact and 6 or 11)
+                    Button.Padding.PaddingLeft = UDim.new(0, IsCompact and 6 or 12)
+                    Button.Padding.PaddingRight = UDim.new(0, IsCompact and 6 or 12)
+                    Button.Padding.PaddingTop = UDim.new(0, IsCompact and 6 or 11)
+                    Button.Icon.SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY
+                end
+            end
+        end
+
+        local function ToggleSidebarWithAnimation()
+            if SidebarAnimating then return end
+            SidebarAnimating = true
+            local IsTargetCompact = not IsCompact
+            local TargetWidth = IsTargetCompact and WindowInfo.SidebarCompactWidth or LastExpandedWidth
+            local WidthValue = Instance.new("NumberValue")
+            WidthValue.Value = Tabs.Size.X.Offset
+            local Tween = TweenService:Create(WidthValue, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Value = TargetWidth})
+            local Connection = WidthValue:GetPropertyChangedSignal("Value"):Connect(function()
+                SetSidebarWidthInternal(WidthValue.Value)
+            end)
+            Tween.Completed:Connect(function()
+                Connection:Disconnect(); WidthValue:Destroy()
+                IsCompact = IsTargetCompact
+                if not IsCompact then LastExpandedWidth = TargetWidth end
+                SidebarAnimating = false
+            end)
+            Tween:Play()
+        end
+
+        local SidebarToggleButton = New("ImageButton", {
+            Name = "SidebarToggle",
+            BackgroundTransparency = 1,
+            Size = UDim2.fromOffset(24, 24),
+            Image = PanelIcon.Url,
+            ImageRectOffset = PanelIcon.ImageRectOffset,
+            ImageRectSize = PanelIcon.ImageRectSize,
+            ImageColor3 = "FontColor",
+            ImageTransparency = 0.3,
+            LayoutOrder = -1,
+            Parent = TitleHolder,
+        })
+        SidebarToggleButton.MouseButton1Click:Connect(ToggleSidebarWithAnimation)
+        SidebarToggleButton.MouseEnter:Connect(function() TweenService:Create(SidebarToggleButton, Library.TweenInfo, {ImageTransparency = 0}):Play() end)
+        SidebarToggleButton.MouseLeave:Connect(function() TweenService:Create(SidebarToggleButton, Library.TweenInfo, {ImageTransparency = 0.3}):Play() end)
 
         if WindowInfo.Icon then
             WindowIcon = New("ImageLabel", {
@@ -6033,17 +6036,17 @@ end
             WindowInfo.Title,
             Library.Scheme.Font,
             20,
-            TitleHolder.AbsoluteSize.X - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 6 or 0) - 12
+            InitialLeftWidth - 60 -- 预留按钮和图标空间
         )
-WindowTitle = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, X, 1, 0),
-    Text = WindowInfo.Title,
-    TextSize = 16,
-    FontFace = Font.fromEnum(Enum.Font.GothamBold),
-    TextColor3 = Color3.new(1, 1, 1),
-    Parent = TitleHolder,
-})
+        WindowTitle = New("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, X, 1, 0),
+            Text = WindowInfo.Title,
+            TextSize = 16,
+            FontFace = Font.fromEnum(Enum.Font.GothamBold),
+            TextColor3 = Color3.new(1, 1, 1),
+            Parent = TitleHolder,
+        })
 
         --// Top Right Bar
         RightWrapper = New("Frame", {
@@ -6074,40 +6077,20 @@ WindowTitle = New("TextLabel", {
             Parent = CurrentTabInfo,
         })
 
-New("UIListLayout", {
-    FillDirection = Enum.FillDirection.Horizontal,
-    HorizontalAlignment = Enum.HorizontalAlignment.Left,
-    VerticalAlignment = Enum.VerticalAlignment.Center,
-    Padding = UDim.new(0, 8),
-    Parent = TitleHolder,
-})
+        New("UIListLayout", {
+            FillDirection = Enum.FillDirection.Vertical,
+            HorizontalAlignment = Enum.HorizontalAlignment.Left,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = CurrentTabInfo,
+        })
 
-New("UIPadding", {
-    PaddingLeft = UDim.new(0, 12),
-    Parent = TitleHolder
-})
-
-local SidebarToggleButton = New("ImageButton", {
-    Name = "SidebarToggle",
-    BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(20, 20),
-    Image = PanelIcon.Url,
-    ImageRectOffset = PanelIcon.ImageRectOffset,
-    ImageRectSize = PanelIcon.ImageRectSize,
-    ImageColor3 = "FontColor",
-    ImageTransparency = 0.3,
-    LayoutOrder = -1,
-    Parent = TitleHolder,
-})
-
-SidebarToggleButton.MouseEnter:Connect(function()
-    TweenService:Create(SidebarToggleButton, Library.TweenInfo, {ImageTransparency = 0}):Play()
-end)
-SidebarToggleButton.MouseLeave:Connect(function()
-    TweenService:Create(SidebarToggleButton, Library.TweenInfo, {ImageTransparency = 0.3}):Play()
-end)
-
-SidebarToggleButton.MouseButton1Click:Connect(ToggleSidebarWithAnimation)
+        New("UIPadding", {
+            PaddingBottom = UDim.new(0, 8),
+            PaddingLeft = UDim.new(0, 8),
+            PaddingRight = UDim.new(0, 8),
+            PaddingTop = UDim.new(0, 8),
+            Parent = CurrentTabInfo,
+        })
 
         CurrentTabLabel = New("TextLabel", {
             BackgroundTransparency = 1,
@@ -6217,43 +6200,14 @@ SidebarToggleButton.MouseButton1Click:Connect(ToggleSidebarWithAnimation)
         })
 
         --// Footer
-        local FooterSteps = {
-            "Initialization in progress",
-            "Finalising.",
-            "successfully!"
-        }
-
         local FooterLabel = New("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(1, 1),
-            Text = FooterSteps[1],
+            Text = WindowInfo.Footer,
             TextSize = 14,
             TextTransparency = 0.5,
             Parent = BottomBar,
         })
-
-        task.spawn(function()
-            for i = 2, #FooterSteps do
-                task.wait(0.7)
-                if FooterLabel and FooterLabel.Parent then
-                    local fadeOut = TweenService:Create(FooterLabel, TweenInfo.new(0.4), {TextTransparency = 1})
-                    fadeOut:Play()
-                    fadeOut.Completed:Wait()
-                    FooterLabel.Text = FooterSteps[i]
-                    TweenService:Create(FooterLabel, TweenInfo.new(0.4), {TextTransparency = 0.5}):Play()
-                end
-            end
-
-            task.wait(1)
-            if FooterLabel and FooterLabel.Parent then
-                local fadeOutFinal = TweenService:Create(FooterLabel, TweenInfo.new(0.5), {TextTransparency = 1})
-                fadeOutFinal:Play()
-                fadeOutFinal.Completed:Wait()
-                
-                FooterLabel.Text = WindowInfo.Footer
-                TweenService:Create(FooterLabel, TweenInfo.new(0.5), {TextTransparency = 0.5}):Play()
-            end
-        end)
 
         --// Resize Button
         if WindowInfo.Resizable then
@@ -6324,27 +6278,17 @@ SidebarToggleButton.MouseButton1Click:Connect(ToggleSidebarWithAnimation)
 
     function Window:ChangeTitle(title)
         assert(typeof(title) == "string", "Expected string for title got: " .. typeof(title))
-
         WindowTitle.Text = title
         WindowInfo.Title = title
     end
 
     local function ApplyCompact()
-        IsCompact = Window:GetSidebarWidth() == WindowInfo.SidebarCompactWidth
-        if WindowInfo.DisableCompactingSnap then
-            IsCompact = Window:GetSidebarWidth() <= WindowInfo.CompactWidthActivation
-        end
-
+        IsCompact = Window:GetSidebarWidth() <= (WindowInfo.SidebarCompactWidth + 5)
         WindowTitle.Visible = not IsCompact
-        if not WindowInfo.Icon then
-            WindowIcon.Visible = IsCompact
-        end
+        if not WindowInfo.Icon then WindowIcon.Visible = IsCompact end
 
         for _, Button in Library.TabButtons do
-            if not Button.Icon then
-                continue
-            end
-
+            if not Button.Icon then continue end
             Button.Label.Visible = not IsCompact
             Button.Padding.PaddingBottom = UDim.new(0, IsCompact and 6 or 11)
             Button.Padding.PaddingLeft = UDim.new(0, IsCompact and 6 or 12)
@@ -6352,6 +6296,48 @@ SidebarToggleButton.MouseButton1Click:Connect(ToggleSidebarWithAnimation)
             Button.Padding.PaddingTop = UDim.new(0, IsCompact and 6 or 11)
             Button.Icon.SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY
         end
+    end
+
+    function Window:IsSidebarCompacted() return IsCompact end
+    function Window:SetCompact(State) Window:SetSidebarWidth(State and WindowInfo.SidebarCompactWidth or LastExpandedWidth) end
+    function Window:GetSidebarWidth() return Tabs.Size.X.Offset end
+
+    function Window:SetSidebarWidth(Width)
+        Width = math.clamp(Width, 48, MainFrame.Size.X.Offset - WindowInfo.MinContainerWidth - 1)
+        DividerLine.Position = UDim2.fromOffset(Width, 0)
+        TitleHolder.Size = UDim2.new(0, Width, 1, 0)
+        RightWrapper.Size = UDim2.new(1, -Width - 57 - 1, 1, -16)
+        Tabs.Size = UDim2.new(0, Width, 1, -70)
+        Container.Size = UDim2.new(1, -Width - 1, 1, -70)
+        if WindowInfo.EnableCompacting then ApplyCompact() end
+        if not IsCompact then LastExpandedWidth = Width end
+    end
+
+    local InfoAnimation = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+    function Window:ShowTabInfo(Name, Description)
+        CurrentTabLabel.Text = Name
+        CurrentTabDescription.Text = Description
+        if not WindowInfo.DisableSearch then
+            local targetSize = IsDefaultSearchbarSize and UDim2.fromScale(0.5, 1) or WindowInfo.SearchbarSize
+            TweenService:Create(SearchBox, InfoAnimation, {Size = targetSize}):Play()
+        end
+        CurrentTabInfo.Visible = true
+        CurrentTabLabel.Position = UDim2.fromOffset(0, -15)
+        CurrentTabDescription.Position = UDim2.fromOffset(0, -10)
+        CurrentTabLabel.TextTransparency = 1
+        CurrentTabDescription.TextTransparency = 1
+        TweenService:Create(CurrentTabLabel, InfoAnimation, {Position = UDim2.fromOffset(0, 0), TextTransparency = 0}):Play()
+        task.delay(0.05, function() TweenService:Create(CurrentTabDescription, InfoAnimation, {Position = UDim2.fromOffset(0, 0), TextTransparency = 0.5}):Play() end)
+    end
+
+    function Window:HideTabInfo()
+        if not CurrentTabInfo.Visible then return end
+        if not WindowInfo.DisableSearch then TweenService:Create(SearchBox, InfoAnimation, {Size = UDim2.fromScale(1, 1)}):Play() end
+        local fade1 = TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1, Position = UDim2.fromOffset(0, 5)})
+        local fade2 = TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1, Position = UDim2.fromOffset(0, 5)})
+        fade1:Play(); fade2:Play()
+        fade1.Completed:Once(function() CurrentTabInfo.Visible = false end)
     end
 
     function Window:IsSidebarCompacted()
