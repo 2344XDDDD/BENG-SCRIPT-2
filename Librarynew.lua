@@ -6330,20 +6330,19 @@ function Library:CreateWindow(WindowInfo)
         end
     end
 
-    local InfoAnimation = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        local InfoAnimation = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
     function Window:ShowTabInfo(Name, Description)
-        if CurrentTabLabel.Text == Name and CurrentTabDescription.Text == Description and CurrentTabInfo.Visible then
-            return
-        end
-
         CurrentTabLabel.Text = Name
         CurrentTabDescription.Text = Description
 
+        -- 1. 搜索框缩小，为文字留出空间
         if not WindowInfo.DisableSearch then
             local targetSize = IsDefaultSearchbarSize and UDim2.fromScale(0.5, 1) or WindowInfo.SearchbarSize
             TweenService:Create(SearchBox, InfoAnimation, {Size = targetSize}):Play()
         end
+
+        -- 2. 描述文字动画
         CurrentTabInfo.Visible = true
         CurrentTabLabel.Position = UDim2.fromOffset(0, -15)
         CurrentTabDescription.Position = UDim2.fromOffset(0, -10)
@@ -6360,6 +6359,25 @@ function Library:CreateWindow(WindowInfo)
                 Position = UDim2.fromOffset(0, 0),
                 TextTransparency = 0.5
             }):Play()
+        end)
+    end
+
+    function Window:HideTabInfo()
+        -- 1. 搜索框恢复全长
+        if not WindowInfo.DisableSearch then
+            TweenService:Create(SearchBox, InfoAnimation, {Size = UDim2.fromScale(1, 1)}):Play()
+        end
+
+        -- 2. 文字渐隐
+        local fade1 = TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1})
+        local fade2 = TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1})
+        
+        fade1:Play()
+        fade2:Play()
+        fade1.Completed:Once(function()
+            if not Library.ActiveTab or not Library.ActiveTab.Description then
+                CurrentTabInfo.Visible = false
+            end
         end)
     end
 
@@ -7031,17 +7049,27 @@ function Library:CreateWindow(WindowInfo)
             end
         end
 
-function Tab:Show()
+        function Tab:Show()
+            -- 【修复点】如果当前已经是激活状态，直接返回，防止重复触发导致隐藏
+            if Library.ActiveTab == Tab then
+                return 
+            end
+
             if Library.ActiveTab then
                 Library.ActiveTab:Hide()
             end
 
+            -- 背景渐变
             TweenService:Create(TabButton, Library.TweenInfo, {
                 BackgroundTransparency = 0,
             }):Play()
+
+            -- 文字渐变 + 【新增】向右移动动画
             TweenService:Create(TabLabel, Library.TweenInfo, {
                 TextTransparency = 0,
+                Position = SelectedLabelPos -- 文字右移
             }):Play()
+
             if TabIcon then
                 TweenService:Create(TabIcon, Library.TweenInfo, {
                     ImageTransparency = 0,
@@ -7054,12 +7082,14 @@ function Tab:Show()
                 Position = UDim2.fromOffset(0, 0)
             }):Play()
 
+            -- 显示描述信息（此时搜索框会自动缩小）
             if Description then
                 Window:ShowTabInfo(Name, Description)
+            else
+                Window:HideTabInfo() -- 如果没描述，则恢复搜索框
             end
 
             Tab:RefreshSides()
-
             Library.ActiveTab = Tab
 
             if Library.Searching then
@@ -7070,9 +7100,13 @@ function Tab:Show()
             TweenService:Create(TabButton, Library.TweenInfo, {
                 BackgroundTransparency = 1,
             }):Play()
+
+            -- 文字半透 + 【新增】回弹到初始位置
             TweenService:Create(TabLabel, Library.TweenInfo, {
                 TextTransparency = 0.5,
+                Position = OriginalLabelPos -- 文字回弹
             }):Play()
+
             if TabIcon then
                 TweenService:Create(TabIcon, Library.TweenInfo, {
                     ImageTransparency = 0.5,
@@ -7080,9 +7114,8 @@ function Tab:Show()
             end
             TabContainer.Visible = false
 
-            Window:HideTabInfo()
-
-            Library.ActiveTab = nil
+            -- 注意：这里不要直接在 Hide 里调用 HideTabInfo
+            -- 因为下一个 Tab:Show 会处理搜索框的状态
         end
 
         --// Execution \\--
