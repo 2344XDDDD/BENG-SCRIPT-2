@@ -1674,10 +1674,10 @@ function Library:AddContextMenu(
             CanvasSize = UDim2.fromOffset(0, 0),
             ScrollBarImageColor3 = "OutlineColor",
             ScrollBarThickness = List == 2 and 2 or 0,
-            Size = typeof(Size) == "function" and Size() or Size,
-            TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png",
+            Size = UDim2.fromOffset(0, 0),
             Visible = false,
             ZIndex = 10,
+            ClipsDescendants = true,
             Parent = ScreenGui,
         })
     else
@@ -1685,12 +1685,14 @@ function Library:AddContextMenu(
             BackgroundColor3 = "BackgroundColor",
             BorderColor3 = "OutlineColor",
             BorderSizePixel = 1,
-            Size = typeof(Size) == "function" and Size() or Size,
+            Size = UDim2.fromOffset(0, 0),
             Visible = false,
             ZIndex = 10,
+            ClipsDescendants = true,
             Parent = ScreenGui,
         })
     end
+    
     table.insert(
         Library.Scales,
         New("UIScale", {
@@ -1704,7 +1706,6 @@ function Library:AddContextMenu(
         Menu = Menu,
         List = nil,
         Signal = nil,
-
         Size = Size,
     }
 
@@ -1724,36 +1725,30 @@ function Library:AddContextMenu(
         CurrentMenu = Table
         Table.Active = true
 
-        if typeof(Offset) == "function" then
-            Menu.Position = UDim2.fromOffset(
-                math.floor(Holder.AbsolutePosition.X + Offset()[1]),
-                math.floor(Holder.AbsolutePosition.Y + Offset()[2])
-            )
-        else
-            Menu.Position = UDim2.fromOffset(
-                math.floor(Holder.AbsolutePosition.X + Offset[1]),
-                math.floor(Holder.AbsolutePosition.Y + Offset[2])
-            )
-        end
-        Menu.Size = typeof(Table.Size) == "function" and Table.Size() or Table.Size
+        local posOffset = typeof(Offset) == "function" and Offset() or Offset
+        Menu.Position = UDim2.fromOffset(
+            math.floor(Holder.AbsolutePosition.X + posOffset[1]),
+            math.floor(Holder.AbsolutePosition.Y + posOffset[2])
+        )
+
+        local TargetSize = typeof(Table.Size) == "function" and Table.Size() or Table.Size
+        Menu.Size = UDim2.new(TargetSize.X.Scale, TargetSize.X.Offset, 0, 0)
+        Menu.Visible = true
+
         if typeof(ActiveCallback) == "function" then
             Library:SafeCallback(ActiveCallback, true)
         end
 
-        Menu.Visible = true
+        TweenService:Create(Menu, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+            Size = TargetSize
+        }):Play()
 
         Table.Signal = Holder:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
-            if typeof(Offset) == "function" then
-                Menu.Position = UDim2.fromOffset(
-                    math.floor(Holder.AbsolutePosition.X + Offset()[1]),
-                    math.floor(Holder.AbsolutePosition.Y + Offset()[2])
-                )
-            else
-                Menu.Position = UDim2.fromOffset(
-                    math.floor(Holder.AbsolutePosition.X + Offset[1]),
-                    math.floor(Holder.AbsolutePosition.Y + Offset[2])
-                )
-            end
+            local currentOffset = typeof(Offset) == "function" and Offset() or Offset
+            Menu.Position = UDim2.fromOffset(
+                math.floor(Holder.AbsolutePosition.X + currentOffset[1]),
+                math.floor(Holder.AbsolutePosition.Y + currentOffset[2])
+            )
         end)
     end
 
@@ -1761,17 +1756,26 @@ function Library:AddContextMenu(
         if CurrentMenu ~= Table then
             return
         end
-        Menu.Visible = false
 
-        if Table.Signal then
-            Table.Signal:Disconnect()
-            Table.Signal = nil
-        end
+        local currentSize = Menu.Size
+        local ClosingTween = TweenService:Create(Menu, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+            Size = UDim2.new(currentSize.X.Scale, currentSize.X.Offset, 0, 0)
+        })
+        
+        ClosingTween:Play()
+        ClosingTween.Completed:Once(function()
+            Menu.Visible = false
+            if Table.Signal then
+                Table.Signal:Disconnect()
+                Table.Signal = nil
+            end
+            if typeof(ActiveCallback) == "function" then
+                Library:SafeCallback(ActiveCallback, false)
+            end
+        end)
+
         Table.Active = false
         CurrentMenu = nil
-        if typeof(ActiveCallback) == "function" then
-            Library:SafeCallback(ActiveCallback, false)
-        end
     end
 
     function Table:Toggle()
@@ -1784,7 +1788,9 @@ function Library:AddContextMenu(
 
     function Table:SetSize(Size)
         Table.Size = Size
-        Menu.Size = typeof(Size) == "function" and Size() or Size
+        if not Table.Active then
+            Menu.Size = typeof(Size) == "function" and Size() or Size
+        end
     end
 
     return Table
