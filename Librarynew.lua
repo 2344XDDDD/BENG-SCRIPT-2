@@ -5840,6 +5840,7 @@ function Library:Notify(...)
 end
 
 function Library:CreateWindow(WindowInfo)
+    local InfoFadeTask = nil
     WindowInfo = Library:Validate(WindowInfo, Templates.Window)
     local ViewportSize: Vector2 = workspace.CurrentCamera.ViewportSize
     if RunService:IsStudio() and ViewportSize.X <= 5 and ViewportSize.Y <= 5 then
@@ -6304,8 +6305,6 @@ function Library:CreateWindow(WindowInfo)
         end
     end
 
-local InfoFadeTask = nil
-
 function Window:ShowTabInfo(Name, Description)
     if InfoFadeTask then task.cancel(InfoFadeTask) InfoFadeTask = nil end
 
@@ -6339,72 +6338,69 @@ function Window:HideTabInfo()
     end)
 end
 
-    function Window:AddTab(...)
-        local Name = nil
-        local Icon = nil
-        local Description = nil
+function Window:AddTab(...)
+    local Name, Icon, Description = nil, nil, nil
 
-        if select("#", ...) == 1 and typeof(...) == "table" then
-            local Info = select(1, ...)
-            Name = Info.Name or "Tab"
-            Icon = Info.Icon
-            Description = Info.Description
-        else
-            Name = select(1, ...)
-            Icon = select(2, ...)
-            Description = select(3, ...)
+    if select("#", ...) == 1 and typeof(select(1, ...)) == "table" then
+        local Info = select(1, ...)
+        Name = Info.Name or "Tab"
+        Icon = Info.Icon
+        Description = Info.Description
+    else
+        Name = select(1, ...)
+        Icon = select(2, ...)
+        Description = select(3, ...)
+    end
+
+    local TabButton, TabLabel, TabIcon
+    local TabContainer, TabLeft, TabRight
+    local WarningBoxHolder
+
+    Icon = Library:GetCustomIcon(Icon)
+    local BaseX = Icon and 30 or 12
+
+    do
+        TabButton = New("TextButton", {
+            BackgroundColor3 = "MainColor",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 40),
+            Text = "",
+            Parent = Tabs,
+        })
+        
+        local ButtonPadding = New("UIPadding", {
+            PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
+            PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
+            PaddingRight = UDim.new(0, IsCompact and 6 or 12),
+            PaddingTop = UDim.new(0, IsCompact and 6 or 11),
+            Parent = TabButton,
+        })
+
+        TabLabel = New("TextLabel", {
+            BackgroundTransparency = 1,
+            Position = UDim2.fromOffset(BaseX, 0),
+            Size = UDim2.new(1, -BaseX, 1, 0),
+            Text = Name,
+            TextSize = 16,
+            TextTransparency = 0.5,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Visible = not IsCompact,
+            Parent = TabButton,
+        })
+
+        if Icon then
+            TabIcon = New("ImageLabel", {
+                Image = Icon.Url,
+                ImageColor3 = Icon.Custom and "WhiteColor" or "AccentColor",
+                ImageRectOffset = Icon.ImageRectOffset,
+                ImageRectSize = Icon.ImageRectSize,
+                ImageTransparency = 0.5,
+                ScaleType = Enum.ScaleType.Fit,
+                Size = UDim2.fromScale(1, 1),
+                SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY,
+                Parent = TabButton,
+            })
         end
-
-        local TabButton: TextButton
-        local TabLabel
-        local TabIcon
-
-        local TabContainer
-        local TabLeft
-        local TabRight
-
-        Icon = Library:GetCustomIcon(Icon)
-        do
-            TabButton = New("TextButton", {
-                BackgroundColor3 = "MainColor",
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 40),
-                Text = "",
-                Parent = Tabs,
-            })
-            local ButtonPadding = New("UIPadding", {
-                PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
-                PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
-                PaddingRight = UDim.new(0, IsCompact and 6 or 12),
-                PaddingTop = UDim.new(0, IsCompact and 6 or 11),
-                Parent = TabButton,
-            })
-
-            TabLabel = New("TextLabel", {
-                BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(30, 0),
-                Size = UDim2.new(1, -30, 1, 0),
-                Text = Name,
-                TextSize = 16,
-                TextTransparency = 0.5,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Visible = not IsCompact,
-                Parent = TabButton,
-            })
-
-            if Icon then
-                TabIcon = New("ImageLabel", {
-                    Image = Icon.Url,
-                    ImageColor3 = Icon.Custom and "WhiteColor" or "AccentColor",
-                    ImageRectOffset = Icon.ImageRectOffset,
-                    ImageRectSize = Icon.ImageRectSize,
-                    ImageTransparency = 0.5,
-                    ScaleType = Enum.ScaleType.Fit,
-                    Size = UDim2.fromScale(1, 1),
-                    SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY,
-                    Parent = TabButton,
-                })
-            end
 
             table.insert(Library.TabButtons, {
                 Label = TabLabel,
@@ -6574,22 +6570,13 @@ end
         end
 
         --// Tab Table \\--
-        local Tab = {
-            Groupboxes = {},
-            Tabboxes = {},
-            DependencyGroupboxes = {},
-            Sides = {
-                TabLeft,
-                TabRight,
-            },
-            WarningBox = {
-                IsNormal = false,
-                LockSize = false,
-                Visible = false,
-                Title = "WARNING",
-                Text = "",
-            },
-        }
+    local Tab = {
+        Groupboxes = {},
+        Tabboxes = {},
+        DependencyGroupboxes = {},
+        Sides = { TabLeft, TabRight },
+        WarningBox = { IsNormal = false, LockSize = false, Visible = false, Title = "WARNING", Text = "" },
+    }
 
         function Tab:UpdateWarningBox(Info)
             if typeof(Info.IsNormal) == "boolean" then
@@ -6663,13 +6650,14 @@ end
             end
         end
 
-        function Tab:RefreshSides()
-            local Offset = WarningBoxHolder.Visible and WarningBox.Size.Y.Offset + 8 or 0
-            for _, Side in Tab.Sides do
-                Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
-                Side.Size = UDim2.new(0.5, -3, 1, -Offset)
-            end
+    function Tab:RefreshSides()
+        if not TabLeft or not TabRight then return end
+        local Offset = (WarningBoxHolder and WarningBoxHolder.Visible) and (WarningBox.Size.Y.Offset + 8) or 0
+        for _, Side in Tab.Sides do
+            Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
+            Side.Size = UDim2.new(0.5, -3, 1, -Offset)
         end
+    end
 
         function Tab:Resize(ResizeWarningBox: boolean?)
             if ResizeWarningBox then
@@ -6916,14 +6904,13 @@ end
 
     function Tab:Show()
         if Library.ActiveTab == Tab then return end
-
-        if Library.ActiveTab then
-            Library.ActiveTab:Hide()
-        end
+        if Library.ActiveTab then Library.ActiveTab:Hide() end
 
         TweenService:Create(TabButton, Library.TweenInfo, {BackgroundTransparency = 0}):Play()
-        TweenService:Create(TabLabel, Library.TweenInfo, {TextTransparency = 0}):Play()
-        TweenService:Create(TabLabel, Library.TweenInfo, {Position = UDim2.fromOffset(BaseX + 6, 0)}):Play()
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0, 
+            Position = UDim2.fromOffset(BaseX + 6, 0)
+        }):Play()
 
         if TabIcon then
             TweenService:Create(TabIcon, Library.TweenInfo, {ImageTransparency = 0}):Play()
@@ -6935,7 +6922,7 @@ end
             Position = UDim2.fromOffset(0, 0)
         }):Play()
 
-        if Description then
+        if Description and Description ~= "" then
             Window:ShowTabInfo(Name, Description)
         else
             Window:HideTabInfo()
@@ -6943,22 +6930,26 @@ end
 
         Tab:RefreshSides()
         Library.ActiveTab = Tab
-
-        if Library.Searching then
-            Library:UpdateSearch(Library.SearchText)
-        end
     end
 
     function Tab:Hide()
         TweenService:Create(TabButton, Library.TweenInfo, {BackgroundTransparency = 1}):Play()
-        TweenService:Create(TabLabel, Library.TweenInfo, {TextTransparency = 0.5}):Play()
-        TweenService:Create(TabLabel, Library.TweenInfo, {Position = UDim2.fromOffset(BaseX, 0)}):Play()
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0.5, 
+            Position = UDim2.fromOffset(BaseX, 0)
+        }):Play()
+
         if TabIcon then
             TweenService:Create(TabIcon, Library.TweenInfo, {ImageTransparency = 0.5}):Play()
         end
-        
         TabContainer.Visible = false
     end
+
+    TabButton.MouseButton1Click:Connect(function() Tab:Show() end)
+
+    Library.Tabs[Name] = Tab
+    return Tab
+end
 
                 function Tab:Hide()
                     Button.BackgroundTransparency = 0
