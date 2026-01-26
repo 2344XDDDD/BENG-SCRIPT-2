@@ -4379,7 +4379,7 @@ function Funcs:AddButton(...)
             })
         end
 
-        local MenuTable = Library:AddContextMenu(
+local MenuTable = Library:AddContextMenu(
             Display,
             function()
                 return UDim2.fromOffset(Display.AbsoluteSize.X / Library.DPIScale, 0)
@@ -4390,11 +4390,17 @@ function Funcs:AddButton(...)
             2,
             function(Active: boolean)
                 Display.TextTransparency = (Active and SearchBox) and 1 or 0
-                ArrowImage.ImageTransparency = Active and 0 or 0.5
-                ArrowImage.Rotation = Active and 180 or 0
+                TweenService:Create(ArrowImage, Library.TweenInfo, {
+                    ImageTransparency = Active and 0 or 0.5,
+                    Rotation = Active and 180 or 0
+                }):Play()
+
                 if SearchBox then
                     SearchBox.Text = ""
                     SearchBox.Visible = Active
+                    if Active then
+                        SearchBox:CaptureFocus()
+                    end
                 end
             end
         )
