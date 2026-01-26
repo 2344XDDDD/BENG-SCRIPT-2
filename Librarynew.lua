@@ -170,6 +170,8 @@ local Library = {
     ToggleKeybind = Enum.KeyCode.RightControl,
     TweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     NotifyTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    AnimationTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    TextAnimationTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
 
     Toggled = false,
     Unloaded = false,
@@ -466,6 +468,108 @@ local function GetSchemeValue(Index)
     return Library.Scheme[Index]
 end
 
+--// Animation Functions \\--
+local ElementAnimationTweens = {}
+local SearchAnimationTween = nil
+
+local function PlayResizeAnimation(Instance, NewSize, Direction)
+    local OriginalSize = Instance.Size
+    local AnimationDirection = Direction or "right"
+
+    local StartPosition = Instance.Position
+    local Offset = 0
+    
+    if AnimationDirection == "left" then
+        Offset = OriginalSize.X.Offset - NewSize.X.Offset
+        Instance.Position = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset - Offset, StartPosition.Y.Scale, StartPosition.Y.Offset)
+    end
+    
+    Instance.Size = UDim2.new(OriginalSize.X.Scale, OriginalSize.X.Offset, OriginalSize.Y.Scale, OriginalSize.Y.Offset)
+
+    local SizeTween = TweenService:Create(Instance, Library.AnimationTweenInfo, {
+        Size = NewSize
+    })
+    
+    local PositionTween
+    if AnimationDirection == "left" then
+        PositionTween = TweenService:Create(Instance, Library.AnimationTweenInfo, {
+            Position = StartPosition
+        })
+    end
+    
+    SizeTween:Play()
+    if PositionTween then
+        PositionTween:Play()
+    end
+end
+
+local function PlayTextFadeAnimation(TextLabel, NewText, FromTop)
+    if not TextLabel or not NewText then return end
+
+    local OriginalText = TextLabel.Text
+    local OriginalTransparency = TextLabel.TextTransparency
+    local OriginalPosition = TextLabel.Position
+
+    if FromTop then
+        TextLabel.Position = UDim2.new(OriginalPosition.X.Scale, OriginalPosition.X.Offset, 
+                                      OriginalPosition.Y.Scale, OriginalPosition.Y.Offset - 20)
+        TextLabel.TextTransparency = 1
+    end
+
+    TextLabel.Text = NewText
+
+    local FadeInTween = TweenService:Create(TextLabel, Library.TextAnimationTweenInfo, {
+        TextTransparency = OriginalTransparency
+    })
+    
+    local SlideInTween
+    if FromTop then
+        SlideInTween = TweenService:Create(TextLabel, Library.TextAnimationTweenInfo, {
+            Position = OriginalPosition
+        })
+    end
+
+    FadeInTween:Play()
+    if SlideInTween then
+        SlideInTween:Play()
+    end
+    
+    return FadeInTween, SlideInTween
+end
+
+function Library:AnimateElementHeight(Element, NewHeight)
+    if not Element or not Element.Holder then return end
+    
+    local Holder = Element.Holder
+    local OriginalHeight = Holder.Size.Y.Offset
+    if ElementAnimationTweens[Element] then
+        ElementAnimationTweens[Element]:Cancel()
+    end
+    local HeightTween = TweenService:Create(Holder, Library.AnimationTweenInfo, {
+        Size = UDim2.new(1, 0, 0, NewHeight)
+    })
+    
+    HeightTween:Play()
+    ElementAnimationTweens[Element] = HeightTween
+    HeightTween.Completed:Connect(function()
+        ElementAnimationTweens[Element] = nil
+    end)
+end
+
+function Library:UpdateSearchBoxSize(NewSize, Direction)
+    if not SearchBox then return end
+    if SearchAnimationTween then
+        SearchAnimationTween:Cancel()
+    end
+    local CurrentSize = SearchBox.Size
+    local CurrentWidth = CurrentSize.X.Scale
+    local AnimDirection = "right"
+    if NewSize.X.Scale < CurrentWidth then
+        AnimDirection = "left"
+    end
+    PlayResizeAnimation(SearchBox, NewSize, AnimDirection)
+end
+
 --// Basic Functions \\--
 local function WaitForEvent(Event, Timeout, Condition)
     local Bindable = Instance.new("BindableEvent")
@@ -701,14 +805,31 @@ local function ApplySearchToTab(Tab, Search)
         local NowVisible = VisibleElements > 0
         
         if NowVisible and not WasVisible then
-            PlaySearchAppearAnimation(Groupbox.BoxHolder)
+            Groupbox.BoxHolder.Position = UDim2.fromOffset(-20, 0)
+            Groupbox.BoxHolder.Visible = true
+            local SlideTween = TweenService:Create(Groupbox.BoxHolder, Library.AnimationTweenInfo, {
+                Position = UDim2.fromOffset(0, 0)
+            })
+            SlideTween:Play()
+        elseif not NowVisible and WasVisible then
+            local SlideTween = TweenService:Create(Groupbox.BoxHolder, Library.AnimationTweenInfo, {
+                Position = UDim2.fromOffset(-20, 0)
+            })
+            SlideTween:Play()
+            SlideTween.Completed:Connect(function()
+                Groupbox.BoxHolder.Visible = false
+                Groupbox.BoxHolder.Position = UDim2.fromOffset(0, 0)
+            end)
         end
         
         if NowVisible then
             Groupbox:Resize()
             HasVisible = true
         end
-        Groupbox.BoxHolder.Visible = NowVisible
+        
+        if not NowVisible and not WasVisible then
+            Groupbox.BoxHolder.Visible = false
+        end
     end
 
     for _, Tabbox in Tab.Tabboxes do
@@ -755,6 +876,7 @@ local function ApplySearchToTab(Tab, Search)
 
     return HasVisible
 end
+
 local function ResetTab(Tab)
     if not Tab then
         return
@@ -813,6 +935,20 @@ end
 
 function Library:UpdateSearch(SearchText)
     Library.SearchText = SearchText
+
+    if SearchBox then
+        local OriginalSize = SearchBox.Size
+        local PulseTween = TweenService:Create(SearchBox, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(OriginalSize.X.Scale, OriginalSize.X.Offset + 5, OriginalSize.Y.Scale, OriginalSize.Y.Offset)
+        })
+        
+        PulseTween:Play()
+        PulseTween.Completed:Connect(function()
+            TweenService:Create(SearchBox, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = OriginalSize
+            }):Play()
+        end)
+    end
 
     local TabsToReset = {}
 
