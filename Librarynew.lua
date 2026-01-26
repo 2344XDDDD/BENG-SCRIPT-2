@@ -3278,18 +3278,21 @@ function Funcs:AddButton(...)
         local function CreateButton(BtnData)
             local Base = New("TextButton", {
                 Active = not BtnData.Disabled,
-                BackgroundColor3 = BtnData.Disabled and "BackgroundColor" or "MainColor",
+                BackgroundColor3 = BtnData.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor,
                 Size = UDim2.fromScale(1, 1),
-                Text = "",
-                ClipsDescendants = true,
+                Text = "", 
+                ClipsDescendants = true, 
                 Parent = Holder,
             })
 
+            -- 修复报错：直接传 Color3，然后注册到 Registry
             local Stroke = New("UIStroke", {
-                Color = "OutlineColor",
+                Color = Library.Scheme.OutlineColor,
                 Transparency = BtnData.Disabled and 0.5 or 0,
                 Parent = Base,
             })
+            Library:AddToRegistry(Base, { BackgroundColor3 = BtnData.Disabled and "BackgroundColor" or "MainColor" })
+            Library:AddToRegistry(Stroke, { Color = "OutlineColor" })
 
             local MainLabel = New("TextLabel", {
                 Size = UDim2.fromScale(1, 1),
@@ -3298,9 +3301,10 @@ function Funcs:AddButton(...)
                 Text = BtnData.Text,
                 TextSize = 14,
                 TextTransparency = 0.4,
-                TextColor3 = BtnData.Risky and "RedColor" or "FontColor",
+                TextColor3 = BtnData.Risky and Library.Scheme.RedColor or Library.Scheme.FontColor,
                 Parent = Base,
             })
+            Library:AddToRegistry(MainLabel, { TextColor3 = BtnData.Risky and "RedColor" or "FontColor" })
 
             local ConfirmLabel = New("TextLabel", {
                 Size = UDim2.fromScale(1, 1),
@@ -3309,9 +3313,10 @@ function Funcs:AddButton(...)
                 Text = "Are you sure?",
                 TextSize = 14,
                 TextTransparency = 1,
-                TextColor3 = "AccentColor",
+                TextColor3 = Library.Scheme.AccentColor,
                 Parent = Base,
             })
+            Library:AddToRegistry(ConfirmLabel, { TextColor3 = "AccentColor" })
 
             return Base, Stroke, MainLabel, ConfirmLabel
         end
@@ -3338,6 +3343,7 @@ function Funcs:AddButton(...)
                     if not Btn.IsConfirming then
                         Btn.IsConfirming = true
                         Btn.Locked = true
+
                         TweenService:Create(MainLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                             Position = UDim2.fromScale(0, 1),
                             TextTransparency = 1
@@ -3350,12 +3356,10 @@ function Funcs:AddButton(...)
                             TextTransparency = 0.4
                         })
                         DropTween:Play()
-                        
-                        DropTween.Completed:Once(function()
-                            Btn.Locked = false
-                        end)
+                        DropTween.Completed:Once(function() Btn.Locked = false end)
 
                         local Clicked = WaitForEvent(Base.MouseButton1Click, 2.0)
+
                         Btn.Locked = true
                         TweenService:Create(ConfirmLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                             Position = UDim2.fromScale(0, 1),
@@ -3374,9 +3378,7 @@ function Funcs:AddButton(...)
                             Btn.Locked = false
                         end)
 
-                        if Clicked then
-                            Library:SafeCallback(Btn.Func)
-                        end
+                        if Clicked then Library:SafeCallback(Btn.Func) end
                     end
                 else
                     Library:SafeCallback(Btn.Func)
@@ -3387,74 +3389,41 @@ function Funcs:AddButton(...)
         local Base, Stroke, MainLabel, ConfirmLabel = CreateButton(Button)
         Button.Base, Button.Stroke, Button.MainLabel, Button.ConfirmLabel = Base, Stroke, MainLabel, ConfirmLabel
         InitEvents(Button, Base, Stroke, MainLabel, ConfirmLabel)
+
         function Button:AddButton(...)
             local SubInfo = GetInfo(...)
             local SubBtn = {
-                Text = SubInfo.Text,
-                Func = SubInfo.Func,
-                DoubleClick = SubInfo.DoubleClick,
-                Risky = SubInfo.Risky,
-                Disabled = SubInfo.Disabled,
-                Visible = SubInfo.Visible,
-                Locked = false,
-                IsConfirming = false,
-                Type = "SubButton",
+                Text = SubInfo.Text, Func = SubInfo.Func, DoubleClick = SubInfo.DoubleClick,
+                Risky = SubInfo.Risky, Disabled = SubInfo.Disabled, Visible = SubInfo.Visible,
+                Locked = false, IsConfirming = false, Type = "SubButton",
             }
-
             local SBase, SStroke, SMain, SConfirm = CreateButton(SubBtn)
-            SubBtn.Base, SubBtn.Stroke, SubBtn.MainLabel, SubBtn.ConfirmLabel = SBase, SStroke, SMain, SConfirm
             InitEvents(SubBtn, SBase, SStroke, SMain, SConfirm)
-
-            function SubBtn:UpdateColors()
-                if Library.Unloaded then return end
-                SBase.BackgroundColor3 = SubBtn.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
-                SMain.TextTransparency = SubBtn.Disabled and 0.8 or 0.4
-                SStroke.Transparency = SubBtn.Disabled and 0.5 or 0
-                Library.Registry[SBase].BackgroundColor3 = SubBtn.Disabled and "BackgroundColor" or "MainColor"
-            end
 
             function SubBtn:SetDisabled(Disabled)
                 SubBtn.Disabled = Disabled
                 SBase.Active = not Disabled
-                SubBtn:UpdateColors()
+                SBase.BackgroundColor3 = Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
+                SMain.TextTransparency = Disabled and 0.8 or 0.4
+                SStroke.Transparency = Disabled and 0.5 or 0
             end
 
-            function SubBtn:SetText(Text)
-                SubBtn.Text = Text
-                SMain.Text = Text
-            end
-
-            SubBtn:UpdateColors()
+            function SubBtn:SetText(Text) SubBtn.Text = Text; SMain.Text = Text end
             table.insert(Groupbox.Elements, SubBtn)
             return SubBtn
-        end
-
-        function Button:UpdateColors()
-            if Library.Unloaded then return end
-            Base.BackgroundColor3 = Button.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
-            MainLabel.TextTransparency = Button.Disabled and 0.8 or 0.4
-            Stroke.Transparency = Button.Disabled and 0.5 or 0
-            Library.Registry[Base].BackgroundColor3 = Button.Disabled and "BackgroundColor" or "MainColor"
         end
 
         function Button:SetDisabled(Disabled)
             Button.Disabled = Disabled
             Base.Active = not Disabled
-            Button:UpdateColors()
+            Base.BackgroundColor3 = Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
+            MainLabel.TextTransparency = Disabled and 0.8 or 0.4
+            Stroke.Transparency = Disabled and 0.5 or 0
         end
 
-        function Button:SetText(Text)
-            Button.Text = Text
-            MainLabel.Text = Text
-        end
+        function Button:SetText(Text) Button.Text = Text; MainLabel.Text = Text end
+        function Button:SetVisible(Visible) Button.Visible = Visible; Holder.Visible = Visible; Groupbox:Resize() end
 
-        function Button:SetVisible(Visible)
-            Button.Visible = Visible
-            Holder.Visible = Visible
-            Groupbox:Resize()
-        end
-
-        Button:UpdateColors()
         Groupbox:Resize()
         Button.Holder = Holder
         table.insert(Groupbox.Elements, Button)
