@@ -6306,40 +6306,38 @@ function Library:CreateWindow(WindowInfo)
 
 local InfoFadeTask = nil
 
-    function Window:ShowTabInfo(Name, Description)
-        if InfoFadeTask then task.cancel(InfoFadeTask) InfoFadeTask = nil end
-        if CurrentTabLabel.Text == Name and CurrentTabDescription.Text == Description and CurrentTabInfo.Visible then
-            return
-        end
+function Window:ShowTabInfo(Name, Description)
+    if InfoFadeTask then task.cancel(InfoFadeTask) InfoFadeTask = nil end
 
-        CurrentTabLabel.Text = Name
-        CurrentTabDescription.Text = Description
+    CurrentTabLabel.Text = Name
+    CurrentTabDescription.Text = Description
 
+    if IsDefaultSearchbarSize then
+        TweenService:Create(SearchBox, Library.TweenInfo, {Size = UDim2.fromScale(0.5, 1)}):Play()
+    end
+
+    CurrentTabInfo.Visible = true
+    CurrentTabInfo.Position = UDim2.fromOffset(0, -15)
+    CurrentTabLabel.TextTransparency = 1
+    CurrentTabDescription.TextTransparency = 1
+
+    TweenService:Create(CurrentTabInfo, Library.TweenInfo, {Position = UDim2.fromOffset(0, 0)}):Play()
+    TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 0}):Play()
+    TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 0.5}):Play()
+end
+
+function Window:HideTabInfo()
+    TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1}):Play()
+    TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1}):Play()
+    
+    InfoFadeTask = task.delay(Library.TweenInfo.Time, function()
         if IsDefaultSearchbarSize then
-            TweenService:Create(SearchBox, Library.TweenInfo, {Size = UDim2.fromScale(0.5, 1)}):Play()
+            TweenService:Create(SearchBox, Library.TweenInfo, {Size = UDim2.fromScale(1, 1)}):Play()
         end
-
-        CurrentTabInfo.Visible = true
-        CurrentTabInfo.Position = UDim2.fromOffset(0, -15)
-        CurrentTabLabel.TextTransparency = 1
-        CurrentTabDescription.TextTransparency = 1
-
-        TweenService:Create(CurrentTabInfo, Library.TweenInfo, {Position = UDim2.fromOffset(0, 0)}):Play()
-        TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 0}):Play()
-        TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 0.5}):Play()
-    end
-
-    function Window:HideTabInfo()
-        TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1}):Play()
-        TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1}):Play()
-        InfoFadeTask = task.delay(Library.TweenInfo.Time, function()
-            if IsDefaultSearchbarSize then
-                TweenService:Create(SearchBox, Library.TweenInfo, {Size = UDim2.fromScale(1, 1)}):Play()
-            end
-            CurrentTabInfo.Visible = false
-            InfoFadeTask = nil
-        end)
-    end
+        CurrentTabInfo.Visible = false
+        InfoFadeTask = nil
+    end)
+end
 
     function Window:AddTab(...)
         local Name = nil
@@ -7231,23 +7229,33 @@ end
             end)
         end
 
-        function Tab:RefreshSides() end
-        function Tab:Resize() end
+local BaseX = Icon and 30 or 5 
+TabLabel.Position = UDim2.fromOffset(BaseX, 0)
 
-        function Tab:Hover(Hovering)
-            if Library.ActiveTab == Tab then
-                return
-            end
+function Tab:RefreshSides() end
+function Tab:Resize() end
 
-            TweenService:Create(TabLabel, Library.TweenInfo, {
-                TextTransparency = Hovering and 0.25 or 0.5,
-            }):Play()
-            if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, {
-                    ImageTransparency = Hovering and 0.25 or 0.5,
-                }):Play()
-            end
-        end
+function Tab:Show()
+    if Library.ActiveTab == Tab then return end
+    if Library.ActiveTab then Library.ActiveTab:Hide() end
+
+    TweenService:Create(TabButton, Library.TweenInfo, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(TabLabel, Library.TweenInfo, {TextTransparency = 0, Position = UDim2.fromOffset(BaseX + 6, 0)}):Play()
+    if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, {ImageTransparency = 0}):Play() end
+
+    TabContainer.Visible = true
+    if Description then Window:ShowTabInfo(Name, Description) else Window:HideTabInfo() end
+
+    Library.ActiveTab = Tab
+    if Library.Searching then Library:UpdateSearch(Library.SearchText) end
+end
+
+function Tab:Hide()
+    TweenService:Create(TabButton, Library.TweenInfo, {BackgroundTransparency = 1}):Play()
+    TweenService:Create(TabLabel, Library.TweenInfo, {TextTransparency = 0.5, Position = UDim2.fromOffset(BaseX, 0)}):Play()
+    if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, {ImageTransparency = 0.5}):Play() end
+    TabContainer.Visible = false
+end
 
         function Tab:Show()
             if Library.ActiveTab then
