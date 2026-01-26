@@ -3219,23 +3219,19 @@ function Funcs:AddLabel(...)
         return Label
     end
 
-    function Funcs:AddButton(...)
+function Funcs:AddButton(...)
         local function GetInfo(...)
             local Info = {}
-
             local First = select(1, ...)
             local Second = select(2, ...)
 
             if typeof(First) == "table" or typeof(Second) == "table" then
                 local Params = typeof(First) == "table" and First or Second
-
                 Info.Text = Params.Text or ""
                 Info.Func = Params.Func or Params.Callback or function() end
                 Info.DoubleClick = Params.DoubleClick
-
                 Info.Tooltip = Params.Tooltip
                 Info.DisabledTooltip = Params.DisabledTooltip
-
                 Info.Risky = Params.Risky or false
                 Info.Disabled = Params.Disabled or false
                 Info.Visible = Params.Visible or true
@@ -3244,20 +3240,12 @@ function Funcs:AddLabel(...)
                 Info.Text = First or ""
                 Info.Func = Second or function() end
                 Info.DoubleClick = false
-
-                Info.Tooltip = nil
-                Info.DisabledTooltip = nil
-
-                Info.Risky = false
-                Info.Disabled = false
-                Info.Visible = true
                 Info.Idx = select(3, ...) or nil
             end
-
             return Info
         end
-        local Info = GetInfo(...)
 
+        local Info = GetInfo(...)
         local Groupbox = self
         local Container = Groupbox.Container
 
@@ -3265,22 +3253,18 @@ function Funcs:AddLabel(...)
             Text = Info.Text,
             Func = Info.Func,
             DoubleClick = Info.DoubleClick,
-
-            Tooltip = Info.Tooltip,
-            DisabledTooltip = Info.DisabledTooltip,
-            TooltipTable = nil,
-
             Risky = Info.Risky,
             Disabled = Info.Disabled,
             Visible = Info.Visible,
-
-            Tween = nil,
+            Locked = false,
+            IsConfirming = false,
             Type = "Button",
         }
 
         local Holder = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, 21),
+            Visible = Button.Visible,
             Parent = Container,
         })
 
@@ -3291,227 +3275,189 @@ function Funcs:AddLabel(...)
             Parent = Holder,
         })
 
-        local function CreateButton(Button)
+        local function CreateButton(BtnData)
             local Base = New("TextButton", {
-                Active = not Button.Disabled,
-                BackgroundColor3 = Button.Disabled and "BackgroundColor" or "MainColor",
+                Active = not BtnData.Disabled,
+                BackgroundColor3 = BtnData.Disabled and "BackgroundColor" or "MainColor",
                 Size = UDim2.fromScale(1, 1),
-                Text = Button.Text,
-                TextSize = 14,
-                TextTransparency = 0.4,
-                Visible = Button.Visible,
+                Text = "",
+                ClipsDescendants = true,
                 Parent = Holder,
             })
 
             local Stroke = New("UIStroke", {
                 Color = "OutlineColor",
-                Transparency = Button.Disabled and 0.5 or 0,
+                Transparency = BtnData.Disabled and 0.5 or 0,
                 Parent = Base,
             })
 
-            return Base, Stroke
+            local MainLabel = New("TextLabel", {
+                Size = UDim2.fromScale(1, 1),
+                Position = UDim2.fromScale(0, 0),
+                BackgroundTransparency = 1,
+                Text = BtnData.Text,
+                TextSize = 14,
+                TextTransparency = 0.4,
+                TextColor3 = BtnData.Risky and "RedColor" or "FontColor",
+                Parent = Base,
+            })
+
+            local ConfirmLabel = New("TextLabel", {
+                Size = UDim2.fromScale(1, 1),
+                Position = UDim2.fromScale(0, -1),
+                BackgroundTransparency = 1,
+                Text = "Are you sure?",
+                TextSize = 14,
+                TextTransparency = 1,
+                TextColor3 = "AccentColor",
+                Parent = Base,
+            })
+
+            return Base, Stroke, MainLabel, ConfirmLabel
         end
 
-        local function InitEvents(Button)
-            Button.Base.MouseEnter:Connect(function()
-                if Button.Disabled then
-                    return
-                end
+        local function InitEvents(Btn, Base, Stroke, MainLabel, ConfirmLabel)
+            local function GetActiveLabel()
+                return Btn.IsConfirming and ConfirmLabel or MainLabel
+            end
 
-                Button.Tween = TweenService:Create(Button.Base, Library.TweenInfo, {
-                    TextTransparency = 0,
-                })
-                Button.Tween:Play()
-            end)
-            Button.Base.MouseLeave:Connect(function()
-                if Button.Disabled then
-                    return
-                end
-
-                Button.Tween = TweenService:Create(Button.Base, Library.TweenInfo, {
-                    TextTransparency = 0.4,
-                })
-                Button.Tween:Play()
+            Base.MouseEnter:Connect(function()
+                if Btn.Disabled then return end
+                TweenService:Create(GetActiveLabel(), Library.TweenInfo, { TextTransparency = 0 }):Play()
             end)
 
-            Button.Base.MouseButton1Click:Connect(function()
-                if Button.Disabled or Button.Locked then
-                    return
-                end
+            Base.MouseLeave:Connect(function()
+                if Btn.Disabled then return end
+                TweenService:Create(GetActiveLabel(), Library.TweenInfo, { TextTransparency = 0.4 }):Play()
+            end)
 
-                if Button.DoubleClick then
-                    Button.Locked = true
+            Base.MouseButton1Click:Connect(function()
+                if Btn.Disabled or Btn.Locked then return end
 
-                    Button.Base.Text = "Are you sure?"
-                    Button.Base.TextColor3 = Library.Scheme.AccentColor
-                    Library.Registry[Button.Base].TextColor3 = "AccentColor"
+                if Btn.DoubleClick then
+                    if not Btn.IsConfirming then
+                        Btn.IsConfirming = true
+                        Btn.Locked = true
+                        TweenService:Create(MainLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                            Position = UDim2.fromScale(0, 1),
+                            TextTransparency = 1
+                        }):Play()
 
-                    local Clicked = WaitForEvent(Button.Base.MouseButton1Click, 0.5)
+                        ConfirmLabel.Position = UDim2.fromScale(0, -1)
+                        ConfirmLabel.TextTransparency = 1
+                        local DropTween = TweenService:Create(ConfirmLabel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Position = UDim2.fromScale(0, 0),
+                            TextTransparency = 0.4
+                        })
+                        DropTween:Play()
+                        
+                        DropTween.Completed:Once(function()
+                            Btn.Locked = false
+                        end)
 
-                    Button.Base.Text = Button.Text
-                    Button.Base.TextColor3 = Button.Risky and Library.Scheme.RedColor or Library.Scheme.FontColor
-                    Library.Registry[Button.Base].TextColor3 = Button.Risky and "RedColor" or "FontColor"
+                        local Clicked = WaitForEvent(Base.MouseButton1Click, 2.0)
+                        Btn.Locked = true
+                        TweenService:Create(ConfirmLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                            Position = UDim2.fromScale(0, 1),
+                            TextTransparency = 1
+                        }):Play()
 
-                    if Clicked then
-                        Library:SafeCallback(Button.Func)
+                        MainLabel.Position = UDim2.fromScale(0, -1)
+                        local RecoverTween = TweenService:Create(MainLabel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Position = UDim2.fromScale(0, 0),
+                            TextTransparency = 0.4
+                        })
+                        RecoverTween:Play()
+
+                        RecoverTween.Completed:Once(function()
+                            Btn.IsConfirming = false
+                            Btn.Locked = false
+                        end)
+
+                        if Clicked then
+                            Library:SafeCallback(Btn.Func)
+                        end
                     end
-
-                    RunService.RenderStepped:Wait() --// Mouse Button fires without waiting (i hate roblox)
-                    Button.Locked = false
-                    return
+                else
+                    Library:SafeCallback(Btn.Func)
                 end
-
-                Library:SafeCallback(Button.Func)
             end)
         end
 
-        Button.Base, Button.Stroke = CreateButton(Button)
-        InitEvents(Button)
-
+        local Base, Stroke, MainLabel, ConfirmLabel = CreateButton(Button)
+        Button.Base, Button.Stroke, Button.MainLabel, Button.ConfirmLabel = Base, Stroke, MainLabel, ConfirmLabel
+        InitEvents(Button, Base, Stroke, MainLabel, ConfirmLabel)
         function Button:AddButton(...)
-            local Info = GetInfo(...)
-
-            local SubButton = {
-                Text = Info.Text,
-                Func = Info.Func,
-                DoubleClick = Info.DoubleClick,
-
-                Tooltip = Info.Tooltip,
-                DisabledTooltip = Info.DisabledTooltip,
-                TooltipTable = nil,
-
-                Risky = Info.Risky,
-                Disabled = Info.Disabled,
-                Visible = Info.Visible,
-
-                Tween = nil,
+            local SubInfo = GetInfo(...)
+            local SubBtn = {
+                Text = SubInfo.Text,
+                Func = SubInfo.Func,
+                DoubleClick = SubInfo.DoubleClick,
+                Risky = SubInfo.Risky,
+                Disabled = SubInfo.Disabled,
+                Visible = SubInfo.Visible,
+                Locked = false,
+                IsConfirming = false,
                 Type = "SubButton",
             }
 
-            Button.SubButton = SubButton
-            SubButton.Base, SubButton.Stroke = CreateButton(SubButton)
-            InitEvents(SubButton)
+            local SBase, SStroke, SMain, SConfirm = CreateButton(SubBtn)
+            SubBtn.Base, SubBtn.Stroke, SubBtn.MainLabel, SubBtn.ConfirmLabel = SBase, SStroke, SMain, SConfirm
+            InitEvents(SubBtn, SBase, SStroke, SMain, SConfirm)
 
-            function SubButton:UpdateColors()
-                if Library.Unloaded then
-                    return
-                end
-
-                StopTween(SubButton.Tween)
-
-                SubButton.Base.BackgroundColor3 = SubButton.Disabled and Library.Scheme.BackgroundColor
-                    or Library.Scheme.MainColor
-                SubButton.Base.TextTransparency = SubButton.Disabled and 0.8 or 0.4
-                SubButton.Stroke.Transparency = SubButton.Disabled and 0.5 or 0
-
-                Library.Registry[SubButton.Base].BackgroundColor3 = SubButton.Disabled and "BackgroundColor"
-                    or "MainColor"
+            function SubBtn:UpdateColors()
+                if Library.Unloaded then return end
+                SBase.BackgroundColor3 = SubBtn.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
+                SMain.TextTransparency = SubBtn.Disabled and 0.8 or 0.4
+                SStroke.Transparency = SubBtn.Disabled and 0.5 or 0
+                Library.Registry[SBase].BackgroundColor3 = SubBtn.Disabled and "BackgroundColor" or "MainColor"
             end
 
-            function SubButton:SetDisabled(Disabled: boolean)
-                SubButton.Disabled = Disabled
-
-                if SubButton.TooltipTable then
-                    SubButton.TooltipTable.Disabled = SubButton.Disabled
-                end
-
-                SubButton.Base.Active = not SubButton.Disabled
-                SubButton:UpdateColors()
+            function SubBtn:SetDisabled(Disabled)
+                SubBtn.Disabled = Disabled
+                SBase.Active = not Disabled
+                SubBtn:UpdateColors()
             end
 
-            function SubButton:SetVisible(Visible: boolean)
-                SubButton.Visible = Visible
-
-                SubButton.Base.Visible = SubButton.Visible
-                Groupbox:Resize()
+            function SubBtn:SetText(Text)
+                SubBtn.Text = Text
+                SMain.Text = Text
             end
 
-            function SubButton:SetText(Text: string)
-                SubButton.Text = Text
-                SubButton.Base.Text = Text
-            end
-
-            if typeof(SubButton.Tooltip) == "string" or typeof(SubButton.DisabledTooltip) == "string" then
-                SubButton.TooltipTable =
-                    Library:AddTooltip(SubButton.Tooltip, SubButton.DisabledTooltip, SubButton.Base)
-                SubButton.TooltipTable.Disabled = SubButton.Disabled
-            end
-
-            if SubButton.Risky then
-                SubButton.Base.TextColor3 = Library.Scheme.RedColor
-                Library.Registry[SubButton.Base].TextColor3 = "RedColor"
-            end
-
-            SubButton:UpdateColors()
-
-            if Info.Idx then
-                Buttons[Info.Idx] = SubButton
-            else
-                table.insert(Buttons, SubButton)
-            end
-
-            return SubButton
+            SubBtn:UpdateColors()
+            table.insert(Groupbox.Elements, SubBtn)
+            return SubBtn
         end
 
         function Button:UpdateColors()
-            if Library.Unloaded then
-                return
-            end
-
-            StopTween(Button.Tween)
-
-            Button.Base.BackgroundColor3 = Button.Disabled and Library.Scheme.BackgroundColor
-                or Library.Scheme.MainColor
-            Button.Base.TextTransparency = Button.Disabled and 0.8 or 0.4
-            Button.Stroke.Transparency = Button.Disabled and 0.5 or 0
-
-            Library.Registry[Button.Base].BackgroundColor3 = Button.Disabled and "BackgroundColor" or "MainColor"
+            if Library.Unloaded then return end
+            Base.BackgroundColor3 = Button.Disabled and Library.Scheme.BackgroundColor or Library.Scheme.MainColor
+            MainLabel.TextTransparency = Button.Disabled and 0.8 or 0.4
+            Stroke.Transparency = Button.Disabled and 0.5 or 0
+            Library.Registry[Base].BackgroundColor3 = Button.Disabled and "BackgroundColor" or "MainColor"
         end
 
-        function Button:SetDisabled(Disabled: boolean)
+        function Button:SetDisabled(Disabled)
             Button.Disabled = Disabled
-
-            if Button.TooltipTable then
-                Button.TooltipTable.Disabled = Button.Disabled
-            end
-
-            Button.Base.Active = not Button.Disabled
+            Base.Active = not Disabled
             Button:UpdateColors()
         end
 
-        function Button:SetVisible(Visible: boolean)
-            Button.Visible = Visible
-
-            Holder.Visible = Button.Visible
-            Groupbox:Resize()
-        end
-
-        function Button:SetText(Text: string)
+        function Button:SetText(Text)
             Button.Text = Text
-            Button.Base.Text = Text
+            MainLabel.Text = Text
         end
 
-        if typeof(Button.Tooltip) == "string" or typeof(Button.DisabledTooltip) == "string" then
-            Button.TooltipTable = Library:AddTooltip(Button.Tooltip, Button.DisabledTooltip, Button.Base)
-            Button.TooltipTable.Disabled = Button.Disabled
-        end
-
-        if Button.Risky then
-            Button.Base.TextColor3 = Library.Scheme.RedColor
-            Library.Registry[Button.Base].TextColor3 = "RedColor"
+        function Button:SetVisible(Visible)
+            Button.Visible = Visible
+            Holder.Visible = Visible
+            Groupbox:Resize()
         end
 
         Button:UpdateColors()
         Groupbox:Resize()
-
         Button.Holder = Holder
         table.insert(Groupbox.Elements, Button)
-
-        if Info.Idx then
-            Buttons[Info.Idx] = Button
-        else
-            table.insert(Buttons, Button)
-        end
 
         return Button
     end
