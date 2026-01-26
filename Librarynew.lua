@@ -6378,11 +6378,11 @@ WindowTitle = New("TextLabel", {
         Description = select(3, ...)
     end
 
-    -- 变量预声明，确保 Show/Hide 函数可以访问
+    -- 1. 预声明变量（确保所有子函数都能访问）
     local TabButton: TextButton
     local TabLabel
     local TabIcon
-    local SelectedGlow -- 发光层变量
+    local SelectedGlow = nil -- 必须先声明为 nil
     local TabContainer
     local TabLeft
     local TabRight
@@ -6392,8 +6392,8 @@ WindowTitle = New("TextLabel", {
 
     Icon = Library:GetCustomIcon(Icon)
     
+    -- 2. 创建 UI 实例
     do
-        -- 1. 创建按钮主体
         TabButton = New("TextButton", {
             BackgroundColor3 = "MainColor",
             BackgroundTransparency = 1,
@@ -6402,20 +6402,20 @@ WindowTitle = New("TextLabel", {
             Parent = Tabs,
         })
 
-        -- 2. 创建渐变发光层 (SelectedGlow)
+        -- 创建发光层并立即赋值给外层变量
         SelectedGlow = New("Frame", {
             Size = UDim2.fromScale(1, 1),
-            BackgroundTransparency = 1, -- 初始完全透明
+            BackgroundTransparency = 1, -- 默认透明
             BackgroundColor3 = "AccentColor",
             BorderSizePixel = 0,
-            ZIndex = 1, -- 在文字下方
+            ZIndex = 1,
             Parent = TabButton,
         })
 
         New("UIGradient", {
             Transparency = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.7), -- 左侧发光亮度
-                NumberSequenceKeypoint.new(0.5, 1),  -- 延伸到一半消失
+                NumberSequenceKeypoint.new(0, 0.7), -- 左侧亮度
+                NumberSequenceKeypoint.new(0.6, 1), -- 渐变到右侧消失
                 NumberSequenceKeypoint.new(1, 1),
             }),
             Parent = SelectedGlow,
@@ -6438,7 +6438,7 @@ WindowTitle = New("TextLabel", {
             TextTransparency = 0.5,
             TextXAlignment = Enum.TextXAlignment.Left,
             Visible = not IsCompact,
-            ZIndex = 2, -- 在发光层上方
+            ZIndex = 2,
             Parent = TabButton,
         })
 
@@ -6457,13 +6457,7 @@ WindowTitle = New("TextLabel", {
             })
         end
 
-        table.insert(Library.TabButtons, {
-            Label = TabLabel,
-            Padding = ButtonPadding,
-            Icon = TabIcon,
-        })
-
-        --// Tab 内容容器创建 (保持原逻辑) \\--
+        -- 容器逻辑保持不变
         TabContainer = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(1, 1),
@@ -6498,6 +6492,7 @@ WindowTitle = New("TextLabel", {
         New("UIPadding", { PaddingBottom = UDim.new(0, 2), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2), PaddingTop = UDim.new(0, 2), Parent = TabRight })
     end
 
+    -- 3. 创建 Tab 对象
     local Tab = {
         Groupboxes = {},
         Tabboxes = {},
@@ -6506,105 +6501,68 @@ WindowTitle = New("TextLabel", {
         WarningBox = { IsNormal = false, LockSize = false, Visible = false, Title = "WARNING", Text = "" },
     }
 
-    -- 继承原有的 Tab 方法 (UpdateWarningBox, RefreshSides, Resize, AddGroupbox 等)
-    -- ... (此处建议保留你代码中原有的 Tab:UpdateWarningBox 到 AddRightTabbox 的所有方法) ...
-
-    --// 核心：修改后的 Show 和 Hide 函数 \\--
+    -- 这里保留你原有的 Tab 方法（UpdateWarningBox, RefreshSides, Resize, AddGroupbox 等）
+    -- 确保这些方法都在 Tab 内部定义
 
     function Tab:Show()
-        if Library.ActiveTab == Tab then
-            return 
-        end
+        if Library.ActiveTab == Tab then return end
+        if Library.ActiveTab then Library.ActiveTab:Hide() end
 
-        if Library.ActiveTab then
-            Library.ActiveTab:Hide()
-        end
+        -- 动画逻辑
+        TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 0.9 }):Play()
+        TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0, Position = SelectedLabelPos }):Play()
 
-        -- 选中时的动画
-        TweenService:Create(TabButton, Library.TweenInfo, {
-            BackgroundTransparency = 0.9, -- 按钮底色微亮
-        }):Play()
-
-        TweenService:Create(TabLabel, Library.TweenInfo, {
-            TextTransparency = 0,
-            Position = SelectedLabelPos -- 文字右移偏移
-        }):Play()
-
-        -- 渐变发光层显示
+        -- 安全检查：只有当 SelectedGlow 存在时才执行动画
         if SelectedGlow then
-            TweenService:Create(SelectedGlow, Library.TweenInfo, {
-                BackgroundTransparency = 0.85, -- 调整此处数值改变亮度 (0最亮, 1全透明)
-            }):Play()
+            TweenService:Create(SelectedGlow, Library.TweenInfo, { BackgroundTransparency = 0.85 }):Play()
         end
 
         if TabIcon then
-            TweenService:Create(TabIcon, Library.TweenInfo, {
-                ImageTransparency = 0,
-            }):Play()
+            TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0 }):Play()
         end
 
         TabContainer.Visible = true
         TabContainer.Position = UDim2.fromOffset(0, 20) 
-        TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Position = UDim2.fromOffset(0, 0)
-        }):Play()
+        TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = UDim2.fromOffset(0, 0) }):Play()
 
-        if Description then
-            Window:ShowTabInfo(Name, Description)
-        else
-            Window:HideTabInfo() 
-        end
-
+        if Description then Window:ShowTabInfo(Name, Description) else Window:HideTabInfo() end
         Tab:RefreshSides()
         Library.ActiveTab = Tab
-
-        if Library.Searching then
-            Library:UpdateSearch(Library.SearchText)
-        end
     end
 
     function Tab:Hide()
-        -- 隐藏动画
-        TweenService:Create(TabButton, Library.TweenInfo, {
-            BackgroundTransparency = 1,
-        }):Play()
+        TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 1 }):Play()
+        TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.5, Position = OriginalLabelPos }):Play()
 
-        TweenService:Create(TabLabel, Library.TweenInfo, {
-            TextTransparency = 0.5,
-            Position = OriginalLabelPos -- 文字回弹
-        }):Play()
-
-        -- 渐变发光层隐藏
+        -- 安全检查
         if SelectedGlow then
-            TweenService:Create(SelectedGlow, Library.TweenInfo, {
-                BackgroundTransparency = 1,
-            }):Play()
+            TweenService:Create(SelectedGlow, Library.TweenInfo, { BackgroundTransparency = 1 }):Play()
         end
 
         if TabIcon then
-            TweenService:Create(TabIcon, Library.TweenInfo, {
-                ImageTransparency = 0.5,
-            }):Play()
+            TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0.5 }):Play()
         end
         TabContainer.Visible = false
     end
 
-    --// 初始化状态 \\--
+    -- 初始化第一个 Tab
     if not Library.ActiveTab then
         Tab:Show()
     end
 
-    TabButton.MouseEnter:Connect(function()
-        if Library.ActiveTab ~= Tab then
-            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.25 }):Play()
-        end
+    -- 事件绑定逻辑保持不变...
+    TabButton.MouseButton1Click:Connect(function() Tab:Show() end)
+    -- 添加悬停效果
+    TabButton.MouseEnter:Connect(function() 
+        if Library.ActiveTab ~= Tab then 
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.25 }):Play() 
+        end 
     end)
-    TabButton.MouseLeave:Connect(function()
-        if Library.ActiveTab ~= Tab then
-            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.5 }):Play()
-        end
+    TabButton.MouseLeave:Connect(function() 
+        if Library.ActiveTab ~= Tab then 
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.5 }):Play() 
+        end 
     end)
-    TabButton.MouseButton1Click:Connect(Tab.Show)
 
     Library.Tabs[Name] = Tab
     return Tab
