@@ -4,7 +4,7 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.72 | by:Footagesus | Script by:BENG  | UI 1.6.7 | UPD: [2026/27/1]
+    V1.6.73 | by:Footagesus | Script by:BENG  | UI 1.6.7 | UPD: [2026/28/1]
     https://bengscript.lol
 
     This UI cannot be used illegally - it cannot be distributed for use with scripts created by us, or used in collaboration with us. This script GUI cannot be used with any script we have created!
@@ -5860,27 +5860,8 @@ if af.Locked then
 af:Lock()
 end
 
-aa.AddSignal(af.ButtonFrame.UIElements.Main.MouseButton1Click,function()
-    if ag then
-        if af.Icon == "refresh-cw" then
-            task.spawn(function()
-                local iconObj = af.UIElements.ButtonIcon
-                local imageLabel = iconObj:FindFirstChildOfClass("ImageLabel") or (iconObj:IsA("ImageLabel") and iconObj)
-                
-                if imageLabel then
-                    local rotateTween = aa.Tween(imageLabel, 3, {Rotation = 1080}, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
-                    rotateTween:Play()
-                    rotateTween.Completed:Wait()
-                    imageLabel.Rotation = 0
-                end
-            end)
-        end
+do local _a=aa local _b=af local _c=task local _d=Enum _a.AddSignal(_b.ButtonFrame.UIElements.Main.MouseButton1Click,function()if not ag then return end if _b.Icon=="refresh-cw" then _c.spawn(function()local _i=_b.UIElements.ButtonIcon local _l=_i:FindFirstChildOfClass("ImageLabel")or(_i:IsA("ImageLabel")and _i) if not _l then return end if _l:GetAttribute("Rotating")then return end _l:SetAttribute("Rotating",true) local _t=_a.Tween(_l,1.5,{Rotation=360},_d.EasingStyle.Sine,_d.EasingDirection.InOut) _t:Play()_t.Completed:Wait()_l.Rotation=0 _l:SetAttribute("Rotating",false)end)end _c.spawn(function()_a.SafeCallback(_b.Callback)end)end)return _b.__type,_b end
 
-        task.spawn(function()
-            aa.SafeCallback(af.Callback)
-        end)
-    end
-end)
 return af.__type,af
 end
 
