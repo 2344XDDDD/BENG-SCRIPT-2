@@ -1,15 +1,17 @@
 --[[
 
-    __   ___       __            
+     __   ___       __            
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.72 | by:Footagesus | Script by:BENG  | UI 1.6.7
+    V1.6.72 | by:Footagesus | Script by:BENG  | UI 1.6.7 | UPD: [2026/27/1]
     https://bengscript.lol
 
     This UI cannot be used illegally - it cannot be distributed for use with scripts created by us, or used in collaboration with us. This script GUI cannot be used with any script we have created!
 
 ]]
+    
+--Ui Code All
 
 local a a={cache={}, load=function(b)if not a.cache[b]then a.cache[b]={c=a[b]()}end return a.cache[b].c end}do function a.a()local b=(cloneref or clonereference or function(b)return b end)
 
@@ -5859,11 +5861,25 @@ af:Lock()
 end
 
 aa.AddSignal(af.ButtonFrame.UIElements.Main.MouseButton1Click,function()
-if ag then
-task.spawn(function()
-aa.SafeCallback(af.Callback)
-end)
-end
+    if ag then
+        if af.Icon == "refresh-cw" then
+            task.spawn(function()
+                local iconObj = af.UIElements.ButtonIcon
+                local imageLabel = iconObj:FindFirstChildOfClass("ImageLabel") or (iconObj:IsA("ImageLabel") and iconObj)
+                
+                if imageLabel then
+                    local rotateTween = aa.Tween(imageLabel, 3, {Rotation = 1080}, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
+                    rotateTween:Play()
+                    rotateTween.Completed:Wait()
+                    imageLabel.Rotation = 0
+                end
+            end)
+        end
+
+        task.spawn(function()
+            aa.SafeCallback(af.Callback)
+        end)
+    end
 end)
 return af.__type,af
 end
