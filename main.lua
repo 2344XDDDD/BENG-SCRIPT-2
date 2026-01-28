@@ -7,11 +7,90 @@
     V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/28/1]
     https://bengscript.lol
     [Update: Added: all - New:LockedIcon]
+    Lua
     This UI is for personal use only. You may not use it without the permission of the creator (UI). To use it, please contact BENG SCRIPT. Creator (UI) must agree! Please do not add our UI to your GitHub repository!
 
 ]]
     
 --Ui Code All
+
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local Camera = workspace.CurrentCamera
+local MacBlur = { Parts = {} }
+local meshGuid = game:GetService("HttpService"):GenerateGUID(true)
+local function GetDOF()
+local dof = Lighting:FindFirstChild("MacBlurDOF") or Instance.new("DepthOfFieldEffect")
+dof.Name = "MacBlurDOF"
+dof.FarIntensity = 0
+dof.FocusDistance = 51.6
+dof.InFocusRadius = 50
+dof.NearIntensity = 1
+dof.Parent = Lighting
+return dof
+end
+local dof = GetDOF()
+local function DrawTriangle(v1, v2, v3, p0, p1)
+local s1, s2, s3 = (v1 - v2).magnitude, (v2 - v3).magnitude, (v3 - v1).magnitude
+local smax = math.max(s1, s2, s3)
+local A, B, C
+if s1 == smax then A, B, C = v1, v2, v3
+elseif s2 == smax then A, B, C = v2, v3, v1
+elseif s3 == smax then A, B, C = v3, v1, v2 end
+local para = ((B-A).x*(C-A).x + (B-A).y*(C-A).y + (B-A).z*(C-A).z) / (A-B).magnitude
+local perp = math.sqrt((C-A).magnitude^2 - para*para)
+local dif_para = (A - B).magnitude - para
+local st = CFrame.new(B, A)
+local za = CFrame.Angles(math.pi/2,0,0)
+local cf0 = st * CFrame.Angles(0, 0, math.acos(Top_Look ~= nil and Top_Look.x or 0))
+local Top_Look = (st * za).lookVector
+local Mid_Point = A + CFrame.new(A, B).lookVector * para
+local Needed_Look = CFrame.new(Mid_Point, C).lookVector
+local dot = Top_Look.x*Needed_Look.x + Top_Look.y*Needed_Look.y + Top_Look.z*Needed_Look.z
+local ac = CFrame.Angles(0, 0, math.acos(math.clamp(dot, -1, 1)))
+cf0 = st * ac
+if ((cf0 * za).lookVector - Needed_Look).magnitude > 0.01 then cf0 = cf0 * CFrame.Angles(0, 0, -2*math.acos(math.clamp(dot, -1, 1))) end
+cf0 = cf0 * CFrame.new(0, perp/2, -(dif_para + para/2))
+local cf1 = st * ac * CFrame.Angles(0, math.pi, 0)
+if ((cf1 * za).lookVector - Needed_Look).magnitude > 0.01 then cf1 = cf1 * CFrame.Angles(0, 0, 2*math.acos(math.clamp(dot, -1, 1))) end
+cf1 = cf1 * CFrame.new(0, perp/2, dif_para/2)
+if not p0 then
+p0 = Instance.new('Part')
+p0.Anchored, p0.CanCollide, p0.CastShadow = true, false, false
+p0.Material = Enum.Material.Glass
+p0.Transparency = 0.98
+p0.Size = Vector3.new(0.2, 0.2, 0.2)
+local m = Instance.new('SpecialMesh', p0); m.MeshType, m.Name = Enum.MeshType.Brick, meshGuid
+end
+p0[meshGuid].Scale = Vector3.new(0, perp/0.2, para/0.2); p0.CFrame = cf0
+if not p1 then p1 = p0:Clone() end
+p1[meshGuid].Scale = Vector3.new(0, perp/0.2, dif_para/0.2); p1.CFrame = cf1
+return p0, p1
+end
+function MacBlur:Bind(frame)
+self.Frame = frame
+self.Enabled = false
+self.Connection = RunService.RenderStepped:Connect(function()
+if not self.Enabled or not frame or not frame.Parent or not frame.Visible then
+for _, v in pairs(self.Parts) do v.Parent = nil end
+dof.Enabled = false
+return
+end
+dof.Enabled = true
+local size, pos = frame.AbsoluteSize, frame.AbsolutePosition
+local z = 1 - 0.05 * frame.ZIndex
+local tl = Camera:ScreenPointToRay(pos.x, pos.y, z).Origin
+local tr = Camera:ScreenPointToRay(pos.x + size.x, pos.y, z).Origin
+local bl = Camera:ScreenPointToRay(pos.x, pos.y + size.y, z).Origin
+local br = Camera:ScreenPointToRay(pos.x + size.x, pos.y + size.y, z).Origin
+self.Parts[1], self.Parts[2] = DrawTriangle(tl, tr, bl, self.Parts[1], self.Parts[2])
+self.Parts[3], self.Parts[4] = DrawTriangle(bl, tr, br, self.Parts[3], self.Parts[4])
+for _, v in pairs(self.Parts) do v.Parent = Camera end
+end)
+end
+function MacBlur:SetState(state)
+self.Enabled = state
+end
 
 local a a={cache={}, load=function(b)if not a.cache[b]then a.cache[b]={c=a[b]()}end return a.cache[b].c end}do function a.a()local b=(cloneref or clonereference or function(b)return b end)
 
