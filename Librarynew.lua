@@ -3636,197 +3636,178 @@ function Funcs:AddButton(...)
 
 -- 请将此部分替换到 BaseAddons 的 Funcs:AddKeyPicker 中
 function Funcs:AddKeyPicker(Idx, Info)
-    Info = Library:Validate(Info, Templates.KeyPicker)
+        Info = Library:Validate(Info, Templates.KeyPicker)
 
-    local ParentObj = self
-    local ToggleLabel = ParentObj.TextLabel
+        local ParentObj = self
+        local ToggleLabel = ParentObj.TextLabel
 
-    local KeyPicker = {
-        Text = Info.Text,
-        Value = Info.Default, 
-        Modifiers = Info.DefaultModifiers, 
-        DisplayValue = Info.Default, 
+        local KeyPicker = {
+            Text = Info.Text,
+            Value = Info.Default, -- Key
+            Modifiers = Info.DefaultModifiers, -- Modifiers
+            DisplayValue = Info.Default, -- Picker Text
 
-        Toggled = false,
-        Mode = Info.Mode,
-        SyncToggleState = Info.SyncToggleState,
+            Toggled = false,
+            Mode = Info.Mode,
+            SyncToggleState = Info.SyncToggleState,
 
-        Callback = Info.Callback,
-        ChangedCallback = Info.ChangedCallback,
-        Changed = Info.Changed,
-        Clicked = Info.Clicked,
+            Callback = Info.Callback,
+            ChangedCallback = Info.ChangedCallback,
+            Changed = Info.Changed,
+            Clicked = Info.Clicked,
 
-        Type = "KeyPicker",
-    }
+            Type = "KeyPicker",
+        }
 
-    -- 初始化按钮：增加 ClipsDescendants 保证动画时不溢出，增加 UICorner
-    local Picker = New("TextButton", {
-        BackgroundColor3 = "MainColor",
-        BorderColor3 = "OutlineColor",
-        BorderSizePixel = 1,
-        Size = UDim2.fromOffset(18, 18),
-        Text = KeyPicker.Value,
-        TextSize = 14,
-        ClipsDescendants = true, -- 防止文字在缩放时闪烁
-        Parent = ToggleLabel,
-    })
+        --// 这里的逻辑修复了你遇到的 nil 索引错误 //--
+        if KeyPicker.Mode == "Press" then
+            assert(ParentObj.Type == "Label", "KeyPicker with the mode 'Press' can be only applied on Labels.")
+            KeyPicker.SyncToggleState = false
+            Info.Modes = { "Press" }
+            Info.Mode = "Press"
+        end
 
-    New("UICorner", {
-        CornerRadius = UDim.new(0, Library.CornerRadius),
-        Parent = Picker,
-    })
+        if KeyPicker.SyncToggleState then
+            Info.Modes = { "Toggle", "Hold" }
+            if not table.find(Info.Modes, Info.Mode) then
+                Info.Mode = "Toggle"
+            end
+        end
 
-    -- 核心：带动画的显示函数
-    function KeyPicker:Display(PickerText)
-        if Library.Unloaded then return end
+        local Picking = false
 
-        local DisplayText = PickerText or KeyPicker.DisplayValue
-        local X, Y = Library:GetTextBounds(
-            DisplayText,
-            Picker.FontFace,
-            Picker.TextSize,
-            Vector2.new(9999, 18) -- 获取无限制宽度
-        )
+        -- 内部依赖表 (必须保留在函数内或上层作用域)
+        local SpecialKeys = { ["MB1"] = Enum.UserInputType.MouseButton1, ["MB2"] = Enum.UserInputType.MouseButton2, ["MB3"] = Enum.UserInputType.MouseButton3 }
+        local SpecialKeysInput = { [Enum.UserInputType.MouseButton1] = "MB1", [Enum.UserInputType.MouseButton2] = "MB2", [Enum.UserInputType.MouseButton3] = "MB3" }
+        local Modifiers = { ["LAlt"] = Enum.KeyCode.LeftAlt, ["RAlt"] = Enum.KeyCode.RightAlt, ["LCtrl"] = Enum.KeyCode.LeftControl, ["RCtrl"] = Enum.KeyCode.RightControl, ["LShift"] = Enum.KeyCode.LeftShift, ["RShift"] = Enum.KeyCode.RightShift, ["Tab"] = Enum.KeyCode.Tab, ["CapsLock"] = Enum.KeyCode.CapsLock }
+        local ModifiersInput = { [Enum.KeyCode.LeftAlt] = "LAlt", [Enum.KeyCode.RightAlt] = "RAlt", [Enum.KeyCode.LeftControl] = "LCtrl", [Enum.KeyCode.RightControl] = "RCtrl", [Enum.KeyCode.LeftShift] = "LShift", [Enum.KeyCode.RightShift] = "RShift", [Enum.KeyCode.Tab] = "Tab", [Enum.KeyCode.CapsLock] = "CapsLock" }
 
-        -- 使用 Tween 动画平滑改变宽度
-        TweenService:Create(Picker, Library.TweenInfo, {
-            Size = UDim2.fromOffset(X + 12, 18) -- 12 是左右边距
-        }):Play()
-        
-        Picker.Text = DisplayText
-    end
+        local function IsModifierInput(Input) return Input.UserInputType == Enum.UserInputType.Keyboard and ModifiersInput[Input.KeyCode] ~= nil end
+        local function GetActiveModifiers()
+            local ActiveModifiers = {}
+            for Name, Input in Modifiers do
+                if UserInputService:IsKeyDown(Input) then table.insert(ActiveModifiers, Name) end
+            end
+            return ActiveModifiers
+        end
+        local function AreModifiersHeld(Required)
+            if not (typeof(Required) == "table" and #Required > 0) then return true end
+            local ActiveModifiers = GetActiveModifiers()
+            for _, Name in Required do if not table.find(ActiveModifiers, Name) then return false end end
+            return true
+        end
+        local function IsInputDown(Input)
+            if not Input then return false end
+            if SpecialKeysInput[Input.UserInputType] then return UserInputService:IsMouseButtonPressed(Input.UserInputType) and not UserInputService:GetFocusedTextBox()
+            elseif Input.UserInputType == Enum.UserInputType.Keyboard then return UserInputService:IsKeyDown(Input.KeyCode) and not UserInputService:GetFocusedTextBox() end
+            return false
+        end
 
-    -- 之前的 KeybindsToggle 逻辑保持不变...
-    local KeybindsToggle = { Normal = KeyPicker.Mode ~= "Toggle" }
-    do
-        local Holder = New("TextButton", {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 0, 16),
-            Text = "",
-            Visible = not Info.NoUI,
-            Parent = Library.KeybindContainer,
-        })
-        local Label = New("TextLabel", {
-            AutomaticSize = Enum.AutomaticSize.X,
-            BackgroundTransparency = 1,
-            Size = UDim2.fromScale(0, 1),
-            Text = "",
-            TextSize = 14,
-            TextTransparency = 0.5,
-            Parent = Holder,
-        })
-        local Checkbox = New("Frame", {
-            AnchorPoint = Vector2.new(0, 0.5),
+        -- 初始化按钮 (添加了圆角和动画属性)
+        local Picker = New("TextButton", {
             BackgroundColor3 = "MainColor",
-            Position = UDim2.fromScale(0, 0.5),
-            Size = UDim2.fromOffset(14, 14),
-            Parent = Holder,
+            BorderColor3 = "OutlineColor",
+            BorderSizePixel = 1,
+            Size = UDim2.fromOffset(18, 18),
+            Text = KeyPicker.Value,
+            TextSize = 14,
+            ClipsDescendants = true,
+            Parent = ToggleLabel,
         })
-        New("UICorner", { CornerRadius = UDim.new(0, 2), Parent = Checkbox })
-        New("UIStroke", { Color = "OutlineColor", Parent = Checkbox })
-        local CheckImage = New("ImageLabel", {
-            Image = CheckIcon and CheckIcon.Url or "",
-            ImageTransparency = 1,
-            Position = UDim2.fromOffset(2, 2),
-            Size = UDim2.new(1, -4, 1, -4),
-            Parent = Checkbox,
-        })
-        function KeybindsToggle:Display(State)
-            Label.TextTransparency = State and 0 or 0.5
-            CheckImage.ImageTransparency = State and 0 or 1
-        end
-        function KeybindsToggle:SetText(Text) Label.Text = Text end
-        function KeybindsToggle:SetVisibility(Visibility) Holder.Visible = Visibility end
-        function KeybindsToggle:SetNormal(Normal)
-            KeybindsToggle.Normal = Normal
-            Holder.Active = not Normal
-            Label.Position = Normal and UDim2.fromOffset(0, 0) or UDim2.fromOffset(22, 0)
-            Checkbox.Visible = not Normal
-        end
-        Holder.MouseButton1Click:Connect(function()
-            if KeybindsToggle.Normal then return end
-            KeyPicker.Toggled = not KeyPicker.Toggled
-            KeyPicker:DoClick()
-        end)
-        KeybindsToggle.Holder = Holder
-        KeybindsToggle.Label = Label
-        KeybindsToggle.Checkbox = Checkbox
-        KeybindsToggle.Loaded = true
-        table.insert(Library.KeybindToggles, KeybindsToggle)
-    end
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Picker })
 
-    local MenuTable = Library:AddContextMenu(Picker, UDim2.fromOffset(62, 0), function()
-        return { Picker.AbsoluteSize.X + 1.5, 0.5 }
-    end, 1)
+        local KeybindsToggle = { Normal = KeyPicker.Mode ~= "Toggle" }
+        do
+            local Holder = New("TextButton", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 16), Text = "", Visible = not Info.NoUI, Parent = Library.KeybindContainer })
+            local Label = New("TextLabel", { AutomaticSize = Enum.AutomaticSize.X, BackgroundTransparency = 1, Size = UDim2.fromScale(0, 1), Text = "", TextSize = 14, TextTransparency = 0.5, Parent = Holder })
+            local Checkbox = New("Frame", { AnchorPoint = Vector2.new(0, 0.5), BackgroundColor3 = "MainColor", Position = UDim2.fromScale(0, 0.5), Size = UDim2.fromOffset(14, 14), Parent = Holder })
+            New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius / 2), Parent = Checkbox })
+            New("UIStroke", { Color = "OutlineColor", Parent = Checkbox })
+            local CheckImage = New("ImageLabel", { Image = CheckIcon and CheckIcon.Url or "", ImageTransparency = 1, Position = UDim2.fromOffset(2, 2), Size = UDim2.new(1, -4, 1, -4), Parent = Checkbox })
+            function KeybindsToggle:Display(State) Label.TextTransparency = State and 0 or 0.5; CheckImage.ImageTransparency = State and 0 or 1 end
+            function KeybindsToggle:SetText(Text) Label.Text = Text end
+            function KeybindsToggle:SetVisibility(Visibility) Holder.Visible = Visibility end
+            function KeybindsToggle:SetNormal(Normal)
+                KeybindsToggle.Normal = Normal
+                Label.Position = Normal and UDim2.fromOffset(0, 0) or UDim2.fromOffset(22, 0)
+                Checkbox.Visible = not Normal
+            end
+            Holder.MouseButton1Click:Connect(function() if not KeybindsToggle.Normal then KeyPicker.Toggled = not KeyPicker.Toggled; KeyPicker:DoClick() end end)
+            KeybindsToggle.Loaded = true
+            table.insert(Library.KeybindToggles, KeybindsToggle)
+        end
 
-    -- 更新函数
-    function KeyPicker:Update()
-        KeyPicker:Display()
-        if Info.NoUI then return end
-        local State = KeyPicker:GetState()
-        if KeybindsToggle.Loaded then
+        local MenuTable = Library:AddContextMenu(Picker, UDim2.fromOffset(62, 0), function() return { Picker.AbsoluteSize.X + 1.5, 0.5 } end, 1)
+        local ModeButtons = {}
+        for _, Mode in Info.Modes do
+            local Button = New("TextButton", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 21), Text = Mode, TextSize = 14, TextTransparency = 0.5, Parent = MenuTable.Menu })
+            local MBtn = {}
+            function MBtn:Select() for _, b in ModeButtons do b:Deselect() end; KeyPicker.Mode = Mode; Button.BackgroundTransparency = 0; Button.TextTransparency = 0; MenuTable:Close(); KeyPicker:Update() end
+            function MBtn:Deselect() Button.BackgroundTransparency = 1; Button.TextTransparency = 0.5 end
+            Button.MouseButton1Click:Connect(function() MBtn:Select() end)
+            ModeButtons[Mode] = MBtn
+            if KeyPicker.Mode == Mode then MBtn:Select() end
+        end
+
+        function KeyPicker:Display(PickerText)
+            if Library.Unloaded then return end
+            local Disp = PickerText or KeyPicker.DisplayValue
+            local X, Y = Library:GetTextBounds(Disp, Picker.FontFace, Picker.TextSize, 999)
+            TweenService:Create(Picker, Library.TweenInfo, { Size = UDim2.fromOffset(X + 12, 18) }):Play()
+            Picker.Text = Disp
+        end
+
+        function KeyPicker:Update()
+            KeyPicker:Display()
+            if Info.NoUI then return end
+            if KeyPicker.Mode == "Toggle" and ParentObj.Type == "Toggle" and ParentObj.Disabled then KeybindsToggle:SetVisibility(false); return end
+            local State = KeyPicker:GetState()
             KeybindsToggle:SetNormal(KeyPicker.Mode ~= "Toggle")
             KeybindsToggle:SetText(("[%s] %s (%s)"):format(KeyPicker.DisplayValue, KeyPicker.Text, KeyPicker.Mode))
             KeybindsToggle:SetVisibility(true)
             KeybindsToggle:Display(State)
         end
-    end
 
-    -- 获取状态逻辑...
-    function KeyPicker:GetState()
-        if KeyPicker.Mode == "Always" then return true
-        elseif KeyPicker.Mode == "Hold" then
-            if KeyPicker.Value == "None" then return false end
-            -- 这里的逻辑使用你原有的 AreModifiersHeld 即可
-            return (UserInputService:IsKeyDown(Enum.KeyCode[KeyPicker.Value]) or UserInputService:IsMouseButtonPressed(SpecialKeys[KeyPicker.Value] or Enum.UserInputType.None))
-        else return KeyPicker.Toggled end
-    end
-
-    function KeyPicker:SetValue(Data)
-        local Key, Mode, Modifiers = Data[1], Data[2], Data[3]
-        KeyPicker.Value = Key or "None"
-        KeyPicker.Modifiers = Modifiers or {}
-        KeyPicker.DisplayValue = (#KeyPicker.Modifiers > 0) and (table.concat(KeyPicker.Modifiers, " + ") .. " + " .. KeyPicker.Value) or KeyPicker.Value
-        KeyPicker:Update()
-    end
-
-    local Picking = false
-    -- 点击按钮：触发伸缩动画
-    Picker.MouseButton1Click:Connect(function()
-        if Picking then return end
-        Picking = true
-
-        -- 动画拉长到 "..." 状态
-        TweenService:Create(Picker, Library.TweenInfo, {
-            Size = UDim2.fromOffset(40, 18)
-        }):Play()
-        Picker.Text = "..."
-
-        local Input
-        repeat
-            Input = UserInputService.InputBegan:Wait()
-        until UserInputService:GetFocusedTextBox() == nil
-
-        local Key = "Unknown"
-        if Input.UserInputType == Enum.UserInputType.Keyboard then
-            Key = Input.KeyCode == Enum.KeyCode.Escape and "None" or Input.KeyCode.Name
-        elseif SpecialKeysInput[Input.UserInputType] then
-            Key = SpecialKeysInput[Input.UserInputType]
+        function KeyPicker:GetState()
+            if KeyPicker.Mode == "Always" then return true
+            elseif KeyPicker.Mode == "Hold" then
+                if KeyPicker.Value == "None" or not AreModifiersHeld(KeyPicker.Modifiers) then return false end
+                return SpecialKeys[KeyPicker.Value] and UserInputService:IsMouseButtonPressed(SpecialKeys[KeyPicker.Value]) or UserInputService:IsKeyDown(Enum.KeyCode[KeyPicker.Value])
+            else return KeyPicker.Toggled end
         end
 
-        KeyPicker:SetValue({ Key, KeyPicker.Mode, {} })
-        Picking = false
-    end)
+        function KeyPicker:DoClick()
+            if KeyPicker.Mode == "Press" then KeyPicker.Toggled = true end
+            Library:SafeCallback(KeyPicker.Callback, KeyPicker.Toggled)
+            Library:SafeCallback(KeyPicker.Clicked, KeyPicker.Toggled)
+            if KeyPicker.Mode == "Press" then KeyPicker.Toggled = false end
+        end
 
-    Picker.MouseButton2Click:Connect(MenuTable.Toggle)
+        function KeyPicker:SetValue(Data)
+            KeyPicker.Value = Data[1] or "None"; KeyPicker.Mode = Data[2] or KeyPicker.Mode; KeyPicker.Modifiers = Data[3] or {}
+            KeyPicker.DisplayValue = (#KeyPicker.Modifiers > 0 and table.concat(KeyPicker.Modifiers, " + ") .. " + " or "") .. KeyPicker.Value
+            if ModeButtons[KeyPicker.Mode] then ModeButtons[KeyPicker.Mode]:Select() end
+            KeyPicker:Update()
+        end
 
-    -- 初始显示
-    KeyPicker:Update()
+        Picker.MouseButton1Click:Connect(function()
+            if Picking then return end
+            Picking = true
+            TweenService:Create(Picker, Library.TweenInfo, { Size = UDim2.fromOffset(40, 18) }):Play()
+            Picker.Text = "..."
+            local Input
+            repeat Input = UserInputService.InputBegan:Wait() until not IsModifierInput(Input) or Input.KeyCode == Enum.KeyCode.Escape
+            local Key = SpecialKeysInput[Input.UserInputType] or (Input.KeyCode == Enum.KeyCode.Escape and "None" or Input.KeyCode.Name)
+            KeyPicker:SetValue({ Key, KeyPicker.Mode, GetActiveModifiers() })
+            Picking = false
+        end)
 
-    if ParentObj.Addons then table.insert(ParentObj.Addons, KeyPicker) end
-    Options[Idx] = KeyPicker
-    return self
-end
+        Picker.MouseButton2Click:Connect(MenuTable.Toggle)
+        KeyPicker:Update()
+        if ParentObj.Addons then table.insert(ParentObj.Addons, KeyPicker) end
+        Options[Idx] = KeyPicker
+        return self
+    end
 
     function Funcs:AddInput(Idx, Info)
         Info = Library:Validate(Info, Templates.Input)
