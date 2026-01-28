@@ -1984,7 +1984,7 @@ local BaseAddons = {}
 do
     local Funcs = {}
 
-    function Funcs:AddKeyPicker(Idx, Info)
+function Funcs:AddKeyPicker(Idx, Info)
         Info = Library:Validate(Info, Templates.KeyPicker)
 
         local ParentObj = self
@@ -2154,6 +2154,7 @@ do
 
         KeyPicker.Modifiers = VerifyModifiers(KeyPicker.Modifiers) -- Verify default modifiers
 
+        -- 创建按钮：增加圆角和 ClipsDescendants (动画需要)
         local Picker = New("TextButton", {
             BackgroundColor3 = "MainColor",
             BorderColor3 = "OutlineColor",
@@ -2161,7 +2162,12 @@ do
             Size = UDim2.fromOffset(18, 18),
             Text = KeyPicker.Value,
             TextSize = 14,
+            ClipsDescendants = true,
             Parent = ToggleLabel,
+        })
+        New("UICorner", {
+            CornerRadius = UDim.new(0, Library.CornerRadius),
+            Parent = Picker,
         })
 
         local KeybindsToggle = { Normal = KeyPicker.Mode ~= "Toggle" }
@@ -2280,11 +2286,10 @@ do
                 Button.TextTransparency = 0
 
                 MenuTable:Close()
+                KeyPicker:Update() -- 确保模式切换后更新 UI
             end
 
             function ModeButton:Deselect()
-                KeyPicker.Mode = nil
-
                 Button.BackgroundTransparency = 1
                 Button.TextTransparency = 0.5
             end
@@ -2293,26 +2298,31 @@ do
                 ModeButton:Select()
             end)
 
+            ModeButtons[Mode] = ModeButton
             if KeyPicker.Mode == Mode then
                 ModeButton:Select()
             end
-
-            ModeButtons[Mode] = ModeButton
         end
 
+        -- 改良后的 Display 函数：增加平滑大小调整动画
         function KeyPicker:Display(PickerText)
             if Library.Unloaded then
                 return
             end
 
+            local DisplayingText = PickerText or KeyPicker.DisplayValue
             local X, Y = Library:GetTextBounds(
-                PickerText or KeyPicker.DisplayValue,
+                DisplayingText,
                 Picker.FontFace,
                 Picker.TextSize,
-                ToggleLabel.AbsoluteSize.X
+                9999 -- 使用极大宽度确保测量准确
             )
-            Picker.Text = PickerText or KeyPicker.DisplayValue
-            Picker.Size = UDim2.fromOffset((X + 9), (Y + 4))
+            
+            Picker.Text = DisplayingText
+            -- 按钮伸缩动画
+            TweenService:Create(Picker, Library.TweenInfo, {
+                Size = UDim2.fromOffset(X + 10, 18)
+            }):Play()
         end
 
         function KeyPicker:Update()
@@ -2449,8 +2459,11 @@ do
 
             Picking = true
 
+            -- 点击时拉长按钮
             Picker.Text = "..."
-            Picker.Size = UDim2.fromOffset(29, 18)
+            TweenService:Create(Picker, Library.TweenInfo, {
+                Size = UDim2.fromOffset(35, 18)
+            }):Play()
 
             -- Wait for an non modifier key --
             local Input
@@ -2465,9 +2478,6 @@ do
                 task.wait()
 
                 -- Wait for any input --
-                Picker.Text = "..."
-                Picker.Size = UDim2.fromOffset(29, 18)
-
                 if GetInput() then
                     Picking = false
                     KeyPicker:Update()
