@@ -6150,34 +6150,10 @@ WindowTitle = New("TextLabel", {
                 IsNormal = false,
                 LockSize = false,
                 Visible = false,
-                Animation = true,
                 Title = "WARNING",
                 Text = "",
             },
         }
-
-        local function PlayWarningContentAnim()
-            if not Tab.WarningBox.Animation or not Tab.WarningBox.Visible then return end
-            local AnimInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-            local TitleTargetPos = UDim2.new(1, -4, 0, 14)
-            WarningTitle.Position = TitleTargetPos + UDim2.fromOffset(0, 10)
-            WarningTitle.TextTransparency = 1
-            
-            TweenService:Create(WarningTitle, AnimInfo, {
-                Position = TitleTargetPos,
-                TextTransparency = 0
-            }):Play()
-            local TextTargetPos = UDim2.fromOffset(0, 16)
-            WarningText.Position = TextTargetPos + UDim2.fromOffset(0, 10)
-            WarningText.TextTransparency = 1
-            
-            task.delay(0.05, function()
-                TweenService:Create(WarningText, AnimInfo, {
-                    Position = TextTargetPos,
-                    TextTransparency = 0
-                }):Play()
-            end)
-        end
 
         function Tab:UpdateWarningBox(Info)
             if typeof(Info.IsNormal) == "boolean" then
@@ -6195,41 +6171,57 @@ WindowTitle = New("TextLabel", {
             if typeof(Info.Text) == "string" then
                 Tab.WarningBox.Text = Info.Text
             end
-            if typeof(Info.Animation) == "boolean" then
-                Tab.WarningBox.Animation = Info.Animation
-            end
+
+            WarningBoxHolder.Visible = Tab.WarningBox.Visible
             WarningTitle.Text = Tab.WarningBox.Title
             WarningText.Text = Tab.WarningBox.Text
-            WarningBoxHolder.Visible = Tab.WarningBox.Visible
             Tab:Resize(true)
-            if Tab.WarningBox.Visible then
-                PlayWarningContentAnim()
-            end
-            local isNormal = Tab.WarningBox.IsNormal
-            WarningBox.BackgroundColor3 = isNormal and Library.Scheme.BackgroundColor or Color3.fromRGB(127, 0, 0)
-            WarningBoxShadowOutline.Color = isNormal and Library.Scheme.DarkColor or Color3.fromRGB(85, 0, 0)
-            WarningBoxOutline.Color = isNormal and Library.Scheme.OutlineColor or Color3.fromRGB(255, 50, 50)
-            WarningTitle.TextColor3 = isNormal and Library.Scheme.FontColor or Color3.fromRGB(255, 50, 50)
-            WarningStroke.Color = isNormal and Library.Scheme.OutlineColor or Color3.fromRGB(169, 0, 0)
 
-            if not Library.Registry[WarningBox] then Library:AddToRegistry(WarningBox, {}) end
-            if not Library.Registry[WarningBoxShadowOutline] then Library:AddToRegistry(WarningBoxShadowOutline, {}) end
-            if not Library.Registry[WarningBoxOutline] then Library:AddToRegistry(WarningBoxOutline, {}) end
-            if not Library.Registry[WarningTitle] then Library:AddToRegistry(WarningTitle, {}) end
-            if not Library.Registry[WarningStroke] then Library:AddToRegistry(WarningStroke, {}) end
+            WarningBox.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor
+                or Color3.fromRGB(127, 0, 0)
+
+            WarningBoxShadowOutline.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.DarkColor
+                or Color3.fromRGB(85, 0, 0)
+            WarningBoxOutline.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
+                or Color3.fromRGB(255, 50, 50)
+
+            WarningTitle.TextColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor
+                or Color3.fromRGB(255, 50, 50)
+            WarningStroke.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
+                or Color3.fromRGB(169, 0, 0)
+
+            if not Library.Registry[WarningBox] then
+                Library:AddToRegistry(WarningBox, {})
+            end
+            if not Library.Registry[WarningBoxShadowOutline] then
+                Library:AddToRegistry(WarningBoxShadowOutline, {})
+            end
+            if not Library.Registry[WarningBoxOutline] then
+                Library:AddToRegistry(WarningBoxOutline, {})
+            end
+            if not Library.Registry[WarningTitle] then
+                Library:AddToRegistry(WarningTitle, {})
+            end
+            if not Library.Registry[WarningStroke] then
+                Library:AddToRegistry(WarningStroke, {})
+            end
 
             Library.Registry[WarningBox].BackgroundColor3 = function()
                 return Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor or Color3.fromRGB(127, 0, 0)
             end
+
             Library.Registry[WarningBoxShadowOutline].Color = function()
                 return Tab.WarningBox.IsNormal == true and Library.Scheme.DarkColor or Color3.fromRGB(85, 0, 0)
             end
+
             Library.Registry[WarningBoxOutline].Color = function()
                 return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(255, 50, 50)
             end
+
             Library.Registry[WarningTitle].TextColor3 = function()
                 return Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor or Color3.fromRGB(255, 50, 50)
             end
+
             Library.Registry[WarningStroke].Color = function()
                 return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(169, 0, 0)
             end
@@ -6266,13 +6258,6 @@ WindowTitle = New("TextLabel", {
             end
 
             Tab:RefreshSides()
-        end
-        local OriginalTabShow = Tab.Show
-        function Tab:Show()
-            OriginalTabShow(Tab)
-            if Tab.WarningBox.Visible and Tab.WarningBox.Animation then
-                task.delay(0.1, PlayWarningContentAnim)
-            end
         end
 
         function Tab:AddGroupbox(Info)
