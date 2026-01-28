@@ -11,57 +11,16 @@ local Teams: Teams = cloneref(game:GetService("Teams"))
 local TweenService: TweenService = cloneref(game:GetService("TweenService"))
 
 local getgenv = getgenv or function()
-return shared
+    return shared
 end
 local setclipboard = setclipboard or nil
 local protectgui = protectgui or (syn and syn.protect_gui) or function() end
 local gethui = gethui or function()
-return CoreGui
+    return CoreGui
 end
+
 local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 local Mouse = cloneref(LocalPlayer:GetMouse())
--- ================= [ 修正后的跑马灯逻辑 ] =================
-local marqueeGradients = {}
-local MARQUEE_SPEED = 120 -- 旋转速度
-
--- 动画驱动逻辑
-RunService.RenderStepped:Connect(function(dt)
-    for i = #marqueeGradients, 1, -1 do
-        local grad = marqueeGradients[i]
-        if grad and grad.Parent then
-            grad.Rotation = (grad.Rotation + MARQUEE_SPEED * dt) % 360
-        else
-            table.remove(marqueeGradients, i)
-        end
-    end
-end)
-
--- 注入函数 (注意：这里的参数名改为 target，不再使用 Instance)
-local function ApplyMarqueeEffect(target)
-    if not target then return end
-    
-    local Stroke = Instance.new("UIStroke")
-    Stroke.Name = "BengMarqueeStroke"
-    Stroke.Thickness = 2.5
-    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Stroke.LineJoinMode = Enum.LineJoinMode.Round
-    Stroke.Parent = target
-
-    local Gradient = Instance.new("UIGradient")
-    Gradient.Name = "BengMarqueeGradient"
-    Gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromHex("#FF0000")),
-        ColorSequenceKeypoint.new(0.2, Color3.fromHex("#FFFF00")),
-        ColorSequenceKeypoint.new(0.4, Color3.fromHex("#00FF00")),
-        ColorSequenceKeypoint.new(0.6, Color3.fromHex("#00FFFF")),
-        ColorSequenceKeypoint.new(0.8, Color3.fromHex("#0000FF")),
-        ColorSequenceKeypoint.new(1, Color3.fromHex("#FF00FF"))
-    })
-    Gradient.Parent = Stroke
-    
-    table.insert(marqueeGradients, Gradient)
-end
--- ================= [ 跑马灯逻辑结束 ] =================
 
 local Labels = {}
 local Buttons = {}
@@ -1584,7 +1543,6 @@ function Library:AddDraggableButton(Text: string, Func, ExcludeScaling: boolean?
         ZIndex = 10,
         Parent = ScreenGui,
     })
-    ApplyMarquee(MainFrame) 
     New("UICorner", {
         CornerRadius = UDim.new(0, Library.CornerRadius),
         Parent = Button,
