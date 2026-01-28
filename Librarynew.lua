@@ -6476,23 +6476,20 @@ local Container = New("CanvasGroup", {
                     DependencyBoxes = {},
                 }
 
-function Tab:Show()
-    if Tabbox.ActiveTab then
-        Tabbox.ActiveTab:Hide()
-    end
-    Button.BackgroundTransparency = 1
-    Button.TextTransparency = 0
-    Line.Visible = false
-    Container.Visible = true
-    Container.GroupTransparency = 1
-    Container.Position = UDim2.fromOffset(0, 45)
-    TweenService:Create(Container, Library.TweenInfo, {
-        GroupTransparency = 0,
-        Position = UDim2.fromOffset(0, 35)
-    }):Play()
-    Tabbox.ActiveTab = Tab
-    Tab:Resize()
-end
+                function Tab:Show()
+                    if Tabbox.ActiveTab then
+                        Tabbox.ActiveTab:Hide()
+                    end
+
+                    Button.BackgroundTransparency = 1
+                    Button.TextTransparency = 0
+                    Line.Visible = false
+
+                    Container.Visible = true
+
+                    Tabbox.ActiveTab = Tab
+                    Tab:Resize()
+                end
 
 function Tab:Hide()
     Button.BackgroundTransparency = 0
@@ -6557,27 +6554,27 @@ end
             end
         end
 
-    function Tab:Show()
-        if Library.ActiveTab == Tab then
-            return 
-        end
-
-        if Library.ActiveTab then
-            Library.ActiveTab:Hide()
-        end
-        TweenService:Create(TabButton, Library.TweenInfo, {
-            BackgroundTransparency = 0,
-        }):Play()
-        TweenService:Create(TabLabel, Library.TweenInfo, {
-            TextTransparency = 0,
-            Position = SelectedLabelPos
-        }):Play()
-
-        if TabIcon then
-            TweenService:Create(TabIcon, Library.TweenInfo, {
-                ImageTransparency = 0,
-            }):Play()
-        end
+function Tab:Show()
+    if Tabbox.ActiveTab == Tab then 
+        return 
+    end
+    if Tabbox.ActiveTab then
+        Tabbox.ActiveTab:Hide()
+    end
+    Button.BackgroundTransparency = 1
+    Button.TextTransparency = 0
+    Line.Visible = false
+    Container.Visible = true
+    Container.GroupTransparency = 1
+    Container.Position = UDim2.fromOffset(0, 50)
+    local SmoothInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    TweenService:Create(Container, SmoothInfo, {
+        GroupTransparency = 0,
+        Position = UDim2.fromOffset(0, 35)
+    }):Play()
+    Tabbox.ActiveTab = Tab
+    Tab:Resize()
+end
 
         TabContainer.Visible = true
         TabContainer.Position = UDim2.fromOffset(0, 20) 
