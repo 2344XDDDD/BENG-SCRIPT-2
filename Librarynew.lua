@@ -5669,35 +5669,39 @@ WindowTitle = New("TextLabel", {
         })
 
         --// Footer
+--// Footer 逻辑开始
         local FooterSteps = {
             "Initialization in progress",
             "Finalising.",
             "successfully!"
         }
 
+        -- 1. 创建左侧页脚 (靠最左对齐)
         local FooterLeftLabel = New("TextLabel", {
             BackgroundTransparency = 1,
-            Position = UDim2.fromOffset(12, 0),
-            Size = UDim2.new(0.5, -12, 1, 0),
-            Text = WindowInfo.FooterLeft,
+            Position = UDim2.fromOffset(10, 0), -- 距离左边 10 像素
+            Size = UDim2.new(0.5, -10, 1, 0),    -- 占据左半边
+            Text = WindowInfo.FooterLeft or "",
             TextSize = 14,
             TextTransparency = 0.5,
-            TextXAlignment = Enum.TextXAlignment.Left,
+            TextXAlignment = Enum.TextXAlignment.Left, -- 文本左对齐
             Parent = BottomBar,
         })
 
+        -- 2. 创建右侧页脚 (靠最右对齐)
         local FooterLabel = New("TextLabel", {
-            AnchorPoint = Vector2.new(1, 0),
+            AnchorPoint = Vector2.new(1, 0),      -- 关键：锚点设为右侧
             BackgroundTransparency = 1,
-            Position = UDim2.new(1, -12, 0, 0),
-            Size = UDim2.new(0.5, -12, 1, 0),
+            Position = UDim2.new(1, -25, 0, 0),   -- 关键：位置设在 1 (100%) 减去右边距 (25是为了避开缩放图标)
+            Size = UDim2.new(0.5, -10, 1, 0),    -- 占据右半边
             Text = FooterSteps[1],
             TextSize = 14,
             TextTransparency = 0.5,
-            TextXAlignment = Enum.TextXAlignment.Right,
+            TextXAlignment = Enum.TextXAlignment.Right, -- 文本右对齐
             Parent = BottomBar,
         })
 
+        -- 3. 页脚动画逻辑 (保持不变，但确保对象正确)
         task.spawn(function()
             for i = 2, #FooterSteps do
                 task.wait(0.7)
@@ -5720,7 +5724,6 @@ WindowTitle = New("TextLabel", {
                 TweenService:Create(FooterLabel, TweenInfo.new(0.5), {TextTransparency = 0.5}):Play()
             end
         end)
-
         --// Resize Button
         if WindowInfo.Resizable then
             ResizeButton = New("TextButton", {
@@ -5793,12 +5796,6 @@ WindowTitle = New("TextLabel", {
 
         WindowTitle.Text = title
         WindowInfo.Title = title
-    end
-
-    function Window:SetLeftFooter(text)
-        assert(typeof(text) == "string", "Expected string for Left Footer")
-        FooterLeftLabel.Text = text
-        WindowInfo.FooterLeft = text
     end
 
     local function ApplyCompact()
