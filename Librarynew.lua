@@ -5977,13 +5977,12 @@ WindowTitle = New("TextLabel", {
             })
 
             --// Tab Container \\--
-TabContainer = New("CanvasGroup", {
-    BackgroundTransparency = 1,
-    GroupTransparency = 1,
-    Size = UDim2.fromScale(1, 1),
-    Visible = false,
-    Parent = Container,
-})
+            TabContainer = New("Frame", {
+                BackgroundTransparency = 1,
+                Size = UDim2.fromScale(1, 1),
+                Visible = false,
+                Parent = Container,
+            })
 
             TabLeft = New("ScrollingFrame", {
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
@@ -6448,13 +6447,14 @@ TabContainer = New("CanvasGroup", {
                     Size = UDim2.new(1, 0, 0, 1),
                 })
 
-                local Container = New("Frame", {
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(0, 35),
-                    Size = UDim2.new(1, 0, 1, -35),
-                    Visible = false,
-                    Parent = TabboxHolder,
-                })
+local Container = New("CanvasGroup", {
+    BackgroundTransparency = 1,
+    GroupTransparency = 1,
+    Position = UDim2.fromOffset(0, 35),
+    Size = UDim2.new(1, 0, 1, -35),
+    Visible = false,
+    Parent = TabboxHolder,
+})
                 local List = New("UIListLayout", {
                     Padding = UDim.new(0, 8),
                     Parent = Container,
@@ -6476,29 +6476,32 @@ TabContainer = New("CanvasGroup", {
                     DependencyBoxes = {},
                 }
 
-                function Tab:Show()
-                    if Tabbox.ActiveTab then
-                        Tabbox.ActiveTab:Hide()
-                    end
+function Tab:Show()
+    if Tabbox.ActiveTab then
+        Tabbox.ActiveTab:Hide()
+    end
+    Button.BackgroundTransparency = 1
+    Button.TextTransparency = 0
+    Line.Visible = false
+    Container.Visible = true
+    Container.GroupTransparency = 1
+    Container.Position = UDim2.fromOffset(0, 45)
+    TweenService:Create(Container, Library.TweenInfo, {
+        GroupTransparency = 0,
+        Position = UDim2.fromOffset(0, 35)
+    }):Play()
+    Tabbox.ActiveTab = Tab
+    Tab:Resize()
+end
 
-                    Button.BackgroundTransparency = 1
-                    Button.TextTransparency = 0
-                    Line.Visible = false
-
-                    Container.Visible = true
-
-                    Tabbox.ActiveTab = Tab
-                    Tab:Resize()
-                end
-
-                function Tab:Hide()
-                    Button.BackgroundTransparency = 0
-                    Button.TextTransparency = 0.5
-                    Line.Visible = true
-                    Container.Visible = false
-
-                    Tabbox.ActiveTab = nil
-                end
+function Tab:Hide()
+    Button.BackgroundTransparency = 0
+    Button.TextTransparency = 0.5
+    Line.Visible = true
+    
+    Container.Visible = false
+    Container.GroupTransparency = 1
+end
 
                 function Tab:Resize()
                     if Tabbox.ActiveTab ~= Tab then
@@ -6554,72 +6557,64 @@ TabContainer = New("CanvasGroup", {
             end
         end
 
-function Tab:Show()
-    if Library.ActiveTab == Tab then
-        return 
-    end
+    function Tab:Show()
+        if Library.ActiveTab == Tab then
+            return 
+        end
 
-    if Library.ActiveTab then
-        Library.ActiveTab:Hide()
-    end
-
-    TweenService:Create(TabButton, Library.TweenInfo, {
-        BackgroundTransparency = 0,
-    }):Play()
-    TweenService:Create(TabLabel, Library.TweenInfo, {
-        TextTransparency = 0,
-        Position = SelectedLabelPos
-    }):Play()
-
-    if TabIcon then
-        TweenService:Create(TabIcon, Library.TweenInfo, {
-            ImageTransparency = 0,
+        if Library.ActiveTab then
+            Library.ActiveTab:Hide()
+        end
+        TweenService:Create(TabButton, Library.TweenInfo, {
+            BackgroundTransparency = 0,
         }):Play()
-end
-    TabContainer.Visible = true
-    TabContainer.GroupTransparency = 1
-    TabContainer.Position = UDim2.fromOffset(0, 30)
-
-    TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        GroupTransparency = 0
-    }):Play()
-
-    TweenService:Create(TabContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        Position = UDim2.fromOffset(0, 0)
-    }):Play()
-
-    if Description then
-        Window:ShowTabInfo(Name, Description)
-    else
-        Window:HideTabInfo() 
-    end
-
-    Tab:RefreshSides()
-    Library.ActiveTab = Tab
-
-    if Library.Searching then
-        Library:UpdateSearch(Library.SearchText)
-    end
-end
-function Tab:Hide()
-    TweenService:Create(TabButton, Library.TweenInfo, {
-        BackgroundTransparency = 1,
-    }):Play()
-
-    TweenService:Create(TabLabel, Library.TweenInfo, {
-        TextTransparency = 0.5,
-        Position = OriginalLabelPos
-    }):Play()
-
-    if TabIcon then
-        TweenService:Create(TabIcon, Library.TweenInfo, {
-            ImageTransparency = 0.5,
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0,
+            Position = SelectedLabelPos
         }):Play()
+
+        if TabIcon then
+            TweenService:Create(TabIcon, Library.TweenInfo, {
+                ImageTransparency = 0,
+            }):Play()
+        end
+
+        TabContainer.Visible = true
+        TabContainer.Position = UDim2.fromOffset(0, 20) 
+        TweenService:Create(TabContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.fromOffset(0, 0)
+        }):Play()
+
+        if Description then
+            Window:ShowTabInfo(Name, Description)
+        else
+            Window:HideTabInfo() 
+        end
+
+        Tab:RefreshSides()
+        Library.ActiveTab = Tab
+
+        if Library.Searching then
+            Library:UpdateSearch(Library.SearchText)
+        end
     end
-    
-    TabContainer.Visible = false
-    TabContainer.GroupTransparency = 1
-end
+    function Tab:Hide()
+        TweenService:Create(TabButton, Library.TweenInfo, {
+            BackgroundTransparency = 1,
+        }):Play()
+
+        TweenService:Create(TabLabel, Library.TweenInfo, {
+            TextTransparency = 0.5,
+            Position = OriginalLabelPos
+        }):Play()
+
+        if TabIcon then
+            TweenService:Create(TabIcon, Library.TweenInfo, {
+                ImageTransparency = 0.5,
+            }):Play()
+        end
+        TabContainer.Visible = false
+    end
 
         --// Execution \\--
         if not Library.ActiveTab then
