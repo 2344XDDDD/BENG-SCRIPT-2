@@ -5663,27 +5663,6 @@ WindowTitle = New("TextLabel", {
             Size = UDim2.new(1, 0, 0, 20),
             Parent = MainFrame,
         })
-        local FooterLeftLabel = New("TextLabel", {
-            BackgroundTransparency = 1,
-            Position = UDim2.fromOffset(10, 0),
-            Size = UDim2.new(0.5, -10, 1, 0),
-            Text = WindowInfo.FooterLeft,
-            TextSize = 14,
-            TextTransparency = 0.5,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = BottomBar,
-        })
-        local FooterLabel = New("TextLabel", {
-            AnchorPoint = Vector2.new(1, 0),
-            BackgroundTransparency = 1,
-            Position = UDim2.new(1, -10, 0, 0),
-            Size = UDim2.new(0.5, -10, 1, 0),
-            Text = FooterSteps[1],
-            TextSize = 14,
-            TextTransparency = 0.5,
-            TextXAlignment = Enum.TextXAlignment.Right,
-            Parent = BottomBar,
-        })
         New("UICorner", {
             CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
             Parent = BottomBackground,
@@ -5696,12 +5675,26 @@ WindowTitle = New("TextLabel", {
             "successfully!"
         }
 
-        local FooterLabel = New("TextLabel", {
+        local FooterLeftLabel = New("TextLabel", {
             BackgroundTransparency = 1,
-            Size = UDim2.fromScale(1, 1),
+            Position = UDim2.fromOffset(10, 0),
+            Size = UDim2.new(0.5, -10, 1, 0),
+            Text = WindowInfo.FooterLeft or "",
+            TextSize = 14,
+            TextTransparency = 0.5,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = BottomBar,
+        })
+        
+        local FooterLabel = New("TextLabel", {
+            AnchorPoint = Vector2.new(1, 0),
+            BackgroundTransparency = 1,
+            Position = UDim2.new(1, -10, 0, 0),
+            Size = UDim2.new(0.5, -10, 1, 0),
             Text = FooterSteps[1],
             TextSize = 14,
             TextTransparency = 0.5,
+            TextXAlignment = Enum.TextXAlignment.Right,
             Parent = BottomBar,
         })
 
@@ -5794,6 +5787,13 @@ WindowTitle = New("TextLabel", {
 
     --// Window Table \\--
     local Window = {}
+
+    function Window:ChangeTitle(title)
+        assert(typeof(title) == "string", "Expected string for title got: " .. typeof(title))
+
+        WindowTitle.Text = title
+        WindowInfo.Title = title
+    end
 
     function Window:SetLeftFooter(text)
         assert(typeof(text) == "string", "Expected string for Left Footer")
