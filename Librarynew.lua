@@ -6235,39 +6235,30 @@ WindowTitle = New("TextLabel", {
             end
         end
 
-function Tab:Resize(ResizeWarningBox: boolean?)
-    if ResizeWarningBox then
-        -- 计算允许的最大高度（窗口高度的 1/3.25）
-        local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y / 3.25)
-        
-        -- 计算文字实际需要占用的高度
-        local _, YText = Library:GetTextBounds(
-            WarningText.Text,
-            Library.Scheme.Font,
-            WarningText.TextSize,
-            WarningText.AbsoluteSize.X
-        )
+        function Tab:Resize(ResizeWarningBox: boolean?)
+            if ResizeWarningBox then
+                local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y / 3.25)
+                local _, YText = Library:GetTextBounds(
+                    WarningText.Text,
+                    Library.Scheme.Font,
+                    WarningText.TextSize,
+                    WarningText.AbsoluteSize.X
+                )
 
-        local YBox = 24 + YText -- 加上标题的高度偏移
-        
-        -- 【核心逻辑：检测文字是否满了】
-        -- 如果开启了 LockSize 且实际高度超过了最大限制高度
-        if Tab.WarningBox.LockSize == true and YBox >= MaximumSize then
-            -- 启用滑动：设置滚动区域的大小为文字的实际高度
-            WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
-            -- 将显示框的高度锁定在最大高度，这样多出的文字就能通过滚轮滑动查看了
-            YBox = MaximumSize
-        else
-            -- 文字不多时，禁用滚动（CanvasSize 设为 0）
-            WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
+                local YBox = 24 + YText
+                if Tab.WarningBox.LockSize == true and YBox >= MaximumSize then
+                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
+                    YBox = MaximumSize
+                else
+                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
+                end
+
+                WarningText.Size = UDim2.new(1, -4, 0, YText)
+                WarningBox.Size = UDim2.new(1, -5, 0, YBox + 4)
+            end
+
+            Tab:RefreshSides()
         end
-
-        WarningText.Size = UDim2.new(1, -4, 0, YText)
-        WarningBox.Size = UDim2.new(1, -5, 0, YBox + 4)
-    end
-
-    Tab:RefreshSides()
-end
 
         function Tab:AddGroupbox(Info)
             local BoxHolder = New("Frame", {
