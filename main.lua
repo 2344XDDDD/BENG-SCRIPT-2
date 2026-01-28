@@ -4,10 +4,12 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.74 | by:Footagesus | Script by:BENG  | UI 1.6.7 | UPD: [2026/28/1]
+    V1.6.74 | by:Footagesus | Script by:BENG  | UI 1.6.9 | UPD: [2026/28/1]
     https://bengscript.lol
-    Added:Icon Locked
-    This UI cannot be used illegally - it cannot be distributed for use with scripts created by us, or used in collaboration with us. This script GUI cannot be used with any script we have created!
+
+    [Update: Added: all - New:LockedIcon]
+    
+    This UI is for personal use only. You may not use it without the permission of the creator (UI). To use it, please contact BENG SCRIPT. Creator (UI) must agree! Please do not add our UI to your GitHub repository!
 
 ]]
     
@@ -6273,7 +6275,7 @@ UIElements={}
 ai.ToggleFrame=a.load'B'{
 Title=ai.Title,
 Desc=ai.Desc,
-
+LockedIcon = ah.LockedIcon,
 
 
 
@@ -6462,6 +6464,7 @@ end
 al.SliderFrame=a.load'B'{
 Title=al.Title,
 Desc=al.Desc,
+LockedIcon = ae.LockedIcon,
 Parent=ak.Parent,
 TextOffset=al.Width,
 Hover=false,
@@ -6755,6 +6758,7 @@ local al=true
 ak.KeybindFrame=a.load'B'{
 Title=ak.Title,
 Desc=ak.Desc,
+LockedIcon = aj.LockedIcon
 Parent=aj.Parent,
 TextOffset=85,
 Hover=ak.CanChange,
@@ -6908,6 +6912,7 @@ local ak=true
 aj.InputFrame=a.load'B'{
 Title=aj.Title,
 Desc=aj.Desc,
+LockedIcon = ai.LockedIcon,
 Parent=ai.Parent,
 TextOffset=aj.Width,
 Hover=false,
@@ -7696,6 +7701,7 @@ local ap=true
 ao.DropdownFrame=a.load'B'{
 Title=ao.Title,
 Desc=ao.Desc,
+LockedIcon = an.LockedIcon,
 Parent=an.Parent,
 TextOffset=ao.Callback and ao.Width or 20,
 Hover=not ao.Callback and true or false,
@@ -8877,6 +8883,7 @@ local av=true
 au.ColorpickerFrame=a.load'B'{
 Title=au.Title,
 Desc=au.Desc,
+LockedIcon = at.LockedIcon,
 Parent=at.Parent,
 TextOffset=40,
 Hover=false,
@@ -11722,7 +11729,7 @@ CornerRadius=UDim.new(0,au.UICorner)
 au.UIElements.SideBarContainer,
 au.UIElements.MainBar,
 
-am("TextLabel",{Name="Footer",Text="Script by:BENG _ 1.6.7 UI",TextSize=13,TextTransparency=0.7,TextXAlignment="Right",BackgroundTransparency=1,Position=UDim2.new(1,-14,1,-14),AnchorPoint=Vector2.new(1,1),Size=UDim2.new(0,0,0,0),AutomaticSize="XY",ThemeTag={TextColor3="Text",},FontFace=Font.new(al.Font,Enum.FontWeight.Medium)}),
+am("TextLabel",{Name="Footer",Text="Script by:BENG _ 1.6.9 UI",TextSize=13,TextTransparency=0.7,TextXAlignment="Right",BackgroundTransparency=1,Position=UDim2.new(1,-14,1,-14),AnchorPoint=Vector2.new(1,1),Size=UDim2.new(0,0,0,0),AutomaticSize="XY",ThemeTag={TextColor3="Text",},FontFace=Font.new(al.Font,Enum.FontWeight.Medium)}),
 
 aB,
 
