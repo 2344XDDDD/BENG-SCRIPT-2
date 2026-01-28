@@ -6499,7 +6499,6 @@ function Tab:Hide()
     Container.Visible = false
     Container.GroupTransparency = 1
 end
-
                 function Tab:Resize()
                     if Tabbox.ActiveTab ~= Tab then
                         return
@@ -6555,9 +6554,10 @@ end
         end
 
 function Tab:Show()
-    if Tabbox.ActiveTab == Tab then 
-        return 
+    if Tabbox.ActiveTab == Tab then
+        return
     end
+
     if Tabbox.ActiveTab then
         Tabbox.ActiveTab:Hide()
     end
@@ -6566,12 +6566,13 @@ function Tab:Show()
     Line.Visible = false
     Container.Visible = true
     Container.GroupTransparency = 1
-    Container.Position = UDim2.fromOffset(0, 50)
-    local SmoothInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    TweenService:Create(Container, SmoothInfo, {
+    Container.Position = UDim2.fromOffset(0, 45)
+    local TabboxTweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    TweenService:Create(Container, TabboxTweenInfo, {
         GroupTransparency = 0,
         Position = UDim2.fromOffset(0, 35)
     }):Play()
+
     Tabbox.ActiveTab = Tab
     Tab:Resize()
 end
