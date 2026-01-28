@@ -6244,18 +6244,13 @@ WindowTitle = New("TextLabel", {
                     WarningText.TextSize,
                     WarningText.AbsoluteSize.X
                 )
-
-                local YBox = 24 + YText
-                if Tab.WarningBox.LockSize == true and YBox >= MaximumSize then
-                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
-                    YBox = MaximumSize
-                else
-                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
-                end
-
-                WarningText.Size = UDim2.new(1, -4, 0, YText)
-                WarningBox.Size = UDim2.new(1, -5, 0, YBox + 4)
-            end
+local YBox = 24 + YText
+if YBox >= MaximumSize then
+    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
+    YBox = MaximumSize
+else
+    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
+end
 
             Tab:RefreshSides()
         end
