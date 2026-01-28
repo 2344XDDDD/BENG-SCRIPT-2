@@ -3634,7 +3634,7 @@ function Funcs:AddButton(...)
         return Toggle
     end
 
-    function Funcs:AddToggle(Idx, Info)
+function Funcs:AddToggle(Idx, Info)
         if Library.ForceCheckbox then
             return Funcs.AddCheckbox(self, Idx, Info)
         end
@@ -3722,7 +3722,7 @@ function Funcs:AddButton(...)
             CornerRadius = UDim.new(1, 0),
             Parent = Ball,
         })
-
+        
         function Toggle:UpdateColors()
             Toggle:Display()
         end
@@ -3733,40 +3733,52 @@ function Funcs:AddButton(...)
             end
 
             local Offset = Toggle.Value and 1 or 0
-
-            Switch.BackgroundTransparency = Toggle.Disabled and 0.75 or 0
-            SwitchStroke.Transparency = Toggle.Disabled and 0.75 or 0
-
-            Switch.BackgroundColor3 = Toggle.Value and Library.Scheme.AccentColor or Library.Scheme.MainColor
-            SwitchStroke.Color = Toggle.Value and Library.Scheme.AccentColor or Library.Scheme.OutlineColor
-
-            Library.Registry[Switch].BackgroundColor3 = Toggle.Value and "AccentColor" or "MainColor"
-            Library.Registry[SwitchStroke].Color = Toggle.Value and "AccentColor" or "OutlineColor"
-
+            local SmoothTI = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             if Toggle.Disabled then
                 Label.TextTransparency = 0.8
                 Ball.AnchorPoint = Vector2.new(Offset, 0)
                 Ball.Position = UDim2.fromScale(Offset, 0)
-
-                Ball.BackgroundColor3 = Library:GetDarkerColor(Library.Scheme.FontColor)
-                Library.Registry[Ball].BackgroundColor3 = function()
-                    return Library:GetDarkerColor(Library.Scheme.FontColor)
-                end
-
+                Switch.BackgroundTransparency = 0.75
+                SwitchStroke.Transparency = 0.75
                 return
             end
 
-            TweenService:Create(Label, Library.TweenInfo, {
-                TextTransparency = Toggle.Value and 0 or 0.4,
-            }):Play()
-            TweenService:Create(Ball, Library.TweenInfo, {
-                AnchorPoint = Vector2.new(Offset, 0),
-                Position = UDim2.fromScale(Offset, 0),
+            TweenService:Create(Switch, SmoothTI, {
+                BackgroundColor3 = Toggle.Value and Library.Scheme.AccentColor or Library.Scheme.MainColor,
+                BackgroundTransparency = 0
             }):Play()
 
-            Ball.BackgroundColor3 = Library.Scheme.FontColor
-            Library.Registry[Ball].BackgroundColor3 = "FontColor"
+            TweenService:Create(SwitchStroke, SmoothTI, {
+                Color = Toggle.Value and Library.Scheme.AccentColor or Library.Scheme.OutlineColor,
+                Transparency = 0
+            }):Play()
+
+            TweenService:Create(Ball, SmoothTI, {
+                AnchorPoint = Vector2.new(Offset, 0),
+                Position = UDim2.fromScale(Offset, 0),
+                BackgroundColor3 = Library.Scheme.FontColor
+            }):Play()
+
+            TweenService:Create(Label, SmoothTI, {
+                TextTransparency = Toggle.Value and 0 or 0.4,
+            }):Play()
+
+            Library.Registry[Switch].BackgroundColor3 = Toggle.Value and "AccentColor" or "MainColor"
+            Library.Registry[SwitchStroke].Color = Toggle.Value and "AccentColor" or "OutlineColor"
         end
+
+        Button.MouseEnter:Connect(function()
+            if Toggle.Disabled then return end
+            TweenService:Create(Label, TweenInfo.new(0.2), { TextTransparency = 0 }):Play()
+            if not Toggle.Value then
+                TweenService:Create(SwitchStroke, TweenInfo.new(0.2), { Color = Library:GetLighterColor(Library.Scheme.OutlineColor) }):Play()
+            end
+        end)
+
+        Button.MouseLeave:Connect(function()
+            if Toggle.Disabled then return end
+            Toggle:Display()
+        end)
 
         function Toggle:OnChanged(Func)
             Toggle.Changed = Func
@@ -3779,6 +3791,9 @@ function Funcs:AddButton(...)
 
             Toggle.Value = Value
             Toggle:Display()
+
+            Switch.Size = UDim2.fromOffset(30, 16)
+            TweenService:Create(Switch, TweenInfo.new(0.2, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(32, 18) }):Play()
 
             for _, Addon in Toggle.Addons do
                 if Addon.Type == "KeyPicker" and Addon.SyncToggleState then
@@ -3794,24 +3809,15 @@ function Funcs:AddButton(...)
 
         function Toggle:SetDisabled(Disabled: boolean)
             Toggle.Disabled = Disabled
-
             if Toggle.TooltipTable then
                 Toggle.TooltipTable.Disabled = Toggle.Disabled
             end
-
-            for _, Addon in Toggle.Addons do
-                if Addon.Type == "KeyPicker" and Addon.SyncToggleState then
-                    Addon:Update()
-                end
-            end
-
             Button.Active = not Toggle.Disabled
             Toggle:Display()
         end
 
         function Toggle:SetVisible(Visible: boolean)
             Toggle.Visible = Visible
-
             Button.Visible = Toggle.Visible
             Groupbox:Resize()
         end
@@ -3822,10 +3828,6 @@ function Funcs:AddButton(...)
         end
 
         Button.MouseButton1Click:Connect(function()
-            if Toggle.Disabled then
-                return
-            end
-
             Toggle:SetValue(not Toggle.Value)
         end)
 
@@ -3850,7 +3852,6 @@ function Funcs:AddButton(...)
         table.insert(Groupbox.Elements, Toggle)
 
         Toggle.Default = Toggle.Value
-
         Toggles[Idx] = Toggle
 
         return Toggle
