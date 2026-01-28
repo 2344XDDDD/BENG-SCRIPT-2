@@ -2008,7 +2008,6 @@ function Funcs:AddKeyPicker(Idx, Info)
             Type = "KeyPicker",
         }
 
-        --// 基础逻辑 //--
         if KeyPicker.Mode == "Press" then
             assert(ParentObj.Type == "Label", "KeyPicker with the mode 'Press' can be only applied on Labels.")
             KeyPicker.SyncToggleState = false
@@ -2022,8 +2021,6 @@ function Funcs:AddKeyPicker(Idx, Info)
         end
 
         local Picking = false
-
-        --// 内部依赖工具 //--
         local SpecialKeys = { ["MB1"] = Enum.UserInputType.MouseButton1, ["MB2"] = Enum.UserInputType.MouseButton2, ["MB3"] = Enum.UserInputType.MouseButton3 }
         local SpecialKeysInput = { [Enum.UserInputType.MouseButton1] = "MB1", [Enum.UserInputType.MouseButton2] = "MB2", [Enum.UserInputType.MouseButton3] = "MB3" }
         local Modifiers = { ["LAlt"] = Enum.KeyCode.LeftAlt, ["RAlt"] = Enum.KeyCode.RightAlt, ["LCtrl"] = Enum.KeyCode.LeftControl, ["RCtrl"] = Enum.KeyCode.RightControl, ["LShift"] = Enum.KeyCode.LeftShift, ["RShift"] = Enum.KeyCode.RightShift, ["Tab"] = Enum.KeyCode.Tab, ["CapsLock"] = Enum.KeyCode.CapsLock }
@@ -2047,7 +2044,6 @@ function Funcs:AddKeyPicker(Idx, Info)
             return Input.UserInputType == Enum.UserInputType.Keyboard and UserInputService:IsKeyDown(Input.KeyCode) and not UserInputService:GetFocusedTextBox()
         end
 
-        --// UI 创建 (添加圆角) //--
         local Picker = New("TextButton", {
             BackgroundColor3 = "MainColor",
             BorderColor3 = "OutlineColor",
@@ -2061,7 +2057,6 @@ function Funcs:AddKeyPicker(Idx, Info)
         New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Picker })
         KeyPicker.PickerInstance = Picker
 
-        --// 核心方法声明 (解决顺序依赖) //--
         function KeyPicker:Display(text)
             if Library.Unloaded then return end
             local disp = text or self.DisplayValue
@@ -2096,9 +2091,8 @@ function Funcs:AddKeyPicker(Idx, Info)
             end
         end
 
-        --// 菜单与列表初始化 //--
         local MenuTable = Library:AddContextMenu(Picker, UDim2.fromOffset(62, 0), function() return { Picker.AbsoluteSize.X + 1.5, 0.5 } end, 1)
-        KeyPicker.Menu = MenuTable -- 【修复关键点】：必须赋值给 .Menu，库的 Toggle 函数依赖它
+        KeyPicker.Menu = MenuTable
 
         local ModeButtons = {}
         for _, Mode in Info.Modes do
@@ -2116,7 +2110,6 @@ function Funcs:AddKeyPicker(Idx, Info)
             ModeButtons[Mode] = MBtn
         end
 
-        -- Keybinds 展示项
         do
             local KT = {}
             local Holder = New("TextButton", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 16), Text = "", Visible = not Info.NoUI, Parent = Library.KeybindContainer })
@@ -2147,7 +2140,6 @@ function Funcs:AddKeyPicker(Idx, Info)
             if ModeButtons[self.Mode] then ModeButtons[self.Mode]:Select() else self:Update() end
         end
 
-        --// 交互与动画 //--
         Picker.MouseButton1Click:Connect(function()
             if Picking then return end
             Picking = true
@@ -2161,8 +2153,6 @@ function Funcs:AddKeyPicker(Idx, Info)
         end)
 
         Picker.MouseButton2Click:Connect(MenuTable.Toggle)
-        
-        --// 初始运行 //--
         if ModeButtons[KeyPicker.Mode] then ModeButtons[KeyPicker.Mode]:Select() end
         KeyPicker:Update()
 
