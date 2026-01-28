@@ -1,4 +1,3 @@
-
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
@@ -5670,39 +5669,36 @@ WindowTitle = New("TextLabel", {
         })
 
         --// Footer
---// Footer 逻辑开始
+        
         local FooterSteps = {
             "Initialization in progress",
             "Finalising.",
             "successfully!"
         }
 
-        -- 1. 创建左侧页脚 (靠最左对齐)
         local FooterLeftLabel = New("TextLabel", {
             BackgroundTransparency = 1,
-            Position = UDim2.fromOffset(10, 0), -- 距离左边 10 像素
-            Size = UDim2.new(0.5, -10, 1, 0),    -- 占据左半边
+            Position = UDim2.fromOffset(10, 0),
+            Size = UDim2.new(0.4, -10, 1, 0),
             Text = WindowInfo.FooterLeft or "",
             TextSize = 14,
             TextTransparency = 0.5,
-            TextXAlignment = Enum.TextXAlignment.Left, -- 文本左对齐
+            TextXAlignment = Enum.TextXAlignment.Left,
             Parent = BottomBar,
         })
 
-        -- 2. 创建右侧页脚 (靠最右对齐)
         local FooterLabel = New("TextLabel", {
-            AnchorPoint = Vector2.new(1, 0),      -- 关键：锚点设为右侧
+            AnchorPoint = Vector2.new(0.5, 0),
             BackgroundTransparency = 1,
-            Position = UDim2.new(1, -25, 0, 0),   -- 关键：位置设在 1 (100%) 减去右边距 (25是为了避开缩放图标)
-            Size = UDim2.new(0.5, -10, 1, 0),    -- 占据右半边
+            Position = UDim2.fromScale(0.5, 0),
+            Size = UDim2.new(0.4, 0, 1, 0),
             Text = FooterSteps[1],
             TextSize = 14,
             TextTransparency = 0.5,
-            TextXAlignment = Enum.TextXAlignment.Right, -- 文本右对齐
+            TextXAlignment = Enum.TextXAlignment.Center,
             Parent = BottomBar,
         })
 
-        -- 3. 页脚动画逻辑 (保持不变，但确保对象正确)
         task.spawn(function()
             for i = 2, #FooterSteps do
                 task.wait(0.7)
@@ -5725,6 +5721,7 @@ WindowTitle = New("TextLabel", {
                 TweenService:Create(FooterLabel, TweenInfo.new(0.5), {TextTransparency = 0.5}):Play()
             end
         end)
+
         --// Resize Button
         if WindowInfo.Resizable then
             ResizeButton = New("TextButton", {
