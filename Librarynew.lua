@@ -1614,13 +1614,14 @@ function Library:AddDraggableMenu(Name: string)
         PaddingRight = UDim.new(0, 12),
         Parent = Label,
     })
-
-    local Container = New("Frame", {
-        BackgroundTransparency = 1,
-        Position = UDim2.fromOffset(0, 35),
-        Size = UDim2.new(1, 0, 1, -35),
-        Parent = Holder,
-    })
+local Container = New("CanvasGroup", {
+    BackgroundTransparency = 1,
+    GroupTransparency = 1,
+    Position = UDim2.fromOffset(0, 35),
+    Size = UDim2.new(1, 0, 1, -35),
+    Visible = false,
+    Parent = TabboxHolder,
+})
     New("UIListLayout", {
         Padding = UDim.new(0, 7),
         Parent = Container,
@@ -6447,14 +6448,13 @@ WindowTitle = New("TextLabel", {
                     Size = UDim2.new(1, 0, 0, 1),
                 })
 
-local Container = New("CanvasGroup", {
-    BackgroundTransparency = 1,
-    GroupTransparency = 1,
-    Position = UDim2.fromOffset(0, 35),
-    Size = UDim2.new(1, 0, 1, -35),
-    Visible = false,
-    Parent = TabboxHolder,
-})
+                local Container = New("Frame", {
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(0, 35),
+                    Size = UDim2.new(1, 0, 1, -35),
+                    Visible = false,
+                    Parent = TabboxHolder,
+                })
                 local List = New("UIListLayout", {
                     Padding = UDim.new(0, 8),
                     Parent = Container,
@@ -6492,13 +6492,13 @@ local Container = New("CanvasGroup", {
                 end
 
 function Tab:Hide()
-    Button.BackgroundTransparency = 0
-    Button.TextTransparency = 0.5
+    TweenService:Create(Button, Library.TweenInfo, {BackgroundTransparency = 0, TextTransparency = 0.5}):Play()
     Line.Visible = true
     
     Container.Visible = false
     Container.GroupTransparency = 1
 end
+
                 function Tab:Resize()
                     if Tabbox.ActiveTab ~= Tab then
                         return
@@ -6554,25 +6554,20 @@ end
         end
 
 function Tab:Show()
-    if Tabbox.ActiveTab == Tab then
-        return
-    end
+    if Tabbox.ActiveTab == Tab then return end
 
     if Tabbox.ActiveTab then
         Tabbox.ActiveTab:Hide()
     end
-    Button.BackgroundTransparency = 1
-    Button.TextTransparency = 0
+    TweenService:Create(Button, Library.TweenInfo, {BackgroundTransparency = 1, TextTransparency = 0}):Play()
     Line.Visible = false
     Container.Visible = true
     Container.GroupTransparency = 1
-    Container.Position = UDim2.fromOffset(0, 45)
-    local TabboxTweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    TweenService:Create(Container, TabboxTweenInfo, {
+    Container.Position = UDim2.fromOffset(0, 45) 
+    TweenService:Create(Container, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
         GroupTransparency = 0,
         Position = UDim2.fromOffset(0, 35)
     }):Play()
-
     Tabbox.ActiveTab = Tab
     Tab:Resize()
 end
