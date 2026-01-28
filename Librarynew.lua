@@ -4018,7 +4018,7 @@ function Funcs:AddButton(...)
         return Input
     end
 
-    function Funcs:AddSlider(Idx, Info)
+function Funcs:AddSlider(Idx, Info)
         Info = Library:Validate(Info, Templates.Slider)
 
         local Groupbox = self
@@ -4097,7 +4097,7 @@ function Funcs:AddButton(...)
 
         local Fill = New("Frame", {
             BackgroundColor3 = "AccentColor",
-            Size = UDim2.fromScale(0.5, 1),
+            Size = UDim2.fromScale(0, 1),
             Parent = Bar,
         })
 
@@ -4147,7 +4147,10 @@ function Funcs:AddButton(...)
             end
 
             local X = (Slider.Value - Slider.Min) / (Slider.Max - Slider.Min)
-            Fill.Size = UDim2.fromScale(X, 1)
+            
+            TweenService:Create(Fill, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.fromScale(X, 1)
+            }):Play()
         end
 
         function Slider:OnChanged(Func)
@@ -4156,37 +4159,32 @@ function Funcs:AddButton(...)
 
         function Slider:SetMax(Value)
             assert(Value > Slider.Min, "Max value cannot be less than the current min value.")
-
-            Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value)) --this will make  so it updates. and im calling this so i dont need to add an if :P
             Slider.Max = Value
+            Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value))
             Slider:Display()
         end
 
         function Slider:SetMin(Value)
             assert(Value < Slider.Max, "Min value cannot be greater than the current max value.")
-
-            Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max)) --same here. adding these comments for the funny
             Slider.Min = Value
+            Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max))
             Slider:Display()
         end
 
         function Slider:SetValue(Str)
-            if Slider.Disabled then
-                return
-            end
-
             local Num = tonumber(Str)
-            if not Num or Num == Slider.Value then
+            if not Num then
                 return
             end
 
             Num = math.clamp(Num, Slider.Min, Slider.Max)
-
             Slider.Value = Num
             Slider:Display()
 
-            Library:SafeCallback(Slider.Callback, Slider.Value)
-            Library:SafeCallback(Slider.Changed, Slider.Value)
+            if not Slider.Disabled then
+                Library:SafeCallback(Slider.Callback, Slider.Value)
+                Library:SafeCallback(Slider.Changed, Slider.Value)
+            end
         end
 
         function Slider:SetDisabled(Disabled: boolean)
@@ -4216,16 +4214,6 @@ function Funcs:AddButton(...)
             Slider:Display()
         end
 
-        function Slider:SetPrefix(Prefix: string)
-            Slider.Prefix = Prefix
-            Slider:Display()
-        end
-
-        function Slider:SetSuffix(Suffix: string)
-            Slider.Suffix = Suffix
-            Slider:Display()
-        end
-
         Bar.InputBegan:Connect(function(Input: InputObject)
             if not IsClickInput(Input) or Slider.Disabled then
                 return
@@ -4242,8 +4230,8 @@ function Funcs:AddButton(...)
                 local OldValue = Slider.Value
                 Slider.Value = Round(Slider.Min + ((Slider.Max - Slider.Min) * Scale), Slider.Rounding)
 
-                Slider:Display()
                 if Slider.Value ~= OldValue then
+                    Slider:Display()
                     Library:SafeCallback(Slider.Callback, Slider.Value)
                     Library:SafeCallback(Slider.Changed, Slider.Value)
                 end
@@ -4257,7 +4245,7 @@ function Funcs:AddButton(...)
         end)
 
         if typeof(Slider.Tooltip) == "string" or typeof(Slider.DisabledTooltip) == "string" then
-            Slider.TooltipTable = Library:AddTooltip(Slider.Tooltip, Slider.DisabledTooltip, Bar)
+            Slider.TooltipTable = Library:AddTooltip(Toggle.Tooltip, Toggle.DisabledTooltip, Bar)
             Slider.TooltipTable.Disabled = Slider.Disabled
         end
 
