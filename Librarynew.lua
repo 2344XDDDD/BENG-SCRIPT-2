@@ -5677,20 +5677,20 @@ WindowTitle = New("TextLabel", {
 
         local FooterLeftLabel = New("TextLabel", {
             BackgroundTransparency = 1,
-            Position = UDim2.fromOffset(10, 0),
-            Size = UDim2.new(0.5, -10, 1, 0),
-            Text = WindowInfo.FooterLeft or "",
+            Position = UDim2.fromOffset(12, 0),
+            Size = UDim2.new(0.5, -12, 1, 0),
+            Text = WindowInfo.FooterLeft,
             TextSize = 14,
             TextTransparency = 0.5,
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = BottomBar,
         })
-        
+
         local FooterLabel = New("TextLabel", {
             AnchorPoint = Vector2.new(1, 0),
             BackgroundTransparency = 1,
-            Position = UDim2.new(1, -10, 0, 0),
-            Size = UDim2.new(0.5, -10, 1, 0),
+            Position = UDim2.new(1, -12, 0, 0),
+            Size = UDim2.new(0.5, -12, 1, 0),
             Text = FooterSteps[1],
             TextSize = 14,
             TextTransparency = 0.5,
@@ -7117,4 +7117,3 @@ Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 
 getgenv().Library = Library
 return Library
-
