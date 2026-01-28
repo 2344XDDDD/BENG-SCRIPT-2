@@ -4,9 +4,9 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.73 | by:Footagesus | Script by:BENG  | UI 1.6.7 | UPD: [2026/28/1]
+    V1.6.74 | by:Footagesus | Script by:BENG  | UI 1.6.7 | UPD: [2026/28/1]
     https://bengscript.lol
-
+    Added:Icon Locked
     This UI cannot be used illegally - it cannot be distributed for use with scripts created by us, or used in collaboration with us. This script GUI cannot be used with any script we have created!
 
 ]]
@@ -5131,6 +5131,7 @@ end
 return function(af)
 local ag={
 Title=af.Title,
+LockedIcon = af.LockedIcon or "lock",
 Desc=af.Desc or nil,
 Hover=af.Hover,
 Thumbnail=af.Thumbnail,
@@ -5296,8 +5297,8 @@ aq
 
 
 local ar=aa.Image(
-"lock",
-"lock",
+ag.LockedIcon,
+ag.LockedIcon,
 0,
 af.Window.Folder,
 "Lock",
@@ -5631,11 +5632,13 @@ f:Destroy()
 end
 
 
-function ag.Lock(h,j)
+function ag.Lock(h,j,newIcon)
 al=false
 au.Active=true
 au.Visible=true
 as.Text=j or"Locked"
+if newIcon then
+end
 end
 
 function ag.Unlock(h)
@@ -5797,7 +5800,7 @@ af.ButtonFrame=a.load'B'{
 Title=af.Title,
 Desc=af.Desc,
 Parent=ae.Parent,
-
+LockedIcon = ae.LockedIcon,
 
 
 
