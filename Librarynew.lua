@@ -11,16 +11,39 @@ local Teams: Teams = cloneref(game:GetService("Teams"))
 local TweenService: TweenService = cloneref(game:GetService("TweenService"))
 
 local getgenv = getgenv or function()
-    return shared
+return shared
 end
 local setclipboard = setclipboard or nil
 local protectgui = protectgui or (syn and syn.protect_gui) or function() end
 local gethui = gethui or function()
-    return CoreGui
+return CoreGui
 end
-
 local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 local Mouse = cloneref(LocalPlayer:GetMouse())
+local marqueeGradients = {}
+local MARQUEE_SPEED = 120
+RunService.RenderStepped:Connect(function(dt)
+for i = #marqueeGradients, 1, -1 do
+local grad = marqueeGradients[i]
+if grad and grad.Parent then
+grad.Rotation = (grad.Rotation + MARQUEE_SPEED * dt) % 360
+else
+table.remove(marqueeGradients, i)
+end
+end
+end)
+local function ApplyMarquee(Instance)
+local Stroke = Instance.new("UIStroke")
+Stroke.Name = "MarqueeStroke"
+Stroke.Thickness = 2.5
+Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+Stroke.Parent = Instance
+local Gradient = Instance.new("UIGradient")
+Gradient.Name = "MarqueeGradient"
+ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromHex("#AEEEEE")), ColorSequenceKeypoint.new(0.5, Color3.fromHex("#B0C4DE")), ColorSequenceKeypoint.new(1, Color3.fromHex("#F5F5DC"))}),
+Gradient.Parent = Stroke
+table.insert(marqueeGradients, Gradient)
+end
 
 local Labels = {}
 local Buttons = {}
@@ -1543,6 +1566,7 @@ function Library:AddDraggableButton(Text: string, Func, ExcludeScaling: boolean?
         ZIndex = 10,
         Parent = ScreenGui,
     })
+    ApplyMarquee(MainFrame) 
     New("UICorner", {
         CornerRadius = UDim.new(0, Library.CornerRadius),
         Parent = Button,
