@@ -5669,7 +5669,7 @@ WindowTitle = New("TextLabel", {
         })
 
         --// Footer
-        
+
         local FooterSteps = {
             "Initialization in progress",
             "Finalising.",
@@ -5680,7 +5680,7 @@ WindowTitle = New("TextLabel", {
             BackgroundTransparency = 1,
             Position = UDim2.fromOffset(10, 0),
             Size = UDim2.new(0.4, -10, 1, 0),
-            Text = WindowInfo.FooterLeft or "",
+            Text = FooterSteps[1],
             TextSize = 14,
             TextTransparency = 0.5,
             TextXAlignment = Enum.TextXAlignment.Left,
