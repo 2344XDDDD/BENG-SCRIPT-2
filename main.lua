@@ -5982,59 +5982,39 @@ Scale=1,
 }),
 })
 })
-
 local ar
 local as
-
 local at=ak and 30 or 20
 local au=aq.Size.X.Offset
-
-function am.Set(av,aw,ax,ay)
+function am.Set(av, aw, ax, ay)
+local onPos = UDim2.new(0, au - at - 2, 0.5, 0)
+local offPos = UDim2.new(0, 2, 0.5, 0)
+local activeColor = Color3.fromRGB(51, 199, 89)
 if not ay then
-if aw then
-ad(aq.Frame,0.15,{
-Position=UDim2.new(0,au-at-2,0.5,0),
-},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-else
-ad(aq.Frame,0.15,{
-Position=UDim2.new(0,2,0.5,0),
-},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-end
-else
-if aw then
-aq.Frame.Position=UDim2.new(0,au-at-2,0.5,0)
-else
-aq.Frame.Position=UDim2.new(0,2,0.5,0)
-end
-end
-
-if aw then
-ad(aq.Layer,0.1,{
-ImageTransparency=0,
-}):Play()
-
+ad(aq.Frame, 0.25, {
+Position = aw and onPos or offPos,
+}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+ad(aq.Layer, 0.2, {
+ImageTransparency = aw and 0 or 1,
+ImageColor3 = activeColor
+}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 if ao then
-ad(ao,0.1,{
-ImageTransparency=0,
+ad(ao, 0.2, {
+ImageTransparency = aw and 0 or 1,
 }):Play()
 end
 else
-ad(aq.Layer,0.1,{
-ImageTransparency=1,
-}):Play()
-
+aq.Frame.Position = aw and onPos or offPos
+aq.Layer.ImageTransparency = aw and 0 or 1
+aq.Layer.ImageColor3 = activeColor
 if ao then
-ad(ao,0.1,{
-ImageTransparency=1,
-}):Play()
+ao.ImageTransparency = aw and 0 or 1
 end
 end
-
-ax=ax~=false
-
+ax = ax ~= false
 task.spawn(function()
 if aj and ax then
-ab.SafeCallback(aj,aw)
+ab.SafeCallback(aj, aw)
 end
 end)
 end
@@ -9630,133 +9610,6 @@ end
 return af end function a.V()
 return{
 Elements={
-    function a.NB() -- 新增步进器组件
-    local aa = a.load'c'
-    local ac = aa.New
-    local ad = aa.Tween
-
-    local ae = {}
-
-    function ae.New(af, ag)
-        local aj = {
-            __type = "NumberBox",
-            Title = ag.Title or "NumberBox",
-            Desc = ag.Desc or nil,
-            Locked = ag.Locked or false,
-            Value = ag.Value or {Min = 0, Max = 100, Default = 50},
-            Step = ag.Step or 1,
-            Callback = ag.Callback or function() end,
-        }
-
-        local ak = aj.Value.Default
-        
-        -- 创建基础框架
-        aj.NumberFrame = a.load'B'{
-            Title = aj.Title,
-            Desc = aj.Desc,
-            Parent = ag.Parent,
-            Window = ag.Window,
-            Tab = ag.Tab,
-            Index = ag.Index,
-            ElementTable = aj,
-            ParentConfig = ag,
-            Hover = false,
-            TextOffset = 120
-        }
-
-        -- 右侧控制区域（背景）
-        local ControlBox = aa.NewRoundFrame(12, "Squircle", {
-            Size = UDim2.new(0, 90, 0, 32),
-            ThemeTag = { ImageColor3 = "ElementBackground" },
-            ImageTransparency = 0.9,
-            Parent = aj.NumberFrame.UIElements.Main,
-            AnchorPoint = Vector2.new(1, 0.5),
-            Position = UDim2.new(1, 0, 0.5, 0),
-        })
-
-        -- 中间分割线
-        ac("Frame", {
-            Size = UDim2.new(0, 1, 0, 16),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            AnchorPoint = Vector2.new(0.5, 0.5),
-            BackgroundTransparency = 0.8,
-            ThemeTag = { BackgroundColor3 = "Text" },
-            Parent = ControlBox
-        })
-
-        -- 减号按钮
-        local Minus = ac("TextButton", {
-            Size = UDim2.new(0.5, 0, 1, 0),
-            Position = UDim2.new(0, 0, 0, 0),
-            BackgroundTransparency = 1,
-            Text = "—",
-            TextSize = 14,
-            ThemeTag = { TextColor3 = "Text" },
-            Parent = ControlBox
-        })
-
-        -- 加号按钮
-        local Plus = ac("TextButton", {
-            Size = UDim2.new(0.5, 0, 1, 0),
-            Position = UDim2.new(0.5, 0, 0, 0),
-            BackgroundTransparency = 1,
-            Text = "＋",
-            TextSize = 18,
-            ThemeTag = { TextColor3 = "Text" },
-            Parent = ControlBox
-        })
-
-        -- 左侧数字显示
-        local ValueLabel = ac("TextLabel", {
-            Text = tostring(ak),
-            Size = UDim2.new(0, 60, 0, 32),
-            Position = UDim2.new(1, -105, 0.5, 0),
-            AnchorPoint = Vector2.new(1, 0.5),
-            BackgroundTransparency = 1,
-            TextXAlignment = "Right",
-            TextSize = 17,
-            FontFace = Font.new(aa.Font, Enum.FontWeight.SemiBold),
-            ThemeTag = { TextColor3 = "Text" },
-            Parent = aj.NumberFrame.UIElements.Main
-        })
-
-        -- 动画更新函数
-        local function UpdateValue(newVal)
-            newVal = math.clamp(newVal, aj.Value.Min, aj.Value.Max)
-            if newVal == ak then return end
-            
-            -- 数字切换渐变动画
-            ad(ValueLabel, 0.1, {TextTransparency = 1, Position = UDim2.new(1, -105, 0.5, -8)}):Play()
-            
-            task.delay(0.1, function()
-                ak = newVal
-                ValueLabel.Text = tostring(ak)
-                ValueLabel.Position = UDim2.new(1, -105, 0.5, 8)
-                ad(ValueLabel, 0.15, {TextTransparency = 0, Position = UDim2.new(1, -105, 0.5, 0)}):Play()
-                aa.SafeCallback(aj.Callback, ak)
-            end)
-        end
-
-        -- 按钮交互效果
-        Minus.MouseButton1Click:Connect(function()
-            ad(Minus, 0.1, {TextTransparency = 0.6}):Play()
-            UpdateValue(ak - aj.Step)
-            task.wait(0.1)
-            ad(Minus, 0.1, {TextTransparency = 0}):Play()
-        end)
-
-        Plus.MouseButton1Click:Connect(function()
-            ad(Plus, 0.1, {TextTransparency = 0.6}):Play()
-            UpdateValue(ak + aj.Step)
-            task.wait(0.1)
-            ad(Plus, 0.1, {TextTransparency = 0}):Play()
-        end)
-
-        return "NumberBox", aj
-    end
-
-    return ae
-end
 Paragraph=a.load'C',
 Button=a.load'D',
 Toggle=a.load'G',
@@ -9769,7 +9622,7 @@ Colorpicker=a.load'Q',
 Section=a.load'R',
 Divider=a.load'K',
 Space=a.load'S',
-Image=a.load'T',    
+Image=a.load'T',
 Group=a.load'U',
 MultiSection = a.load'MS', 
 
