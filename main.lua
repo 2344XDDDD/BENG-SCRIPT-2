@@ -9627,6 +9627,118 @@ aj.Tab
 return ak.__type,ak
 end
 
+function a.NB()
+    local aa = a.load'c'
+    local ac = aa.New
+    local ad = aa.Tween
+    local ae = {}
+    function ae.New(af, ag)
+        local aj = {
+            __type = "NumberBox",
+            Title = ag.Title or "NumberBox",
+            Desc = ag.Desc or nil,
+            Locked = ag.Locked or false,
+            Value = ag.Value or {Min = 0, Max = 100, Default = 50},
+            Step = ag.Step or 1,
+            Callback = ag.Callback or function() end,
+        }
+        local ak = aj.Value.Default
+        aj.NumberFrame = a.load'B'{
+            Title = aj.Title,
+            Desc = aj.Desc,
+            Parent = ag.Parent,
+            Window = ag.Window,
+            Tab = ag.Tab,
+            Index = ag.Index,
+            ElementTable = aj,
+            ParentConfig = ag,
+            Hover = false,
+            TextOffset = 120
+        }
+
+        local ControlBox = aa.NewRoundFrame(12, "Squircle", {
+            Size = UDim2.new(0, 90, 0, 32),
+            ThemeTag = { ImageColor3 = "ElementBackground" },
+            ImageTransparency = 0.9,
+            Parent = aj.NumberFrame.UIElements.Main,
+            AnchorPoint = Vector2.new(1, 0.5),
+            Position = UDim2.new(1, 0, 0.5, 0),
+        })
+
+        ac("Frame", {
+            Size = UDim2.new(0, 1, 0, 16),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundTransparency = 0.8,
+            ThemeTag = { BackgroundColor3 = "Text" },
+            Parent = ControlBox
+        })
+
+        local Minus = ac("TextButton", {
+            Size = UDim2.new(0.5, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 1,
+            Text = "—",
+            TextSize = 14,
+            ThemeTag = { TextColor3 = "Text" },
+            Parent = ControlBox
+        })
+
+        local Plus = ac("TextButton", {
+            Size = UDim2.new(0.5, 0, 1, 0),
+            Position = UDim2.new(0.5, 0, 0, 0),
+            BackgroundTransparency = 1,
+            Text = "＋",
+            TextSize = 18,
+            ThemeTag = { TextColor3 = "Text" },
+            Parent = ControlBox
+        })
+
+        local ValueLabel = ac("TextLabel", {
+            Text = tostring(ak),
+            Size = UDim2.new(0, 60, 0, 32),
+            Position = UDim2.new(1, -105, 0.5, 0),
+            AnchorPoint = Vector2.new(1, 0.5),
+            BackgroundTransparency = 1,
+            TextXAlignment = "Right",
+            TextSize = 17,
+            FontFace = Font.new(aa.Font, Enum.FontWeight.SemiBold),
+            ThemeTag = { TextColor3 = "Text" },
+            Parent = aj.NumberFrame.UIElements.Main
+        })
+
+        local function UpdateValue(newVal)
+            newVal = math.clamp(newVal, aj.Value.Min, aj.Value.Max)
+            if newVal == ak then return end
+            ad(ValueLabel, 0.1, {TextTransparency = 1, Position = UDim2.new(1, -105, 0.5, -8)}):Play()
+            task.delay(0.1, function()
+                ak = newVal
+                ValueLabel.Text = tostring(ak)
+                ValueLabel.Position = UDim2.new(1, -105, 0.5, 8)
+                ad(ValueLabel, 0.15, {TextTransparency = 0, Position = UDim2.new(1, -105, 0.5, 0)}):Play()
+                aa.SafeCallback(aj.Callback, ak)
+            end)
+        end
+
+        Minus.MouseButton1Click:Connect(function()
+            ad(Minus, 0.1, {TextTransparency = 0.6}):Play()
+            UpdateValue(ak - aj.Step)
+            task.wait(0.1)
+            ad(Minus, 0.1, {TextTransparency = 0}):Play()
+        end)
+
+        Plus.MouseButton1Click:Connect(function()
+            ad(Plus, 0.1, {TextTransparency = 0.6}):Play()
+            UpdateValue(ak + aj.Step)
+            task.wait(0.1)
+            ad(Plus, 0.1, {TextTransparency = 0}):Play()
+        end)
+
+        return "NumberBox", aj
+    end
+    return ae
+end
+
 return af end function a.V()
 return{
 Elements={
