@@ -4,7 +4,7 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/30/1]
+    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/28/1]
     https://bengscript.lol
     [Update: Added: all - New:LockedIcon]
     Lua
@@ -9627,11 +9627,16 @@ aj.Tab
 return ak.__type,ak
 end
 
-function a.NB()
+return af end function a.V()
+return{
+Elements={
+    function a.NB() -- 新增步进器组件
     local aa = a.load'c'
     local ac = aa.New
     local ad = aa.Tween
+
     local ae = {}
+
     function ae.New(af, ag)
         local aj = {
             __type = "NumberBox",
@@ -9642,7 +9647,10 @@ function a.NB()
             Step = ag.Step or 1,
             Callback = ag.Callback or function() end,
         }
+
         local ak = aj.Value.Default
+        
+        -- 创建基础框架
         aj.NumberFrame = a.load'B'{
             Title = aj.Title,
             Desc = aj.Desc,
@@ -9656,6 +9664,7 @@ function a.NB()
             TextOffset = 120
         }
 
+        -- 右侧控制区域（背景）
         local ControlBox = aa.NewRoundFrame(12, "Squircle", {
             Size = UDim2.new(0, 90, 0, 32),
             ThemeTag = { ImageColor3 = "ElementBackground" },
@@ -9665,6 +9674,7 @@ function a.NB()
             Position = UDim2.new(1, 0, 0.5, 0),
         })
 
+        -- 中间分割线
         ac("Frame", {
             Size = UDim2.new(0, 1, 0, 16),
             Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -9674,6 +9684,7 @@ function a.NB()
             Parent = ControlBox
         })
 
+        -- 减号按钮
         local Minus = ac("TextButton", {
             Size = UDim2.new(0.5, 0, 1, 0),
             Position = UDim2.new(0, 0, 0, 0),
@@ -9684,6 +9695,7 @@ function a.NB()
             Parent = ControlBox
         })
 
+        -- 加号按钮
         local Plus = ac("TextButton", {
             Size = UDim2.new(0.5, 0, 1, 0),
             Position = UDim2.new(0.5, 0, 0, 0),
@@ -9694,6 +9706,7 @@ function a.NB()
             Parent = ControlBox
         })
 
+        -- 左侧数字显示
         local ValueLabel = ac("TextLabel", {
             Text = tostring(ak),
             Size = UDim2.new(0, 60, 0, 32),
@@ -9707,10 +9720,14 @@ function a.NB()
             Parent = aj.NumberFrame.UIElements.Main
         })
 
+        -- 动画更新函数
         local function UpdateValue(newVal)
             newVal = math.clamp(newVal, aj.Value.Min, aj.Value.Max)
             if newVal == ak then return end
+            
+            -- 数字切换渐变动画
             ad(ValueLabel, 0.1, {TextTransparency = 1, Position = UDim2.new(1, -105, 0.5, -8)}):Play()
+            
             task.delay(0.1, function()
                 ak = newVal
                 ValueLabel.Text = tostring(ak)
@@ -9720,6 +9737,7 @@ function a.NB()
             end)
         end
 
+        -- 按钮交互效果
         Minus.MouseButton1Click:Connect(function()
             ad(Minus, 0.1, {TextTransparency = 0.6}):Play()
             UpdateValue(ak - aj.Step)
@@ -9736,12 +9754,9 @@ function a.NB()
 
         return "NumberBox", aj
     end
+
     return ae
 end
-
-return af end function a.V()
-return{
-Elements={
 Paragraph=a.load'C',
 Button=a.load'D',
 Toggle=a.load'G',
@@ -9754,7 +9769,7 @@ Colorpicker=a.load'Q',
 Section=a.load'R',
 Divider=a.load'K',
 Space=a.load'S',
-Image=a.load'T',
+Image=a.load'T',    
 Group=a.load'U',
 MultiSection = a.load'MS', 
 
