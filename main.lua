@@ -5870,15 +5870,18 @@ do local _a=aa local _b=af local _c=task local _d=Enum _a.AddSignal(_b.ButtonFra
 return af.__type,af
 end
 
-function a.E()
+return ac end function a.E()
 local aa={}
+
 local ab=a.load'c'
 local ac=ab.New
 local ad=ab.Tween
+
 local ae=game:GetService"UserInputService"
 
 function aa.New(af,ag,ah,ai,aj,ak,al)
 local am={}
+
 local an=12
 local ao
 if ag and ag~=""then
@@ -5901,9 +5904,6 @@ BackgroundTransparency=1,
 Parent=ai,
 })
 
--- 这里的 activeColor 是图片二中的绿色
-local activeColor = Color3.fromRGB(51, 199, 89)
-
 local aq=ab.NewRoundFrame(an,"Squircle",{
 ImageTransparency=.85,
 ThemeTag={
@@ -5917,7 +5917,9 @@ Position=UDim2.new(0,0,0.5,0),
 ab.NewRoundFrame(an,"Squircle",{
 Size=UDim2.new(1,0,1,0),
 Name="Layer",
-ImageColor3=activeColor, -- 强制设为绿色
+ThemeTag={
+ImageColor3="Toggle",
+},
 ImageTransparency=1,
 }),
 ab.NewRoundFrame(an,"SquircleOutline",{
@@ -5934,6 +5936,8 @@ NumberSequenceKeypoint.new(1,1),
 }
 })
 }),
+
+
 ab.NewRoundFrame(an,"Squircle",{
 Size=UDim2.new(0,ak and 30 or 20,0,20),
 Position=UDim2.new(0,2,0.5,0),
@@ -5956,6 +5960,20 @@ Size=UDim2.new(1,0,1,0),
 ImageColor3=Color3.new(1,1,1),
 Name="Highlight",
 ImageTransparency=0.4,
+},{
+
+
+
+
+
+
+
+
+
+
+
+
+
 }),
 ao,
 ac("UIScale",{
@@ -5967,28 +5985,53 @@ Scale=1,
 
 local ar
 local as
+
 local at=ak and 30 or 20
 local au=aq.Size.X.Offset
 
 function am.Set(av,aw,ax,ay)
-local targetPos = aw and UDim2.new(0,au-at-2,0.5,0) or UDim2.new(0,2,0.5,0)
 if not ay then
-ad(aq.Frame,0.2,{Position=targetPos,},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-ad(aq.Layer,0.15,{ImageTransparency=aw and 0 or 1,}):Play()
+if aw then
+ad(aq.Frame,0.15,{
+Position=UDim2.new(0,au-at-2,0.5,0),
+},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 else
-aq.Frame.Position=targetPos
-aq.Layer.ImageTransparency=aw and 0 or 1
+ad(aq.Frame,0.15,{
+Position=UDim2.new(0,2,0.5,0),
+},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+end
+else
+if aw then
+aq.Frame.Position=UDim2.new(0,au-at-2,0.5,0)
+else
+aq.Frame.Position=UDim2.new(0,2,0.5,0)
+end
 end
 
+if aw then
+ad(aq.Layer,0.1,{
+ImageTransparency=0,
+}):Play()
+
 if ao then
-if not ay then
-ad(ao,0.15,{ImageTransparency=aw and 0 or 1,}):Play()
+ad(ao,0.1,{
+ImageTransparency=0,
+}):Play()
+end
 else
-ao.ImageTransparency=aw and 0 or 1
+ad(aq.Layer,0.1,{
+ImageTransparency=1,
+}):Play()
+
+if ao then
+ad(ao,0.1,{
+ImageTransparency=1,
+}):Play()
 end
 end
 
 ax=ax~=false
+
 task.spawn(function()
 if aj and ax then
 ab.SafeCallback(aj,aw)
@@ -5996,41 +6039,115 @@ end
 end)
 end
 
+
 function am.Animate(av,aw,ax)
 if not al.Window.IsToggleDragging then
 al.Window.IsToggleDragging=true
-local ay=aw.Position.X
-local aA=aq.Frame.Position.X.Offset
-ad(aq.Frame.Bar.UIScale,0.25,{Scale=1.3},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 
-if ar then ar:Disconnect() end
+local ay=aw.Position.X
+local az=aw.Position.Y
+local aA=aq.Frame.Position.X.Offset
+local aB=false
+
+ad(aq.Frame.Bar.UIScale,0.28,{Scale=1.5},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+ad(aq.Frame.Bar,0.28,{ImageTransparency=.85},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+
+if ar then
+ar:Disconnect()
+end
+
 ar=ae.InputChanged:Connect(function(b)
 if al.Window.IsToggleDragging and(b.UserInputType==Enum.UserInputType.MouseMovement or b.UserInputType==Enum.UserInputType.Touch)then
+if aB then
+return
+end
+
+local d=math.abs(b.Position.X-ay)
+local f=math.abs(b.Position.Y-az)
+
+if f>d and f>10 then
+aB=true
+al.Window.IsToggleDragging=false
+
+if ar then
+ar:Disconnect()
+ar=nil
+end
+if as then
+as:Disconnect()
+as=nil
+end
+
+ad(aq.Frame,0.15,{
+Position=UDim2.new(0,aA,0.5,0)
+},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+
+ad(aq.Frame.Bar.UIScale,0.23,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+ad(aq.Frame.Bar,0.23,{ImageTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+return
+end
+
 local g=b.Position.X-ay
-local h=math.max(2,math.min(aA+g,au-at-2))
-aq.Frame.Position=UDim2.new(0,h,0.5,0)
--- 背景透明度随拖动变化
-local progress = (h-2)/(au-at-4)
-aq.Layer.ImageTransparency = 1 - progress
+local h=math.max(2,math.min(aA+g,au-at-2))local j=
+
+(aq.Frame.Position.X.Offset-2)/(au-at-4)
+
+ad(aq.Frame,0.05,{
+Position=UDim2.new(0,h,0.5,0)
+},Enum.EasingStyle.Linear,Enum.EasingDirection.Out):Play()
+
+
+
+
+
 end
 end)
 
-if as then as:Disconnect() end
+if as then
+as:Disconnect()
+end
+
 as=ae.InputEnded:Connect(function(b)
 if al.Window.IsToggleDragging and(b.UserInputType==Enum.UserInputType.MouseButton1 or b.UserInputType==Enum.UserInputType.Touch)then
 al.Window.IsToggleDragging=false
-if ar then ar:Disconnect() ar=nil end
-if as then as:Disconnect() as=nil end
-local finalX = aq.Frame.Position.X.Offset
-local isOn = finalX > (au/2 - at/2)
-ax:Set(isOn,true,false)
-ad(aq.Frame.Bar.UIScale,0.2,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+
+if ar then
+ar:Disconnect()
+ar=nil
+end
+
+if as then
+as:Disconnect()
+as=nil
+end
+
+if aB then
+return
+end
+
+local d=aq.Frame.Position.X.Offset
+local f=math.abs(b.Position.X-ay)
+
+if f<10 then
+local g=not ax.Value
+ax:Set(g,true,false)
+else
+local g=d+at/2
+local h=au/2
+local j=g>h
+ax:Set(j,true,false)
+end
+
+ad(aq.Frame.Bar.UIScale,0.23,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+ad(aq.Frame.Bar,0.23,{ImageTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 end
 end)
 end
 end
+
 return ap,am
 end
+
 return aa end function a.F()
 local aa={}
 
