@@ -5870,265 +5870,150 @@ do local _a=aa local _b=af local _c=task local _d=Enum _a.AddSignal(_b.ButtonFra
 return af.__type,af
 end
 
-return ac end function a.E()
-local aa={}
+function a.E()
+    local aa = {}
+    local ab = a.load'c'
+    local ac = ab.New
+    local ad = ab.Tween
+    local ae = game:GetService"UserInputService"
+    function aa.New(af, ag, ah, ai, aj, ak, al)
+        local am = {}
+        local an = 12
+        local ao
+        if ag and ag ~= "" then
+            ao = ac("ImageLabel", {
+                Size = UDim2.new(0, 13, 0, 13),
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                Image = ab.Icon(ag)[1],
+                ImageRectOffset = ab.Icon(ag)[2].ImageRectPosition,
+                ImageRectSize = ab.Icon(ag)[2].ImageRectSize,
+                ImageTransparency = 1,
+                ImageColor3 = Color3.new(0, 0, 0),
+            })
+        end
+        local ap = ac("Frame", {
+            Size = UDim2.new(0, 2, 0, 26),
+            BackgroundTransparency = 1,
+            Parent = ai,
+        })
+        local activeGreen = Color3.fromRGB(51, 199, 89)
+        local aq = ab.NewRoundFrame(an, "Squircle", {
+            ImageTransparency = .85,
+            ThemeTag = { ImageColor3 = "Text" },
+            Parent = ap,
+            Size = UDim2.new(0, ak and (52) or (40.8), 0, 24),
+            AnchorPoint = Vector2.new(1, 0.5),
+            Position = UDim2.new(0, 0, 0.5, 0),
+        }, {
+            ab.NewRoundFrame(an, "Squircle", {
+                Size = UDim2.new(1, 0, 1, 0),
+                Name = "Layer",
+                ImageColor3 = activeGreen,
+                ImageTransparency = 1,
+            }),
+            ab.NewRoundFrame(an, "SquircleOutline", {
+                Size = UDim2.new(1, 0, 1, 0),
+                Name = "Stroke",
+                ImageColor3 = Color3.new(1, 1, 1),
+                ImageTransparency = 1,
+            }, {
+                ac("UIGradient", {
+                    Rotation = 90,
+                    Transparency = NumberSequence.new{
+                        NumberSequenceKeypoint.new(0, 0),
+                        NumberSequenceKeypoint.new(1, 1),
+                    }
+                })
+            }),
+            ab.NewRoundFrame(an, "Squircle", {
+                Size = UDim2.new(0, ak and 30 or 20, 0, 20),
+                Position = UDim2.new(0, 2, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                ImageTransparency = 1,
+                Name = "Frame",
+            }, {
+                ab.NewRoundFrame(an, "Squircle", {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    ImageTransparency = 0,
+                    ThemeTag = { ImageColor3 = "ToggleBar" },
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    Name = "Bar"
+                }, {
+                    ab.NewRoundFrame(an, "Glass-1", {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        ImageColor3 = Color3.new(1, 1, 1),
+                        Name = "Highlight",
+                        ImageTransparency = 0.4,
+                    }),
+                    ao,
+                    ac("UIScale", { Scale = 1 })
+                }),
+            })
+        })
+        local ar, as
+        local at = ak and 30 or 20
+        local au = aq.Size.X.Offset
+        function am.Set(av, aw, ax, ay)
+            local targetPos = aw and UDim2.new(0, au - at - 2, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+            if not ay then
+                ad(aq.Frame, 0.25, { Position = targetPos }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                ad(aq.Layer, 0.2, { ImageTransparency = aw and 0 or 1 }):Play()
+                if ao then ad(ao, 0.2, { ImageTransparency = aw and 0 or 1 }):Play() end
+            else
+                aq.Frame.Position = targetPos
+                aq.Layer.ImageTransparency = aw and 0 or 1
+                if ao then ao.ImageTransparency = aw and 0 or 1 end
+            end
+            ax = ax ~= false
+            task.spawn(function()
+                if aj and ax then
+                    ab.SafeCallback(aj, aw)
+                end
+            end)
+        end
 
-local ab=a.load'c'
-local ac=ab.New
-local ad=ab.Tween
+        function am.Animate(av, aw, ax)
+            if not al.Window.IsToggleDragging then
+                al.Window.IsToggleDragging = true
+                local ay = aw.Position.X
+                local aA = aq.Frame.Position.X.Offset
+                
+                ad(aq.Frame.Bar.UIScale, 0.2, {Scale = 1.2}, Enum.EasingStyle.Quint):Play()
+                if ar then ar:Disconnect() end
+                ar = ae.InputChanged:Connect(function(b)
+                    if al.Window.IsToggleDragging and (b.UserInputType == Enum.UserInputType.MouseMovement or b.UserInputType == Enum.UserInputType.Touch) then
+                        local g = b.Position.X - ay
+                        local h = math.max(2, math.min(aA + g, au - at - 2))
+                        aq.Frame.Position = UDim2.new(0, h, 0.5, 0)
+                        
+                        local percent = (h - 2) / (au - at - 4)
+                        aq.Layer.ImageTransparency = 1 - percent
+                    end
+                end)
 
-local ae=game:GetService"UserInputService"
+                if as then as:Disconnect() end
+                as = ae.InputEnded:Connect(function(b)
+                    if al.Window.IsToggleDragging and (b.UserInputType == Enum.UserInputType.MouseButton1 or b.UserInputType == Enum.UserInputType.Touch) then
+                        al.Window.IsToggleDragging = false
+                        ar:Disconnect()
+                        as:Disconnect()
+                        
+                        local finalX = aq.Frame.Position.X.Offset
+                        local isOn = finalX > (au / 2 - at / 2)
+                        ax:Set(isOn, true, false)
+                        ad(aq.Frame.Bar.UIScale, 0.2, {Scale = 1}, Enum.EasingStyle.Quint):Play()
+                    end
+                end)
+            end
+        end
 
-function aa.New(af,ag,ah,ai,aj,ak,al)
-local am={}
+        return ap, am
+    end
+    return aa end function a.F()
 
-local an=12
-local ao
-if ag and ag~=""then
-ao=ac("ImageLabel",{
-Size=UDim2.new(0,13,0,13),
-BackgroundTransparency=1,
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-Image=ab.Icon(ag)[1],
-ImageRectOffset=ab.Icon(ag)[2].ImageRectPosition,
-ImageRectSize=ab.Icon(ag)[2].ImageRectSize,
-ImageTransparency=1,
-ImageColor3=Color3.new(0,0,0),
-})
-end
-
-local ap=ac("Frame",{
-Size=UDim2.new(0,2,0,26),
-BackgroundTransparency=1,
-Parent=ai,
-})
-
-local aq=ab.NewRoundFrame(an,"Squircle",{
-ImageTransparency=.85,
-ThemeTag={
-ImageColor3="Text"
-},
-Parent=ap,
-Size=UDim2.new(0,ak and(52)or(40.8),0,24),
-AnchorPoint=Vector2.new(1,0.5),
-Position=UDim2.new(0,0,0.5,0),
-},{
-ab.NewRoundFrame(an,"Squircle",{
-Size=UDim2.new(1,0,1,0),
-Name="Layer",
-ThemeTag={
-ImageColor3="Toggle",
-},
-ImageTransparency=1,
-}),
-ab.NewRoundFrame(an,"SquircleOutline",{
-Size=UDim2.new(1,0,1,0),
-Name="Stroke",
-ImageColor3=Color3.new(1,1,1),
-ImageTransparency=1,
-},{
-ac("UIGradient",{
-Rotation=90,
-Transparency=NumberSequence.new{
-NumberSequenceKeypoint.new(0,0),
-NumberSequenceKeypoint.new(1,1),
-}
-})
-}),
-
-
-ab.NewRoundFrame(an,"Squircle",{
-Size=UDim2.new(0,ak and 30 or 20,0,20),
-Position=UDim2.new(0,2,0.5,0),
-AnchorPoint=Vector2.new(0,0.5),
-ImageTransparency=1,
-Name="Frame",
-},{
-ab.NewRoundFrame(an,"Squircle",{
-Size=UDim2.new(1,0,1,0),
-ImageTransparency=0,
-ThemeTag={
-ImageColor3="ToggleBar",
-},
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-Name="Bar"
-},{
-ab.NewRoundFrame(an,"Glass-1",{
-Size=UDim2.new(1,0,1,0),
-ImageColor3=Color3.new(1,1,1),
-Name="Highlight",
-ImageTransparency=0.4,
-},{
-
-
-
-
-
-
-
-
-
-
-
-
-
-}),
-ao,
-ac("UIScale",{
-Scale=1,
-})
-}),
-})
-})
-local ar
-local as
-local at=ak and 30 or 20
-local au=aq.Size.X.Offset
-function am.Set(av, aw, ax, ay)
-local onPos = UDim2.new(0, au - at - 2, 0.5, 0)
-local offPos = UDim2.new(0, 2, 0.5, 0)
-local activeColor = Color3.fromRGB(51, 199, 89)
-if not ay then
-ad(aq.Frame, 0.25, {
-Position = aw and onPos or offPos,
-}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-ad(aq.Layer, 0.2, {
-ImageTransparency = aw and 0 or 1,
-ImageColor3 = activeColor
-}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-if ao then
-ad(ao, 0.2, {
-ImageTransparency = aw and 0 or 1,
-}):Play()
-end
-else
-aq.Frame.Position = aw and onPos or offPos
-aq.Layer.ImageTransparency = aw and 0 or 1
-aq.Layer.ImageColor3 = activeColor
-if ao then
-ao.ImageTransparency = aw and 0 or 1
-end
-end
-ax = ax ~= false
-task.spawn(function()
-if aj and ax then
-ab.SafeCallback(aj, aw)
-end
-end)
-end
-
-
-function am.Animate(av,aw,ax)
-if not al.Window.IsToggleDragging then
-al.Window.IsToggleDragging=true
-
-local ay=aw.Position.X
-local az=aw.Position.Y
-local aA=aq.Frame.Position.X.Offset
-local aB=false
-
-ad(aq.Frame.Bar.UIScale,0.28,{Scale=1.5},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-ad(aq.Frame.Bar,0.28,{ImageTransparency=.85},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-
-if ar then
-ar:Disconnect()
-end
-
-ar=ae.InputChanged:Connect(function(b)
-if al.Window.IsToggleDragging and(b.UserInputType==Enum.UserInputType.MouseMovement or b.UserInputType==Enum.UserInputType.Touch)then
-if aB then
-return
-end
-
-local d=math.abs(b.Position.X-ay)
-local f=math.abs(b.Position.Y-az)
-
-if f>d and f>10 then
-aB=true
-al.Window.IsToggleDragging=false
-
-if ar then
-ar:Disconnect()
-ar=nil
-end
-if as then
-as:Disconnect()
-as=nil
-end
-
-ad(aq.Frame,0.15,{
-Position=UDim2.new(0,aA,0.5,0)
-},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-
-ad(aq.Frame.Bar.UIScale,0.23,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-ad(aq.Frame.Bar,0.23,{ImageTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-return
-end
-
-local g=b.Position.X-ay
-local h=math.max(2,math.min(aA+g,au-at-2))local j=
-
-(aq.Frame.Position.X.Offset-2)/(au-at-4)
-
-ad(aq.Frame,0.05,{
-Position=UDim2.new(0,h,0.5,0)
-},Enum.EasingStyle.Linear,Enum.EasingDirection.Out):Play()
-
-
-
-
-
-end
-end)
-
-if as then
-as:Disconnect()
-end
-
-as=ae.InputEnded:Connect(function(b)
-if al.Window.IsToggleDragging and(b.UserInputType==Enum.UserInputType.MouseButton1 or b.UserInputType==Enum.UserInputType.Touch)then
-al.Window.IsToggleDragging=false
-
-if ar then
-ar:Disconnect()
-ar=nil
-end
-
-if as then
-as:Disconnect()
-as=nil
-end
-
-if aB then
-return
-end
-
-local d=aq.Frame.Position.X.Offset
-local f=math.abs(b.Position.X-ay)
-
-if f<10 then
-local g=not ax.Value
-ax:Set(g,true,false)
-else
-local g=d+at/2
-local h=au/2
-local j=g>h
-ax:Set(j,true,false)
-end
-
-ad(aq.Frame.Bar.UIScale,0.23,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-ad(aq.Frame.Bar,0.23,{ImageTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-end
-end)
-end
-end
-
-return ap,am
-end
-
-return aa end function a.F()
 local aa={}
 
 local ab=a.load'c'local ac=
