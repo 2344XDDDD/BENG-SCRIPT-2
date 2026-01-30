@@ -8253,7 +8253,9 @@ UICorner=9,
 
 }
 
--- [[ 修复后的 Colorpicker 逻辑 ]]
+local ar={
+    UICorner=9,
+}
 
 function ar.Colorpicker(as,at,au,av)
     local aw={
@@ -8276,11 +8278,11 @@ function ar.Colorpicker(as,at,au,av)
 
     aw:SetHSVFromRGB(aw.Default)
 
-    local ax=a.load'n'.Init(au)
-    local ay=ax.Create() 
+    local ax_dialog=a.load'n'.Init(au)
+    local ay_dialog=ax_dialog.Create() 
 
-    aw.ColorpickerFrame=ay
-    ay.UIElements.Main.Size=UDim2.new(1,0,0,0)
+    aw.ColorpickerFrame=ay_dialog
+    ay_dialog.UIElements.Main.Size=UDim2.new(1,0,0,0)
 
     local az,aA,aB=aw.Hue,aw.Sat,aw.Vib
 
@@ -8294,7 +8296,7 @@ function ar.Colorpicker(as,at,au,av)
         AutomaticSize="Y",
         ThemeTag={TextColor3="Text"},
         BackgroundTransparency=1,
-        Parent=ay.UIElements.Main
+        Parent=ay_dialog.UIElements.Main
     },{
         ae("UIPadding",{
             PaddingTop=UDim.new(0,aw.TextPadding/2),
@@ -8304,8 +8306,8 @@ function ar.Colorpicker(as,at,au,av)
         })
     })
 
-    -- 颜色区域
-    local b=ae("Frame",{
+    -- 调色映射点
+    local b_dot=ae("Frame",{
         Size=UDim2.new(0,14,0,14),
         AnchorPoint=Vector2.new(0.5,0.5),
         Position=UDim2.new(0.5,0,0,0),
@@ -8321,11 +8323,11 @@ function ar.Colorpicker(as,at,au,av)
         Image="rbxassetid://4155801252",
         BackgroundColor3=Color3.fromHSV(az,1,1),
         BackgroundTransparency=0,
-        Parent=ay.UIElements.Main,
+        Parent=ay_dialog.UIElements.Main,
     },{
         ae("UICorner",{CornerRadius=UDim.new(0,8)}),
         aa.NewRoundFrame(8,"SquircleOutline",{ThemeTag={ImageColor3="Outline"},Size=UDim2.new(1,0,1,0),ImageTransparency=.85,ZIndex=99999}),
-        b,
+        b_dot,
     })
 
     aw.UIElements.Inputs=ae("Frame",{
@@ -8333,12 +8335,11 @@ function ar.Colorpicker(as,at,au,av)
         Size=UDim2.new(0,0,0,0),
         Position=UDim2.fromOffset(aw.Transparency and 240 or 210,40+aw.TextPadding),
         BackgroundTransparency=1,
-        Parent=ay.UIElements.Main
+        Parent=ay_dialog.UIElements.Main
     },{
         ae("UIListLayout",{Padding=UDim.new(0,4),FillDirection="Vertical"})
     })
 
-    -- 输入框创建
     function CreateNewInput(p_name, r_val)
         local u_input=aq(p_name,nil,aw.UIElements.Inputs)
         ae("TextLabel",{
@@ -8365,13 +8366,13 @@ function ar.Colorpicker(as,at,au,av)
     local a_in, as_scale
     if aw.Transparency then a_in, as_scale = CreateNewInput("Alpha",((1-aw.Transparency)*100).."%") end
 
-    -- [[ 动画逻辑：往上下渐变滑入 ]]
+    -- [[ 动画：往上下渐变滑入 ]]
     local inputs = { {p_in, ps}, {r_in, rs}, {g_in, gs}, {b_in, bs}, {a_in, as_scale} }
     for i, data in ipairs(inputs) do
         local obj, scale = data[1], data[2]
         if obj then
             local oldPos = obj.Position
-            obj.Position = oldPos + UDim2.fromOffset(0, 20) -- 初始下移
+            obj.Position = oldPos + UDim2.fromOffset(0, 20)
             task.spawn(function()
                 task.wait(0.1 + (i * 0.05))
                 af(obj, 0.5, {Position = oldPos}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
@@ -8380,46 +8381,101 @@ function ar.Colorpicker(as,at,au,av)
         end
     end
 
-    -- 颜色调节条
+    -- Hue 条
     local h_keys={}
     for h=0,1,0.1 do table.insert(h_keys,ColorSequenceKeypoint.new(h,Color3.fromHSV(h,1,1))) end
     local h_grad=ae("UIGradient",{Color=ColorSequence.new(h_keys),Rotation=90})
     local h_drag=ae("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1})
-    local h_p=ae("Frame",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0,0),Parent=h_drag,BackgroundColor3=aw.Default},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
-    local m_hue=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(180,40+aw.TextPadding),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),h_grad,h_drag})
+    local h_point=ae("Frame",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0,0),Parent=h_drag,BackgroundColor3=aw.Default},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
+    local m_hue=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(180,40+aw.TextPadding),Parent=ay_dialog.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),h_grad,h_drag})
 
-    -- 预览方块
+    -- 预览
     local f_pre=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=0,ZIndex=9},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
-    ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(0,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),f_pre})
+    ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(0,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay_dialog.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),f_pre})
 
     -- 底部按钮
-    local btns=ae("Frame",{Size=UDim2.new(1,0,0,40),AutomaticSize="Y",Position=UDim2.new(0,0,0,254+aw.TextPadding),BackgroundTransparency=1,Parent=ay.UIElements.Main,LayoutOrder=4},{ae("UIListLayout",{Padding=UDim.new(0,6),FillDirection="Horizontal",HorizontalAlignment="Right"})})
-    local btnCfgs={{Title="取消",Variant="Secondary",Callback=function() ay:Close() end},{Title="Apply",Icon="chevron-right",Variant="Primary",Callback=function() av(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib),aw.Transparency) ay:Close() end}}
+    local btns=ae("Frame",{Size=UDim2.new(1,0,0,40),AutomaticSize="Y",Position=UDim2.new(0,0,0,254+aw.TextPadding),BackgroundTransparency=1,Parent=ay_dialog.UIElements.Main,LayoutOrder=4},{ae("UIListLayout",{Padding=UDim.new(0,6),FillDirection="Horizontal",HorizontalAlignment="Right"})})
+    local btnCfgs={{Title="取消",Variant="Secondary",Callback=function() ay_dialog:Close() end},{Title="Apply",Icon="chevron-right",Variant="Primary",Callback=function() av(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib),aw.Transparency) ay_dialog:Close() end}}
     for _,c in next,btnCfgs do
-        local b_obj=ap(c.Title,c.Icon,c.Callback,c.Variant,btns,ay,false)
+        local b_obj=ap(c.Title,c.Icon,c.Callback,c.Variant,btns,ay_dialog,false)
         b_obj.Size=UDim2.new(0.5,-3,0,40)
     end
 
-    function aw.Update(self,col,tra)
-        if col then aw.Hue,aw.Sat,aw.Vib=Color3.toHSV(col) end
-        aw.UIElements.SatVibMap.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
-        b.Position=UDim2.new(aw.Sat,0,1-aw.Vib,0)
-        b.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
-        f_pre.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
-        h_p.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
-        h_p.Position=UDim2.new(0.5,0,aw.Hue,0)
-        p_in.Frame.Frame.TextBox.Text="#"..Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib):ToHex()
-        r_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).R*255)
-        g_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).G*255)
-        b_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).B*255)
+    -- 透明度处理
+    local B_trans,C_dot,F_grad
+    if aw.Transparency then
+        local G_hold=ae("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1})
+        C_dot=ae("ImageLabel",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),ThemeTag={BackgroundColor3="Text"},Parent=G_hold},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
+        F_grad=ae("Frame",{Size=UDim2.fromScale(1,1)},{ae("UIGradient",{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)},Rotation=270}),ae("UICorner",{CornerRadius=UDim.new(0,6)})})
+        B_trans=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(210,40+aw.TextPadding),Parent=ay_dialog.UIElements.Main,BackgroundTransparency=1},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Size=UDim2.fromScale(1,1)},{ae("UICorner",{CornerRadius=UDim.new(1,0)})}),F_grad,G_hold})
     end
 
-    aw:Update(aw.Default,aw.Transparency)
-    ay:Open()
+    function aw.Update(self)
+        local col = Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
+        aw.UIElements.SatVibMap.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
+        b_dot.Position=UDim2.new(aw.Sat,0,1-aw.Vib,0)
+        b_dot.BackgroundColor3=col
+        f_pre.BackgroundColor3=col
+        h_point.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
+        h_point.Position=UDim2.new(0.5,0,aw.Hue,0)
+        p_in.Frame.Frame.TextBox.Text="#"..col:ToHex()
+        r_in.Frame.Frame.TextBox.Text=math.floor(col.R*255)
+        g_in.Frame.Frame.TextBox.Text=math.floor(col.G*255)
+        b_in.Frame.Frame.TextBox.Text=math.floor(col.B*255)
+        if aw.Transparency then
+            f_pre.BackgroundTransparency=aw.Transparency
+            if F_grad then F_grad.BackgroundColor3=col end
+            if C_dot then C_dot.Position=UDim2.new(0.5,0,1-aw.Transparency,0) end
+            if a_in then a_in.Frame.Frame.TextBox.Text=math.floor((1-aw.Transparency)*100).."%" end
+        end
+    end
+
+    -- [[ 修复：恢复拖拽选择颜色的核心逻辑 ]]
+    local uis = game:GetService("UserInputService")
+    local rs = game:GetService("RunService")
+
+    local function setupDrag(trigger, updateFunc)
+        aa.AddSignal(trigger.InputBegan, function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                local conn; conn = rs.RenderStepped:Connect(function()
+                    if not uis:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then conn:Disconnect() return end
+                    updateFunc()
+                end)
+            end
+        end)
+    end
+
+    setupDrag(aw.UIElements.SatVibMap, function()
+        local mPos = uis:GetMouseLocation()
+        local absPos = aw.UIElements.SatVibMap.AbsolutePosition
+        local absSize = aw.UIElements.SatVibMap.AbsoluteSize
+        aw.Sat = math.clamp((mPos.X - absPos.X) / absSize.X, 0, 1)
+        aw.Vib = 1 - math.clamp((mPos.Y - 36 - absPos.Y) / absSize.Y, 0, 1)
+        aw:Update()
+    end)
+
+    setupDrag(m_hue, function()
+        local mPos = uis:GetMouseLocation()
+        local absPos = m_hue.AbsolutePosition
+        local absSize = m_hue.AbsoluteSize
+        aw.Hue = math.clamp((mPos.Y - 36 - absPos.Y) / absSize.Y, 0, 1)
+        aw:Update()
+    end)
+
+    if B_trans then
+        setupDrag(B_trans, function()
+            local mPos = uis:GetMouseLocation()
+            local absPos = B_trans.AbsolutePosition
+            local absSize = B_trans.AbsoluteSize
+            aw.Transparency = 1 - math.clamp((mPos.Y - 36 - absPos.Y) / absSize.Y, 0, 1)
+            aw:Update()
+        end)
+    end
+
+    aw:Update()
+    ay_dialog:Open()
     return aw
 end
-
--- [[ 修复后的 New 函数，解决 UI 重叠问题 ]]
 
 function ar.New(as,at)
     local au={
@@ -8432,7 +8488,7 @@ function ar.New(as,at)
         Callback=at.Callback or function()end,
         Transparency=at.Transparency,
         UIElements={},
-        PickerOpened = false, -- 添加状态锁
+        PickerOpened = false, -- 重叠锁
     }
 
     local av=true
@@ -8468,21 +8524,20 @@ function ar.New(as,at)
         if ay then au.Transparency=ay end
     end
 
-    -- 点击触发
     aa.AddSignal(au.UIElements.Colorpicker.MouseButton1Click,function()
-        -- 检查锁：如果已经打开了，直接跳过
+        -- [[ 修复重叠：只有在未打开时才允许创建新的 Picker ]]
         if av and not au.PickerOpened then
-            au.PickerOpened = true -- 上锁
+            au.PickerOpened = true
             
-            local picker = ar:Colorpicker(au,at.Window,function(aw,ax)
-                au:Update(aw,ax)
-                aa.SafeCallback(au.Callback,aw,ax)
+            local picker = ar:Colorpicker(au,at.Window,function(aw_col,ax_tra)
+                au:Update(aw_col,ax_tra)
+                aa.SafeCallback(au.Callback,aw_col,ax_tra)
             end)
 
-            -- 注入关闭回调：当窗口关闭动画结束或被调用时，解锁
+            -- 监听关闭以解锁
             local originalClose = picker.ColorpickerFrame.Close
             picker.ColorpickerFrame.Close = function(...)
-                au.PickerOpened = false -- 解锁
+                au.PickerOpened = false
                 return originalClose(...)
             end
         end
@@ -8490,6 +8545,8 @@ function ar.New(as,at)
 
     return au.__type,au
 end
+
+return ar
 
 return ar end function a.R()
 local aa=a.load'c'
