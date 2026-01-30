@@ -4,7 +4,7 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.82 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/30/1]
+    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/28/1]
     https://bengscript.lol
     [Update: Added: all - New:LockedIcon]
     Lua
@@ -8275,9 +8275,9 @@ function ar.Colorpicker(as,at,au,av)
     aw:SetHSVFromRGB(aw.Default)
 
     local ax=a.load'n'.Init(au)
-    local ay=ax.Create() -- 这里创建了 Dialog 对象
+    local ay=ax.Create() -- 创建 Dialog 背景
 
-    -- 【修改 1: 点击空白处关闭】
+    -- [[ 添加：点击空白处关闭功能 ]]
     if ay.UIElements.FullScreen then
         aa.AddSignal(ay.UIElements.FullScreen.InputBegan, function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -8310,7 +8310,7 @@ function ar.Colorpicker(as,at,au,av)
         })
     })
 
-    -- 颜色映射图和拖拽点
+    -- 调色板 UI 元素
     local b=ae("Frame",{
         Size=UDim2.new(0,14,0,14),
         AnchorPoint=Vector2.new(0.5,0.5),
@@ -8345,7 +8345,7 @@ function ar.Colorpicker(as,at,au,av)
     })
 
     function CreateNewInput(p,r)
-        local u=aq(p,nil,aw.UIElements.Inputs)
+        local u=aq(p,nil,aw.UIElements.Inputs) -- aq 是 Input 模块
         ae("TextLabel",{
             BackgroundTransparency=1,TextTransparency=.4,TextSize=17,
             FontFace=Font.new(aa.Font,Enum.FontWeight.Regular),
@@ -8353,7 +8353,7 @@ function ar.Colorpicker(as,at,au,av)
             AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,-12,0.5,0),
             Parent=u.Frame,Text=p,
         })
-        ae("UIScale",{Parent=u,Scale=0.7}) -- 初始缩放小一点用于动画
+        ae("UIScale",{Parent=u,Scale=0}) -- 初始缩放为 0
         u.Frame.Frame.TextBox.Text=r
         u.Size=UDim2.new(0,150,0,42)
         return u
@@ -8363,86 +8363,82 @@ function ar.Colorpicker(as,at,au,av)
         return {R=math.floor(p.R*255),G=math.floor(p.G*255),B=math.floor(p.B*255)}
     end
 
-    -- 创建所有输入框
-    local p=CreateNewInput("Hex","#"..aw.Default:ToHex())
-    local r=CreateNewInput("Red",ToRGB(aw.Default).R)
-    local u=CreateNewInput("Green",ToRGB(aw.Default).G)
-    local v=CreateNewInput("Blue",ToRGB(aw.Default).B)
-    local x
+    -- 创建输入框
+    local p_in=CreateNewInput("Hex","#"..aw.Default:ToHex())
+    local r_in=CreateNewInput("Red",ToRGB(aw.Default).R)
+    local u_in=CreateNewInput("Green",ToRGB(aw.Default).G)
+    local v_in=CreateNewInput("Blue",ToRGB(aw.Default).B)
+    local x_in
     if aw.Transparency then
-        x=CreateNewInput("Alpha",((1-aw.Transparency)*100).."%")
+        x_in=CreateNewInput("Alpha",((1-aw.Transparency)*100).."%")
     end
 
-    -- 【修改 2: 输入框滑入动画】
-    local inputList = {p, r, u, v, x}
-    for i, inputObj in ipairs(inputList) do
-        if inputObj then
-            local targetScale = 0.85
-            local originalPos = inputObj.Position
-            -- 初始状态：向下偏移 15 像素
-            inputObj.Position = originalPos + UDim2.fromOffset(0, 15)
-            
+    -- [[ 添加：右侧输入框丝滑入场动画 ]]
+    local inputList = {p_in, r_in, u_in, v_in, x_in}
+    for i, obj in ipairs(inputList) do
+        if obj then
+            local targetPos = obj.Position
+            obj.Position = targetPos + UDim2.fromOffset(0, 15) -- 初始下移
             task.spawn(function()
-                task.wait(0.1 + (i * 0.04)) -- 每个框依次弹出，形成交错感
-                af(inputObj, 0.45, {Position = originalPos}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-                if inputObj:FindFirstChildOfClass("UIScale") then
-                    af(inputObj.UIScale, 0.45, {Scale = targetScale}, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
+                task.wait(0.1 + (i * 0.05)) -- 交错时间
+                af(obj, 0.4, {Position = targetPos}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                if obj:FindFirstChildOfClass("UIScale") then
+                    af(obj.UIScale, 0.5, {Scale = 0.85}, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
                 end
             end)
         end
     end
 
-    -- 下方的预览和 Hue 调节逻辑保持不变...
-    local d=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=aw.Transparency or 0},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
-    ae("ImageLabel",{Image="http://www.roblox.com/asset/?id=14204231522",ImageTransparency=0.45,ScaleType=Enum.ScaleType.Tile,TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(85,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),d})
+    -- 预览方块和其他滑块（保持原逻辑）
+    local d_pre=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=aw.Transparency or 0},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
+    ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(85,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),d_pre})
     
-    local f=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=0,ZIndex=9},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
-    ae("ImageLabel",{Image="http://www.roblox.com/asset/?id=14204231522",ImageTransparency=0.45,ScaleType=Enum.ScaleType.Tile,TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(0,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),f})
+    local f_pre=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=0,ZIndex=9},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
+    ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(0,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),f_pre})
 
-    local g={}
-    for h=0,1,0.1 do table.insert(g,ColorSequenceKeypoint.new(h,Color3.fromHSV(h,1,1))) end
-    local h=ae("UIGradient",{Color=ColorSequence.new(g),Rotation=90})
-    local j=ae("Frame",{Size=UDim2.new(1,0,1,0),Position=UDim2.new(0,0,0,0),BackgroundTransparency=1})
-    local l=ae("Frame",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0,0),Parent=j,BackgroundColor3=aw.Default},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
-    local m=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(180,40+aw.TextPadding),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),h,j})
+    local hueGrad={}
+    for h=0,1,0.1 do table.insert(hueGrad,ColorSequenceKeypoint.new(h,Color3.fromHSV(h,1,1))) end
+    local h_grad=ae("UIGradient",{Color=ColorSequence.new(hueGrad),Rotation=90})
+    local hueDrag=ae("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1})
+    local l_point=ae("Frame",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0,0),Parent=hueDrag,BackgroundColor3=aw.Default},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
+    local m_bar=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(180,40+aw.TextPadding),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),h_grad,hueDrag})
 
-    -- 按钮区域
-    local z=ae("Frame",{Size=UDim2.new(1,0,0,40),AutomaticSize="Y",Position=UDim2.new(0,0,0,254+aw.TextPadding),BackgroundTransparency=1,Parent=ay.UIElements.Main,LayoutOrder=4},{ae("UIListLayout",{Padding=UDim.new(0,6),FillDirection="Horizontal",HorizontalAlignment="Right"})})
-    local A={{Title="取消",Variant="Secondary",Callback=function() ay:Close() end},{Title="Apply",Icon="chevron-right",Variant="Primary",Callback=function() av(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib),aw.Transparency) ay:Close() end}}
-    for B,C in next,A do
-        local F=ap(C.Title,C.Icon,C.Callback,C.Variant,z,ay,false)
-        F.Size=UDim2.new(0.5,-3,0,40)
+    -- 底部按钮
+    local btnFrame=ae("Frame",{Size=UDim2.new(1,0,0,40),AutomaticSize="Y",Position=UDim2.new(0,0,0,254+aw.TextPadding),BackgroundTransparency=1,Parent=ay.UIElements.Main,LayoutOrder=4},{ae("UIListLayout",{Padding=UDim.new(0,6),FillDirection="Horizontal",HorizontalAlignment="Right"})})
+    local btnsConfigs={{Title="取消",Variant="Secondary",Callback=function() ay:Close() end},{Title="Apply",Icon="chevron-right",Variant="Primary",Callback=function() av(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib),aw.Transparency) ay:Close() end}}
+    for _,cfg in next,btnsConfigs do
+        local b_obj=ap(cfg.Title,cfg.Icon,cfg.Callback,cfg.Variant,btnFrame,ay,false) -- ap 是 Button 模块
+        b_obj.Size=UDim2.new(0.5,-3,0,40)
     end
 
-    -- 透明度滑块逻辑 (如果开启)
-    local B,C,F
+    -- 透明度处理 (B/C/F 变量对应原脚本)
+    local B_trans,C_point,F_grad
     if aw.Transparency then
-        local G=ae("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1})
-        C=ae("ImageLabel",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),ThemeTag={BackgroundColor3="Text"},Parent=G},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
-        F=ae("Frame",{Size=UDim2.fromScale(1,1)},{ae("UIGradient",{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)},Rotation=270}),ae("UICorner",{CornerRadius=UDim.new(0,6)})})
-        B=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(210,40+aw.TextPadding),Parent=ay.UIElements.Main,BackgroundTransparency=1},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType=Enum.ScaleType.Tile,TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Size=UDim2.fromScale(1,1)},{ae("UICorner",{CornerRadius=UDim.new(1,0)})}),F,G})
+        local G_holder=ae("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1})
+        C_point=ae("ImageLabel",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),ThemeTag={BackgroundColor3="Text"},Parent=G_holder},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
+        F_grad=ae("Frame",{Size=UDim2.fromScale(1,1)},{ae("UIGradient",{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)},Rotation=270}),ae("UICorner",{CornerRadius=UDim.new(0,6)})})
+        B_trans=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(210,40+aw.TextPadding),Parent=ay.UIElements.Main,BackgroundTransparency=1},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Size=UDim2.fromScale(1,1)},{ae("UICorner",{CornerRadius=UDim.new(1,0)})}),F_grad,G_holder})
     end
 
-    function aw.Update(G,H,J)
-        if H then az,aA,aB=Color3.toHSV(H) else az,aA,aB=aw.Hue,aw.Sat,aw.Vib end
-        aw.UIElements.SatVibMap.BackgroundColor3=Color3.fromHSV(az,1,1)
-        b.Position=UDim2.new(aA,0,1-aB,0)
-        b.BackgroundColor3=Color3.fromHSV(az,aA,aB)
-        f.BackgroundColor3=Color3.fromHSV(az,aA,aB)
-        l.BackgroundColor3=Color3.fromHSV(az,1,1)
-        l.Position=UDim2.new(0.5,0,az,0)
-        p.Frame.Frame.TextBox.Text="#"..Color3.fromHSV(az,aA,aB):ToHex()
-        r.Frame.Frame.TextBox.Text=ToRGB(Color3.fromHSV(az,aA,aB)).R
-        u.Frame.Frame.TextBox.Text=ToRGB(Color3.fromHSV(az,aA,aB)).G
-        v.Frame.Frame.TextBox.Text=ToRGB(Color3.fromHSV(az,aA,aB)).B
-        if J or aw.Transparency then
-            f.BackgroundTransparency=aw.Transparency or J
-            if F then F.BackgroundColor3=Color3.fromHSV(az,aA,aB) end
-            if C then 
-                C.BackgroundColor3=Color3.fromHSV(az,aA,aB)
-                C.Position=UDim2.new(0.5,0,1-(aw.Transparency or J),0)
-            end
-            if x then x.Frame.Frame.TextBox.Text=math.floor((1-(aw.Transparency or J))*100).."%" end
+    -- 更新函数
+    function aw.Update(self,newColor,newTrans)
+        if newColor then aw.Hue,aw.Sat,aw.Vib=Color3.toHSV(newColor) end
+        aw.UIElements.SatVibMap.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
+        b.Position=UDim2.new(aw.Sat,0,1-aw.Vib,0)
+        b.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
+        f_pre.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
+        l_point.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
+        l_point.Position=UDim2.new(0.5,0,aw.Hue,0)
+        p_in.Frame.Frame.TextBox.Text="#"..Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib):ToHex()
+        r_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).R*255)
+        u_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).G*255)
+        v_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).B*255)
+        if newTrans or aw.Transparency then
+            local transVal = newTrans or aw.Transparency
+            f_pre.BackgroundTransparency=transVal
+            if F_grad then F_grad.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib) end
+            if C_point then C_point.Position=UDim2.new(0.5,0,1-transVal,0) end
+            if x_in then x_in.Frame.Frame.TextBox.Text=math.floor((1-transVal)*100).."%" end
         end
     end
 
