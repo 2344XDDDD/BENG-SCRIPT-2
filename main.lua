@@ -8277,27 +8277,6 @@ function ar.Colorpicker(as,at,au,av)
     local ax=a.load'n'.Init(au)
     local ay=ax.Create() 
 
-    -- [[ 修复：点击空白处关闭（增加范围判定，防止误关） ]]
-    if ay.UIElements.FullScreen then
-        aa.AddSignal(ay.UIElements.FullScreen.InputBegan, function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                local mainFrame = ay.UIElements.Main
-                local mousePos = input.Position
-                local absPos = mainFrame.AbsolutePosition
-                local absSize = mainFrame.AbsoluteSize
-                
-                -- 判断点击坐标是否在颜色面板矩形区域内
-                local isInside = mousePos.X >= absPos.X and mousePos.X <= absPos.X + absSize.X and
-                                 mousePos.Y >= absPos.Y and mousePos.Y <= absPos.Y + absSize.Y
-                
-                -- 只有在外面点击才关闭
-                if not isInside then
-                    ay:Close()
-                end
-            end
-        end)
-    end
-
     aw.ColorpickerFrame=ay
     ay.UIElements.Main.Size=UDim2.new(1,0,0,0)
 
@@ -8366,7 +8345,7 @@ function ar.Colorpicker(as,at,au,av)
             AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,-12,0.5,0),
             Parent=u_input.Frame,Text=p_name,
         })
-        -- 初始状态：透明且缩小
+        -- 初始状态：缩小为 0，隐藏
         local ui_scale = ae("UIScale",{Parent=u_input, Scale=0})
         u_input.Frame.Frame.TextBox.Text=r_val
         u_input.Size=UDim2.new(0,150,0,42)
@@ -8384,15 +8363,15 @@ function ar.Colorpicker(as,at,au,av)
     local a_in, as_scale
     if aw.Transparency then a_in, as_scale = CreateNewInput("Alpha",((1-aw.Transparency)*100).."%") end
 
-    -- [[ 添加：输入框丝滑动画 ]]
+    -- [[ 保留：输入框丝滑入场动画 ]]
     local inputs = { {p_in, ps}, {r_in, rs}, {g_in, gs}, {b_in, bs}, {a_in, as_scale} }
     for i, data in ipairs(inputs) do
         local obj, scale = data[1], data[2]
         if obj then
             local oldPos = obj.Position
-            obj.Position = oldPos + UDim2.fromOffset(0, 20) -- 初始下移
+            obj.Position = oldPos + UDim2.fromOffset(0, 20) -- 初始下移20像素
             task.spawn(function()
-                task.wait(0.1 + (i * 0.05)) -- 阶梯式延迟
+                task.wait(0.1 + (i * 0.05)) -- 阶梯式延迟弹出
                 af(obj, 0.5, {Position = oldPos}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                 af(scale, 0.5, {Scale = 0.85}, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
             end)
@@ -8451,7 +8430,7 @@ function ar.Colorpicker(as,at,au,av)
         end
     end
 
-    -- 交互逻辑 (与原版一致，确保选色正常)
+    -- 交互逻辑 (拖动选色)
     local function setupDrag(obj, callback)
         aa.AddSignal(obj.InputBegan, function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
