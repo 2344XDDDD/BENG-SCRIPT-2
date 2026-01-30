@@ -9789,7 +9789,29 @@ end,
         return al
     end
 
-    function al.New(am, an)
+local originalSelectTab = al.SelectTab
+function al:SelectTab(index)
+    if originalSelectTab then originalSelectTab(self, index) end
+    
+    for i, tab in next, al.Tabs do
+        local isSelected = (i == index)
+        local glow = tab.UIElements.Glow
+        local outline = tab.UIElements.Outline
+        local frame = tab.UIElements.Main:FindFirstChild("Frame", true)
+
+        if isSelected then
+            af.Tween(glow, 0.3, {ImageTransparency = 0.5}):Play() 
+            af.Tween(outline, 0.3, {ImageTransparency = 0}):Play()
+            if frame then af.Tween(frame.TextLabel, 0.3, {TextTransparency = 0}):Play() end
+        else
+            af.Tween(glow, 0.3, {ImageTransparency = 1}):Play()
+            af.Tween(outline, 0.3, {ImageTransparency = 1}):Play()
+            if frame then af.Tween(frame.TextLabel, 0.3, {TextTransparency = 0.4}):Play() end
+        end
+    end
+end
+
+function al.New(am, an)
         local ao = {
             __type = "Tab",
             Title = am.Title or "Tab",
@@ -9808,9 +9830,9 @@ end,
             Elements = {},
             ContainerFrame = nil,
             UICorner = Window.UICorner - (Window.UIPadding / 2),
+            BorderColor = am.BorderColor or Color3.fromRGB(168, 85, 247),
 
             Gap = Window.NewElements and 1 or 6,
-
             TabPaddingX = 4 + (Window.UIPadding / 2),
             TabPaddingY = 3 + (Window.UIPadding / 2),
             TitlePaddingY = 0,
@@ -9823,7 +9845,6 @@ end,
         end
 
         al.TabCount = al.TabCount + 1
-
         local ap = al.TabCount
         ao.Index = ap
 
@@ -9833,7 +9854,6 @@ end,
             PaddingLeft = UDim.new(0, 0)
         })
         ao.UIElements.TextPadding = textPadding
-
         ao.UIElements.Main = af.NewRoundFrame(ao.UICorner, "Squircle", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, -7, 0, 0),
@@ -9844,15 +9864,23 @@ end,
             },
             ImageTransparency = 1,
         }, {
-            af.NewRoundFrame(ao.UICorner, "Glass-1.4", {
-                Size = UDim2.new(1, 0, 1, 0),
-                ThemeTag = {
-                    ImageColor3 = "TabBorder",
-                },
+            af.NewRoundFrame(ao.UICorner + 8, "Shadow-sm", {
+                Size = UDim2.new(1, 28, 1, 28),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                ImageColor3 = ao.BorderColor,
                 ImageTransparency = 1,
-                Name = "Outline"
+                ZIndex = 0,
+                Name = "Glow"
+            }),
+                af.NewRoundFrame(ao.UICorner, "Glass-1.4", {
+                Size = UDim2.new(1, 0, 1, 0),
+                ImageColor3 = ao.BorderColor,
+                ImageTransparency = 1,
+                Name = "Outline",
+                ZIndex = 2
             }, {}),
-            af.NewRoundFrame(ao.UICorner, "Squircle", {
+                af.NewRoundFrame(ao.UICorner, "Squircle", {
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = "Y",
                 ThemeTag = {
@@ -9860,6 +9888,7 @@ end,
                 },
                 ImageTransparency = 1,
                 Name = "Frame",
+                ZIndex = 3
             }, {
                 ah("UIListLayout", {
                     SortOrder = "LayoutOrder",
@@ -9893,6 +9922,18 @@ end,
                 })
             }),
         }, true)
+
+        ao.UIElements.Glow = ao.UIElements.Main:FindFirstChild("Glow", true)
+        ao.UIElements.Outline = ao.UIElements.Main:FindFirstChild("Outline", true)
+        function ao:SetBorderColor(color)
+            ao.BorderColor = color
+            if ao.UIElements.Glow then
+                af.Tween(ao.UIElements.Glow, 0.4, {ImageColor3 = color}):Play()
+            end
+            if ao.UIElements.Outline then
+                af.Tween(ao.UIElements.Outline, 0.4, {ImageColor3 = color}):Play()
+            end
+        end
 
         local aq = 0
         local ar
@@ -10079,7 +10120,9 @@ end,
         end
 
         af.AddSignal(ao.UIElements.Main.MouseEnter, function()
-            if not ao.Locked then
+            if not ao.Locked and not ao.Selected then
+                af.Tween(ao.UIElements.Outline, 0.1, {ImageTransparency = 0.8}):Play()
+                
                 af.SetThemeTag(ao.UIElements.Main.Frame, {
                     ImageTransparency = "TabBackgroundHoverTransparency",
                     ImageColor3 = "TabBackgroundHover",
@@ -10103,7 +10146,9 @@ end,
                 end
             end
 
-            if not ao.Locked then
+            if not ao.Locked and not ao.Selected then
+                af.Tween(ao.UIElements.Outline, 0.1, {ImageTransparency = 1}):Play()
+                
                 af.SetThemeTag(ao.UIElements.Main.Frame, {
                     ImageTransparency = "TabBorderTransparency"
                 }, 0.08)
@@ -10135,49 +10180,7 @@ end,
         end
 
         local ax = a.load 'V'
-
         ax.Load(ao, ao.UIElements.ContainerFrame, ax.Elements, Window, WindUI, nil, ax, an)
-
-        function ao.LockAll(ay)
-            for az, aA in next, Window.AllElements do
-                if aA.Tab and aA.Tab.Index and aA.Tab.Index == ao.Index and aA.Lock then
-                    aA:Lock()
-                end
-            end
-        end
-        function ao.UnlockAll(ay)
-            for az, aA in next, Window.AllElements do
-                if aA.Tab and aA.Tab.Index and aA.Tab.Index == ao.Index and aA.Unlock then
-                    aA:Unlock()
-                end
-            end
-        end
-        function ao.GetLocked(ay)
-            local az = {}
-
-            for aA, aB in next, Window.AllElements do
-                if aB.Tab and aB.Tab.Index and aB.Tab.Index == ao.Index and aB.Locked == true then
-                    table.insert(az, aB)
-                end
-            end
-
-            return az
-        end
-        function ao.GetUnlocked(ay)
-            local az = {}
-
-            for aA, aB in next, Window.AllElements do
-                if aB.Tab and aB.Tab.Index and aB.Tab.Index == ao.Index and aB.Locked == false then
-                    table.insert(az, aB)
-                end
-            end
-
-            return az
-        end
-
-        function ao.Select(ay)
-            return al:SelectTab(ao.Index)
-        end
 
         task.spawn(function()
             local ay = ah("Frame", {
@@ -12934,22 +12937,28 @@ end
 
 
 
-local sidebarOpened=true
-au.ToggleSidebar=function()
-sidebarOpened=not sidebarOpened
-local targetWidth=sidebarOpened and au.SideBarWidth or 0
-local animTime=0.5
-local easing=Enum.EasingStyle.Quint
-an(au.UIElements.SideBarContainer,animTime,{Size=UDim2.new(0,targetWidth,1,au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)},easing,Enum.EasingDirection.Out):Play()
-an(au.UIElements.MainBar,animTime,{Size=UDim2.new(1,-targetWidth,1,-au.Topbar.Height)},easing,Enum.EasingDirection.Out):Play()
-if aB then
-an(aB,animTime,{Size=UDim2.new(0,math.max(0,targetWidth-(au.UIPadding/2)),0,42+(au.UIPadding))},easing,Enum.EasingDirection.Out):Play()
-aB.ClipsDescendants=true
+local sidebarOpened = true
+au.ToggleSidebar = function()
+    sidebarOpened = not sidebarOpened
+    local targetWidth = sidebarOpened and au.SideBarWidth or 0
+    local animTime = 0.5
+    local easing = Enum.EasingStyle.Quint
+    an(au.UIElements.SideBarContainer, animTime, {
+        Size = UDim2.new(0, targetWidth, 1, au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)
+    }, easing, Enum.EasingDirection.Out):Play()
+    an(au.UIElements.MainBar, animTime, {
+        Size = UDim2.new(1, -targetWidth, 1, -au.Topbar.Height)
+    }, easing, Enum.EasingDirection.Out):Play()
+    if aB then
+        an(aB, animTime, {
+            Size = UDim2.new(0, math.max(0, targetWidth - (au.UIPadding/2)), 0, 42+(au.UIPadding))
+        }, easing, Enum.EasingDirection.Out):Play()
+        aB.ClipsDescendants = true
+    end
 end
-end
-au:CreateTopbarButton("SidebarToggle","menu",function()
-au.ToggleSidebar()
-end,990,true,Color3.fromRGB(255,255,255))
+au:CreateTopbarButton("SidebarToggle", "menu", function()
+    au.ToggleSidebar()
+end, 990, true, Color3.fromRGB(255, 255, 255))
 function au.DisableTopbarButtons(M,N)
 for O,P in next,N do
 for Q,R in next,au.TopBarButtons do
