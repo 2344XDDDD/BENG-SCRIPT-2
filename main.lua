@@ -8253,6 +8253,8 @@ UICorner=9,
 
 }
 
+-- [[ 修复后的 Colorpicker 逻辑 ]]
+
 function ar.Colorpicker(as,at,au,av)
     local aw={
         __type="Colorpicker",
@@ -8277,13 +8279,12 @@ function ar.Colorpicker(as,at,au,av)
     local ax=a.load'n'.Init(au)
     local ay=ax.Create() 
 
-    -- [已移除点击空白处关闭的代码]
-
     aw.ColorpickerFrame=ay
     ay.UIElements.Main.Size=UDim2.new(1,0,0,0)
 
     local az,aA,aB=aw.Hue,aw.Sat,aw.Vib
 
+    -- 标题
     aw.UIElements.Title=ae("TextLabel",{
         Text=aw.Title,
         TextSize=20,
@@ -8303,7 +8304,7 @@ function ar.Colorpicker(as,at,au,av)
         })
     })
 
-    -- 调色区域游标
+    -- 颜色区域
     local b=ae("Frame",{
         Size=UDim2.new(0,14,0,14),
         AnchorPoint=Vector2.new(0.5,0.5),
@@ -8314,7 +8315,6 @@ function ar.Colorpicker(as,at,au,av)
         ae("UICorner",{CornerRadius=UDim.new(1,0)})
     })
 
-    -- 饱和度/亮度图
     aw.UIElements.SatVibMap=ae("ImageLabel",{
         Size=UDim2.fromOffset(160,158),
         Position=UDim2.fromOffset(0,40+aw.TextPadding),
@@ -8328,7 +8328,6 @@ function ar.Colorpicker(as,at,au,av)
         b,
     })
 
-    -- 输入框容器
     aw.UIElements.Inputs=ae("Frame",{
         AutomaticSize="XY",
         Size=UDim2.new(0,0,0,0),
@@ -8339,7 +8338,7 @@ function ar.Colorpicker(as,at,au,av)
         ae("UIListLayout",{Padding=UDim.new(0,4),FillDirection="Vertical"})
     })
 
-    -- 创建输入框的辅助函数
+    -- 输入框创建
     function CreateNewInput(p_name, r_val)
         local u_input=aq(p_name,nil,aw.UIElements.Inputs)
         ae("TextLabel",{
@@ -8349,7 +8348,6 @@ function ar.Colorpicker(as,at,au,av)
             AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,-12,0.5,0),
             Parent=u_input.Frame,Text=p_name,
         })
-        -- 初始状态：Scale设为0用于动画
         local ui_scale = ae("UIScale",{Parent=u_input, Scale=0})
         u_input.Frame.Frame.TextBox.Text=r_val
         u_input.Size=UDim2.new(0,150,0,42)
@@ -8360,7 +8358,6 @@ function ar.Colorpicker(as,at,au,av)
         return {R=math.floor(p.R*255),G=math.floor(p.G*255),B=math.floor(p.B*255)}
     end
 
-    -- 创建具体的输入框
     local p_in, ps = CreateNewInput("Hex","#"..aw.Default:ToHex())
     local r_in, rs = CreateNewInput("Red",ToRGB(aw.Default).R)
     local g_in, gs = CreateNewInput("Green",ToRGB(aw.Default).G)
@@ -8368,33 +8365,22 @@ function ar.Colorpicker(as,at,au,av)
     local a_in, as_scale
     if aw.Transparency then a_in, as_scale = CreateNewInput("Alpha",((1-aw.Transparency)*100).."%") end
 
-    -- [[ 动画逻辑：输入框交错位移入场 ]]
+    -- [[ 动画逻辑：往上下渐变滑入 ]]
     local inputs = { {p_in, ps}, {r_in, rs}, {g_in, gs}, {b_in, bs}, {a_in, as_scale} }
     for i, data in ipairs(inputs) do
         local obj, scale = data[1], data[2]
         if obj then
             local oldPos = obj.Position
-            -- 初始位置向下偏移20像素
-            obj.Position = oldPos + UDim2.fromOffset(0, 20)
+            obj.Position = oldPos + UDim2.fromOffset(0, 20) -- 初始下移
             task.spawn(function()
-                -- 依次延迟执行，形成阶梯动画
-                task.wait(0.1 + (i * 0.05)) 
-                -- 位移回归
+                task.wait(0.1 + (i * 0.05))
                 af(obj, 0.5, {Position = oldPos}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-                -- 缩放变大
                 af(scale, 0.5, {Scale = 0.85}, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
             end)
         end
     end
 
-    -- 预览颜色块
-    local d_pre=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=aw.Transparency or 0},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
-    ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(85,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),d_pre})
-    
-    local f_pre=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=0,ZIndex=9},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
-    ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(0,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),f_pre})
-
-    -- 色相(Hue)条
+    -- 颜色调节条
     local h_keys={}
     for h=0,1,0.1 do table.insert(h_keys,ColorSequenceKeypoint.new(h,Color3.fromHSV(h,1,1))) end
     local h_grad=ae("UIGradient",{Color=ColorSequence.new(h_keys),Rotation=90})
@@ -8402,21 +8388,16 @@ function ar.Colorpicker(as,at,au,av)
     local h_p=ae("Frame",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0,0),Parent=h_drag,BackgroundColor3=aw.Default},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
     local m_hue=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(180,40+aw.TextPadding),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),h_grad,h_drag})
 
+    -- 预览方块
+    local f_pre=ae("Frame",{BackgroundColor3=aw.Default,Size=UDim2.fromScale(1,1),BackgroundTransparency=0,ZIndex=9},{ae("UICorner",{CornerRadius=UDim.new(0,8)})})
+    ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Position=UDim2.fromOffset(0,208+aw.TextPadding),Size=UDim2.fromOffset(75,24),Parent=ay.UIElements.Main},{ae("UICorner",{CornerRadius=UDim.new(0,8)}),f_pre})
+
     -- 底部按钮
     local btns=ae("Frame",{Size=UDim2.new(1,0,0,40),AutomaticSize="Y",Position=UDim2.new(0,0,0,254+aw.TextPadding),BackgroundTransparency=1,Parent=ay.UIElements.Main,LayoutOrder=4},{ae("UIListLayout",{Padding=UDim.new(0,6),FillDirection="Horizontal",HorizontalAlignment="Right"})})
     local btnCfgs={{Title="取消",Variant="Secondary",Callback=function() ay:Close() end},{Title="Apply",Icon="chevron-right",Variant="Primary",Callback=function() av(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib),aw.Transparency) ay:Close() end}}
     for _,c in next,btnCfgs do
         local b_obj=ap(c.Title,c.Icon,c.Callback,c.Variant,btns,ay,false)
         b_obj.Size=UDim2.new(0.5,-3,0,40)
-    end
-
-    -- 透明度条
-    local B_t,C_p,F_g
-    if aw.Transparency then
-        local G_h=ae("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1})
-        C_p=ae("ImageLabel",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),ThemeTag={BackgroundColor3="Text"},Parent=G_h},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
-        F_g=ae("Frame",{Size=UDim2.fromScale(1,1)},{ae("UIGradient",{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)},Rotation=270}),ae("UICorner",{CornerRadius=UDim.new(0,6)})})
-        B_t=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(210,40+aw.TextPadding),Parent=ay.UIElements.Main,BackgroundTransparency=1},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType="Tile",TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Size=UDim2.fromScale(1,1)},{ae("UICorner",{CornerRadius=UDim.new(1,0)})}),F_g,G_h})
     end
 
     function aw.Update(self,col,tra)
@@ -8431,175 +8412,83 @@ function ar.Colorpicker(as,at,au,av)
         r_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).R*255)
         g_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).G*255)
         b_in.Frame.Frame.TextBox.Text=math.floor(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib).B*255)
-        if tra or aw.Transparency then
-            local t = tra or aw.Transparency
-            f_pre.BackgroundTransparency=t
-            if F_g then F_g.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib) end
-            if C_p then C_p.Position=UDim2.new(0.5,0,1-t,0) end
-            if a_in then a_in.Frame.Frame.TextBox.Text=math.floor((1-t)*100).."%" end
-        end
     end
-
-    -- 拖拽交互逻辑
-    local function setupDrag(obj, callback)
-        aa.AddSignal(obj.InputBegan, function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                local loop; loop = game:GetService("RunService").RenderStepped:Connect(function()
-                    if not game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then loop:Disconnect() return end
-                    callback()
-                end)
-            end
-        end)
-    end
-
-    setupDrag(aw.UIElements.SatVibMap, function()
-        local mPos = game:GetService("UserInputService"):GetMouseLocation()
-        local pos = aw.UIElements.SatVibMap.AbsolutePosition
-        local size = aw.UIElements.SatVibMap.AbsoluteSize
-        aw.Sat = math.clamp((mPos.X - pos.X) / size.X, 0, 1)
-        aw.Vib = 1 - math.clamp((mPos.Y - 36 - pos.Y) / size.Y, 0, 1)
-        aw:Update()
-    end)
-
-    setupDrag(m_hue, function()
-        local mPos = game:GetService("UserInputService"):GetMouseLocation()
-        local pos = m_hue.AbsolutePosition
-        local size = m_hue.AbsoluteSize
-        aw.Hue = math.clamp((mPos.Y - 36 - pos.Y) / size.Y, 0, 1)
-        aw:Update()
-    end)
-
-    if B_t then
-        setupDrag(B_t, function()
-            local mPos = game:GetService("UserInputService"):GetMouseLocation()
-            local pos = B_t.AbsolutePosition
-            local size = B_t.AbsoluteSize
-            aw.Transparency = 1 - math.clamp((mPos.Y - 36 - pos.Y) / size.Y, 0, 1)
-            aw:Update()
-        end)
-    end
-    
-    -- 输入框失去焦点更新颜色逻辑
-    local function clampVal(v, min, max) return math.clamp(tonumber(v) or 0, min, max) end
-    local function bindInput(inputObj, key)
-        aa.AddSignal(inputObj.Frame.Frame.TextBox.FocusLost, function(enter)
-            if enter then
-                local txt = inputObj.Frame.Frame.TextBox.Text
-                local val = clampVal(txt, 0, 255)
-                local currentRGB = ToRGB(Color3.fromHSV(aw.Hue, aw.Sat, aw.Vib))
-                currentRGB[key] = val
-                local newCol = Color3.fromRGB(currentRGB.R, currentRGB.G, currentRGB.B)
-                aw.Hue, aw.Sat, aw.Vib = Color3.toHSV(newCol)
-                aw:Update()
-            end
-        end)
-    end
-    
-    bindInput(r_in, "R")
-    bindInput(g_in, "G")
-    bindInput(b_in, "B")
-    
-    aa.AddSignal(p_in.Frame.Frame.TextBox.FocusLost, function(enter)
-        if enter then
-            local s, res = pcall(Color3.fromHex, p_in.Frame.Frame.TextBox.Text:gsub("#",""))
-            if s and typeof(res) == "Color3" then
-                aw.Hue, aw.Sat, aw.Vib = Color3.toHSV(res)
-                aw:Update()
-            end
-        end
-    end)
 
     aw:Update(aw.Default,aw.Transparency)
     ay:Open()
     return aw
 end
 
+-- [[ 修复后的 New 函数，解决 UI 重叠问题 ]]
+
 function ar.New(as,at)
-local au={
-__type="Colorpicker",
-Title=at.Title or"Colorpicker",
-Desc=at.Desc or nil,
-Locked=at.Locked or false,
-LockedTitle=at.LockedTitle,
-Default=at.Default or Color3.new(1,1,1),
-Callback=at.Callback or function()end,
+    local au={
+        __type="Colorpicker",
+        Title=at.Title or"Colorpicker",
+        Desc=at.Desc or nil,
+        Locked=at.Locked or false,
+        LockedTitle=at.LockedTitle,
+        Default=at.Default or Color3.new(1,1,1),
+        Callback=at.Callback or function()end,
+        Transparency=at.Transparency,
+        UIElements={},
+        PickerOpened = false, -- 添加状态锁
+    }
 
-UIScale=at.UIScale,
-Transparency=at.Transparency,
-UIElements={}
-}
+    local av=true
 
-local av=true
+    au.ColorpickerFrame=a.load'B'{
+        Title=au.Title,
+        Desc=au.Desc,
+        Parent=at.Parent,
+        TextOffset=40,
+        Hover=false,
+        Tab=at.Tab,
+        Index=at.Index,
+        Window=at.Window,
+        ElementTable=au,
+        ParentConfig=at,
+        LockedIcon = at.LockedIcon,
+    }
 
+    au.UIElements.Colorpicker=aa.NewRoundFrame(ar.UICorner,"Squircle",{
+        ImageTransparency=0,
+        Active=true,
+        ImageColor3=au.Default,
+        Parent=au.ColorpickerFrame.UIElements.Main,
+        Size=UDim2.new(0,26,0,26),
+        AnchorPoint=Vector2.new(1,0),
+        Position=UDim2.new(1,0,0,0),
+        ZIndex=2
+    },nil,true)
 
+    function au.Update(aw,ax,ay)
+        au.UIElements.Colorpicker.ImageColor3=ax
+        au.Default=ax
+        if ay then au.Transparency=ay end
+    end
 
-au.ColorpickerFrame=a.load'B'{
-Title=au.Title,
-Desc=au.Desc,
-Parent=at.Parent,
-TextOffset=40,
-Hover=false,
-Tab=at.Tab,
-Index=at.Index,
-Window=at.Window,
-ElementTable=au,
-ParentConfig=at,
-LockedIcon = at.LockedIcon,
-}
+    -- 点击触发
+    aa.AddSignal(au.UIElements.Colorpicker.MouseButton1Click,function()
+        -- 检查锁：如果已经打开了，直接跳过
+        if av and not au.PickerOpened then
+            au.PickerOpened = true -- 上锁
+            
+            local picker = ar:Colorpicker(au,at.Window,function(aw,ax)
+                au:Update(aw,ax)
+                aa.SafeCallback(au.Callback,aw,ax)
+            end)
 
-au.UIElements.Colorpicker=aa.NewRoundFrame(ar.UICorner,"Squircle",{
-ImageTransparency=0,
-Active=true,
-ImageColor3=au.Default,
-Parent=au.ColorpickerFrame.UIElements.Main,
-Size=UDim2.new(0,26,0,26),
-AnchorPoint=Vector2.new(1,0),
-Position=UDim2.new(1,0,0,0),
-ZIndex=2
-},nil,true)
+            -- 注入关闭回调：当窗口关闭动画结束或被调用时，解锁
+            local originalClose = picker.ColorpickerFrame.Close
+            picker.ColorpickerFrame.Close = function(...)
+                au.PickerOpened = false -- 解锁
+                return originalClose(...)
+            end
+        end
+    end)
 
-
-function au.Lock(aw)
-au.Locked=true
-av=false
-return au.ColorpickerFrame:Lock(au.LockedTitle)
-end
-function au.Unlock(aw)
-au.Locked=false
-av=true
-return au.ColorpickerFrame:Unlock()
-end
-
-if au.Locked then
-au:Lock()
-end
-
-
-function au.Update(aw,ax,ay)
-au.UIElements.Colorpicker.ImageTransparency=ay or 0
-au.UIElements.Colorpicker.ImageColor3=ax
-au.Default=ax
-if ay then
-au.Transparency=ay
-end
-end
-
-function au.Set(aw,ax,ay)
-return au:Update(ax,ay)
-end
-
-aa.AddSignal(au.UIElements.Colorpicker.MouseButton1Click,function()
-if av then
-ar:Colorpicker(au,at.Window,function(aw,ax)
-au:Update(aw,ax)
-au.Default=aw
-au.Transparency=ax
-aa.SafeCallback(au.Callback,aw,ax)
-end).ColorpickerFrame:Open()
-end
-end)
-
-return au.__type,au
+    return au.__type,au
 end
 
 return ar end function a.R()
