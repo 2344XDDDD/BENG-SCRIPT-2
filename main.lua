@@ -8253,433 +8253,701 @@ UICorner=9,
 
 }
 
-local ar={
-    UICorner=9,
+function ar.Colorpicker(as,at,au,av)
+local aw={
+__type="Colorpicker",
+Title=at.Title,
+Desc=at.Desc,
+Default=at.Value or at.Default,
+Callback=at.Callback,
+Transparency=at.Transparency,
+UIElements=at.UIElements,
+
+TextPadding=10,
 }
 
-function ar.Colorpicker(as,at,au,av)
-    local aw={
-        __type="Colorpicker",
-        Title=at.Title,
-        Desc=at.Desc,
-        Default=at.Value or at.Default,
-        Callback=at.Callback,
-        Transparency=at.Transparency,
-        UIElements=at.UIElements,
+function aw.SetHSVFromRGB(ax,ay)
+local az,aA,aB=Color3.toHSV(ay)
+aw.Hue=az
+aw.Sat=aA
+aw.Vib=aB
+end
 
-        TextPadding=10,
-    }
+aw:SetHSVFromRGB(aw.Default)
 
-    function aw.SetHSVFromRGB(ax,ay)
-        local az,aA,aB=Color3.toHSV(ay)
-        aw.Hue=az
-        aw.Sat=aA
-        aw.Vib=aB
-    end
+local ax=a.load'n'.Init(au)
+local ay=ax.Create()
 
-    aw:SetHSVFromRGB(aw.Default)
+aw.ColorpickerFrame=ay
 
-    local ax=a.load'n'.Init(au)
-    local ay=ax.Create()
+ay.UIElements.Main.Size=UDim2.new(1,0,0,0)
 
-    aw.ColorpickerFrame=ay
-    ay.UIElements.Main.Size=UDim2.new(1,0,0,0)
 
-    local az,aA,aB=aw.Hue,aw.Sat,aw.Vib
 
-    aw.UIElements.Title=ae("TextLabel",{
-        Text=aw.Title,
-        TextSize=20,
-        FontFace=Font.new(aa.Font,Enum.FontWeight.SemiBold),
-        TextXAlignment="Left",
-        Size=UDim2.new(1,0,0,0),
-        AutomaticSize="Y",
-        ThemeTag={
-            TextColor3="Text"
-        },
-        BackgroundTransparency=1,
-        Parent=ay.UIElements.Main
-    },{
-        ae("UIPadding",{
-            PaddingTop=UDim.new(0,aw.TextPadding/2),
-            PaddingLeft=UDim.new(0,aw.TextPadding/2),
-            PaddingRight=UDim.new(0,aw.TextPadding/2),
-            PaddingBottom=UDim.new(0,aw.TextPadding/2),
-        })
-    })
+local az,aA,aB=aw.Hue,aw.Sat,aw.Vib
 
-    local b=ae("Frame",{
-        Size=UDim2.new(0,14,0,14),
-        AnchorPoint=Vector2.new(0.5,0.5),
-        Position=UDim2.new(0.5,0,0,0),
-        BackgroundColor3=aw.Default
-    },{
-        ae("UIStroke",{
-            Thickness=2,
-            Transparency=.1,
-            ThemeTag={
-                Color="Text",
-            },
-        }),
-        ae("UICorner",{
-            CornerRadius=UDim.new(1,0),
-        })
-    })
+aw.UIElements.Title=ae("TextLabel",{
+Text=aw.Title,
+TextSize=20,
+FontFace=Font.new(aa.Font,Enum.FontWeight.SemiBold),
+TextXAlignment="Left",
+Size=UDim2.new(1,0,0,0),
+AutomaticSize="Y",
+ThemeTag={
+TextColor3="Text"
+},
+BackgroundTransparency=1,
+Parent=ay.UIElements.Main
+},{
+ae("UIPadding",{
+PaddingTop=UDim.new(0,aw.TextPadding/2),
+PaddingLeft=UDim.new(0,aw.TextPadding/2),
+PaddingRight=UDim.new(0,aw.TextPadding/2),
+PaddingBottom=UDim.new(0,aw.TextPadding/2),
+})
+})
 
-    aw.UIElements.SatVibMap=ae("ImageLabel",{
-        Size=UDim2.fromOffset(160,158),
-        Position=UDim2.fromOffset(0,40+aw.TextPadding),
-        Image="rbxassetid://4155801252",
-        BackgroundColor3=Color3.fromHSV(az,1,1),
-        BackgroundTransparency=0,
-        Parent=ay.UIElements.Main,
-    },{
-        ae("UICorner",{
-            CornerRadius=UDim.new(0,8),
-        }),
-        aa.NewRoundFrame(8,"SquircleOutline",{
-            ThemeTag={
-                ImageColor3="Outline",
-            },
-            Size=UDim2.new(1,0,1,0),
-            ImageTransparency=.85,
-            ZIndex=99999,
-        },{
-            ae("UIGradient",{
-                Rotation=45,
-                Color=ColorSequence.new{
-                    ColorSequenceKeypoint.new(0.0,Color3.fromRGB(255,255,255)),
-                    ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
-                    ColorSequenceKeypoint.new(1.0,Color3.fromRGB(255,255,255)),
-                },
-                Transparency=NumberSequence.new{
-                    NumberSequenceKeypoint.new(0.0,0.1),
-                    NumberSequenceKeypoint.new(0.5,1),
-                    NumberSequenceKeypoint.new(1.0,0.1),
-                }
-            })
-        }),
-        b,
-    })
 
-    aw.UIElements.Inputs=ae("Frame",{
-        AutomaticSize="XY",
-        Size=UDim2.new(0,0,0,0),
-        Position=UDim2.fromOffset(aw.Transparency and 240 or 210,40+aw.TextPadding),
-        BackgroundTransparency=1,
-        Parent=ay.UIElements.Main
-    },{
-        ae("UIListLayout",{
-            Padding=UDim.new(0,4),
-            FillDirection="Vertical",
-        })
-    })
 
-    function CreateNewInput(p,r)
-        local u=aq(p,nil,aw.UIElements.Inputs)
-        ae("TextLabel",{
-            BackgroundTransparency=1,
-            TextTransparency=.4,
-            TextSize=17,
-            FontFace=Font.new(aa.Font,Enum.FontWeight.Regular),
-            AutomaticSize="XY",
-            ThemeTag={
-                TextColor3="Placeholder",
-            },
-            AnchorPoint=Vector2.new(1,0.5),
-            Position=UDim2.new(1,-12,0.5,0),
-            Parent=u.Frame,
-            Text=p,
-        })
-        local sc = ae("UIScale",{
-            Parent=u,
-            Scale=0, -- 初始为0
-        })
-        u.Frame.Frame.TextBox.Text=r
-        u.Size=UDim2.new(0,150,0,42)
-        return u, sc
-    end
 
-    local function ToRGB(p)
-        return{
-            R=math.floor(p.R*255),
-            G=math.floor(p.G*255),
-            B=math.floor(p.B*255)
-        }
-    end
 
-    local p=CreateNewInput("Hex","#"..aw.Default:ToHex())
-    local r=CreateNewInput("Red",ToRGB(aw.Default).R)
-    local u=CreateNewInput("Green",ToRGB(aw.Default).G)
-    local v=CreateNewInput("Blue",ToRGB(aw.Default).B)
-    local x
-    if aw.Transparency then
-        x=CreateNewInput("Alpha",((1-aw.Transparency)*100).."%")
-    end
+local b=ae("Frame",{
+Size=UDim2.new(0,14,0,14),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0,0),
+Parent=HueDragHolder,
+BackgroundColor3=aw.Default
+},{
+ae("UIStroke",{
+Thickness=2,
+Transparency=.1,
+ThemeTag={
+Color="Text",
+},
+}),
+ae("UICorner",{
+CornerRadius=UDim.new(1,0),
+})
+})
 
-    -- [[ 输入框入场动画：从下往上渐变弹出 ]]
-    local inputList = {p, r, u, v, x}
-    for i, obj in ipairs(inputList) do
-        if obj then
-            local targetPos = obj.Position
-            local sc = obj:FindFirstChildOfClass("UIScale")
-            obj.Position = targetPos + UDim2.fromOffset(0, 20) -- 初始下移
-            task.spawn(function()
-                task.wait(0.1 + (i * 0.05))
-                af(obj, 0.5, {Position = targetPos}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-                if sc then
-                    af(sc, 0.5, {Scale = 0.85}, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
-                end
-            end)
-        end
-    end
+aw.UIElements.SatVibMap=ae("ImageLabel",{
+Size=UDim2.fromOffset(160,158),
+Position=UDim2.fromOffset(0,40+aw.TextPadding),
+Image="rbxassetid://4155801252",
+BackgroundColor3=Color3.fromHSV(az,1,1),
+BackgroundTransparency=0,
+Parent=ay.UIElements.Main,
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(0,8),
+}),
+aa.NewRoundFrame(8,"SquircleOutline",{
+ThemeTag={
+ImageColor3="Outline",
+},
+Size=UDim2.new(1,0,1,0),
+ImageTransparency=.85,
+ZIndex=99999,
+},{
+ae("UIGradient",{
+Rotation=45,
+Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0.0,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(1.0,Color3.fromRGB(255,255,255)),
+},
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0.0,0.1),
+NumberSequenceKeypoint.new(0.5,1),
+NumberSequenceKeypoint.new(1.0,0.1),
+}
+})
+}),
 
-    local f=ae("Frame",{
-        BackgroundColor3=aw.Default,
-        Size=UDim2.fromScale(1,1),
-        BackgroundTransparency=0,
-        ZIndex=9,
-    },{
-        ae("UICorner",{
-            CornerRadius=UDim.new(0,8),
-        }),
-    })
+b,
+})
 
-    ae("ImageLabel",{
-        Image="http://www.roblox.com/asset/?id=14204231522",
-        ImageTransparency=0.45,
-        ScaleType=Enum.ScaleType.Tile,
-        TileSize=UDim2.fromOffset(40,40),
-        BackgroundTransparency=1,
-        Position=UDim2.fromOffset(0,208+aw.TextPadding),
-        Size=UDim2.fromOffset(75,24),
-        Parent=ay.UIElements.Main,
-    },{
-        ae("UICorner",{
-            CornerRadius=UDim.new(0,8),
-        }),
-        aa.NewRoundFrame(8,"SquircleOutline",{
-            ThemeTag={
-                ImageColor3="Outline",
-            },
-            Size=UDim2.new(1,0,1,0),
-            ImageTransparency=.85,
-            ZIndex=99999,
-        }),
-        f,
-    })
+aw.UIElements.Inputs=ae("Frame",{
+AutomaticSize="XY",
+Size=UDim2.new(0,0,0,0),
+Position=UDim2.fromOffset(aw.Transparency and 240 or 210,40+aw.TextPadding),
+BackgroundTransparency=1,
+Parent=ay.UIElements.Main
+},{
+ae("UIListLayout",{
+Padding=UDim.new(0,4),
+FillDirection="Vertical",
+})
+})
 
-    local g_keys={}
-    for h=0,1,0.1 do
-        table.insert(g_keys,ColorSequenceKeypoint.new(h,Color3.fromHSV(h,1,1)))
-    end
-    local h_grad=ae("UIGradient",{
-        Color=ColorSequence.new(g_keys),
-        Rotation=90,
-    })
-    local j_drag=ae("Frame",{
-        Size=UDim2.new(1,0,1,0),
-        Position=UDim2.new(0,0,0,0),
-        BackgroundTransparency=1,
-    })
-    local l_ptr=ae("Frame",{
-        Size=UDim2.new(0,14,0,14),
-        AnchorPoint=Vector2.new(0.5,0.5),
-        Position=UDim2.new(0.5,0,0,0),
-        Parent=j_drag,
-        BackgroundColor3=aw.Default
-    },{
-        ae("UIStroke",{
-            Thickness=2,
-            Transparency=.1,
-            ThemeTag={
-                Color="Text",
-            },
-        }),
-        ae("UICorner",{
-            CornerRadius=UDim.new(1,0),
-        })
-    })
-    local m_hue=ae("Frame",{
-        Size=UDim2.fromOffset(6,192),
-        Position=UDim2.fromOffset(180,40+aw.TextPadding),
-        Parent=ay.UIElements.Main,
-    },{
-        ae("UICorner",{
-            CornerRadius=UDim.new(1,0),
-        }),
-        h_grad,
-        j_drag,
-    })
 
-    local z_btns=ae("Frame",{
-        Size=UDim2.new(1,0,0,40),
-        AutomaticSize="Y",
-        Position=UDim2.new(0,0,0,254+aw.TextPadding),
-        BackgroundTransparency=1,
-        Parent=ay.UIElements.Main,
-        LayoutOrder=4,
-    },{
-        ae("UIListLayout",{
-            Padding=UDim.new(0,6),
-            FillDirection="Horizontal",
-            HorizontalAlignment="Right",
-        }),
-    })
 
-    local btnCfgs={
-        {Title="取消",Variant="Secondary",Callback=function() ay:Close() end},
-        {Title="Apply",Icon="chevron-right",Variant="Primary",Callback=function() av(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib),aw.Transparency) ay:Close() end}
-    }
 
-    for _,cfg in next,btnCfgs do
-        local btnObj=ap(cfg.Title,cfg.Icon,cfg.Callback,cfg.Variant,z_btns,ay,false)
-        btnObj.Size=UDim2.new(0.5,-3,0,40)
-    end
 
-    local B_tra,C_ptr,F_gra
-    if aw.Transparency then
-        local G_hld=ae("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1})
-        C_ptr=ae("ImageLabel",{Size=UDim2.new(0,14,0,14),AnchorPoint=Vector2.new(0.5,0.5),ThemeTag={BackgroundColor3="Text"},Parent=G_hld},{ae("UIStroke",{Thickness=2,Transparency=.1,ThemeTag={Color="Text"}}),ae("UICorner",{CornerRadius=UDim.new(1,0)})})
-        F_gra=ae("Frame",{Size=UDim2.fromScale(1,1)},{ae("UIGradient",{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)},Rotation=270}),ae("UICorner",{CornerRadius=UDim.new(0,6)})})
-        B_tra=ae("Frame",{Size=UDim2.fromOffset(6,192),Position=UDim2.fromOffset(210,40+aw.TextPadding),Parent=ay.UIElements.Main,BackgroundTransparency=1},{ae("UICorner",{CornerRadius=UDim.new(1,0)}),ae("ImageLabel",{Image="rbxassetid://14204231522",ImageTransparency=0.45,ScaleType=Enum.ScaleType.Tile,TileSize=UDim2.fromOffset(40,40),BackgroundTransparency=1,Size=UDim2.fromScale(1,1)},{ae("UICorner",{CornerRadius=UDim.new(1,0)})}),F_gra,G_hld})
-    end
+local d=ae("Frame",{
+BackgroundColor3=aw.Default,
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=aw.Transparency,
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(0,8),
+}),
+})
 
-    function aw.Update(self)
-        aw.UIElements.SatVibMap.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
-        b.Position=UDim2.new(aw.Sat,0,1-aw.Vib,0)
-        b.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
-        f.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
-        l_ptr.BackgroundColor3=Color3.fromHSV(aw.Hue,1,1)
-        l_ptr.Position=UDim2.new(0.5,0,aw.Hue,0)
-        p.Frame.Frame.TextBox.Text="#"..Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib):ToHex()
-        if aw.Transparency then
-            f.BackgroundTransparency=aw.Transparency
-            if F_gra then F_gra.BackgroundColor3=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib) end
-            if C_ptr then C_ptr.Position=UDim2.new(0.5,0,1-aw.Transparency,0) end
-        end
-    end
+ae("ImageLabel",{
+Image="http://www.roblox.com/asset/?id=14204231522",
+ImageTransparency=0.45,
+ScaleType=Enum.ScaleType.Tile,
+TileSize=UDim2.fromOffset(40,40),
+BackgroundTransparency=1,
+Position=UDim2.fromOffset(85,208+aw.TextPadding),
+Size=UDim2.fromOffset(75,24),
+Parent=ay.UIElements.Main,
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(0,8),
+}),
+aa.NewRoundFrame(8,"SquircleOutline",{
+ThemeTag={
+ImageColor3="Outline",
+},
+Size=UDim2.new(1,0,1,0),
+ImageTransparency=.85,
+ZIndex=99999,
+},{
+ae("UIGradient",{
+Rotation=60,
+Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0.0,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(1.0,Color3.fromRGB(255,255,255)),
+},
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0.0,0.1),
+NumberSequenceKeypoint.new(0.5,1),
+NumberSequenceKeypoint.new(1.0,0.1),
+}
+})
+}),
 
-    -- [[ 交互逻辑：使用原始代码中的坐标引用方法，确保颜色选择正常工作 ]]
-    aa.AddSignal(aw.UIElements.SatVibMap.InputBegan,function(H)
-        if H.UserInputType==Enum.UserInputType.MouseButton1 or H.UserInputType==Enum.UserInputType.Touch then
-            while aj:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-                local J=aw.UIElements.SatVibMap.AbsolutePosition.X
-                local L=J+aw.UIElements.SatVibMap.AbsoluteSize.X
-                local M=math.clamp(ao.X,J,L)
-                local N=aw.UIElements.SatVibMap.AbsolutePosition.Y
-                local O=N+aw.UIElements.SatVibMap.AbsoluteSize.Y
-                local P=math.clamp(ao.Y,N,O)
-                aw.Sat=(M-J)/(L-J)
-                aw.Vib=1-((P-N)/(O-N))
-                aw:Update()
-                am:Wait()
-            end
-        end
-    end)
 
-    aa.AddSignal(m_hue.InputBegan,function(H)
-        if H.UserInputType==Enum.UserInputType.MouseButton1 or H.UserInputType==Enum.UserInputType.Touch then
-            while aj:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-                local J=m_hue.AbsolutePosition.Y
-                local L=J+m_hue.AbsoluteSize.Y
-                local M=math.clamp(ao.Y,J,L)
-                aw.Hue=((M-J)/(L-J))
-                aw:Update()
-                am:Wait()
-            end
-        end
-    end)
 
-    if B_tra then
-        aa.AddSignal(B_tra.InputBegan,function(H)
-            if H.UserInputType==Enum.UserInputType.MouseButton1 or H.UserInputType==Enum.UserInputType.Touch then
-                while aj:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-                    local J=B_tra.AbsolutePosition.Y
-                    local L=J+B_tra.AbsoluteSize.Y
-                    local M=math.clamp(ao.Y,J,L)
-                    aw.Transparency=1-((M-J)/(L-J))
-                    aw:Update()
-                    am:Wait()
-                end
-            end
-        end)
-    end
 
-    aw:Update()
-    ay:Open()
-    return aw
+
+
+
+d,
+})
+
+local f=ae("Frame",{
+BackgroundColor3=aw.Default,
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=0,
+ZIndex=9,
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(0,8),
+}),
+})
+
+ae("ImageLabel",{
+Image="http://www.roblox.com/asset/?id=14204231522",
+ImageTransparency=0.45,
+ScaleType=Enum.ScaleType.Tile,
+TileSize=UDim2.fromOffset(40,40),
+BackgroundTransparency=1,
+Position=UDim2.fromOffset(0,208+aw.TextPadding),
+Size=UDim2.fromOffset(75,24),
+Parent=ay.UIElements.Main,
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(0,8),
+}),
+
+
+
+
+
+
+
+aa.NewRoundFrame(8,"SquircleOutline",{
+ThemeTag={
+ImageColor3="Outline",
+},
+Size=UDim2.new(1,0,1,0),
+ImageTransparency=.85,
+ZIndex=99999,
+},{
+ae("UIGradient",{
+Rotation=60,
+Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0.0,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(1.0,Color3.fromRGB(255,255,255)),
+},
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0.0,0.1),
+NumberSequenceKeypoint.new(0.5,1),
+NumberSequenceKeypoint.new(1.0,0.1),
+}
+})
+}),
+f,
+})
+
+local g={}
+
+for h=0,1,0.1 do
+table.insert(g,ColorSequenceKeypoint.new(h,Color3.fromHSV(h,1,1)))
+end
+
+local h=ae("UIGradient",{
+Color=ColorSequence.new(g),
+Rotation=90,
+})
+
+local j=ae("Frame",{
+Size=UDim2.new(1,0,1,0),
+Position=UDim2.new(0,0,0,0),
+BackgroundTransparency=1,
+})
+
+local l=ae("Frame",{
+Size=UDim2.new(0,14,0,14),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0,0),
+Parent=j,
+
+
+BackgroundColor3=aw.Default
+},{
+ae("UIStroke",{
+Thickness=2,
+Transparency=.1,
+ThemeTag={
+Color="Text",
+},
+}),
+ae("UICorner",{
+CornerRadius=UDim.new(1,0),
+})
+})
+
+local m=ae("Frame",{
+Size=UDim2.fromOffset(6,192),
+Position=UDim2.fromOffset(180,40+aw.TextPadding),
+Parent=ay.UIElements.Main,
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(1,0),
+}),
+h,
+j,
+})
+
+
+function CreateNewInput(p,r)
+local u=aq(p,nil,aw.UIElements.Inputs)
+
+ae("TextLabel",{
+BackgroundTransparency=1,
+TextTransparency=.4,
+TextSize=17,
+FontFace=Font.new(aa.Font,Enum.FontWeight.Regular),
+AutomaticSize="XY",
+ThemeTag={
+TextColor3="Placeholder",
+},
+AnchorPoint=Vector2.new(1,0.5),
+Position=UDim2.new(1,-12,0.5,0),
+Parent=u.Frame,
+Text=p,
+})
+
+ae("UIScale",{
+Parent=u,
+Scale=.85,
+})
+
+u.Frame.Frame.TextBox.Text=r
+u.Size=UDim2.new(0,150,0,42)
+
+return u
+end
+
+local function ToRGB(p)
+return{
+R=math.floor(p.R*255),
+G=math.floor(p.G*255),
+B=math.floor(p.B*255)
+}
+end
+
+local p=CreateNewInput("Hex","#"..aw.Default:ToHex())
+
+local r=CreateNewInput("Red",ToRGB(aw.Default).R)
+local u=CreateNewInput("Green",ToRGB(aw.Default).G)
+local v=CreateNewInput("Blue",ToRGB(aw.Default).B)
+local x
+if aw.Transparency then
+x=CreateNewInput("Alpha",((1-aw.Transparency)*100).."%")
+end
+
+local z=ae("Frame",{
+Size=UDim2.new(1,0,0,40),
+AutomaticSize="Y",
+Position=UDim2.new(0,0,0,254+aw.TextPadding),
+BackgroundTransparency=1,
+Parent=ay.UIElements.Main,
+LayoutOrder=4,
+},{
+ae("UIListLayout",{
+Padding=UDim.new(0,6),
+FillDirection="Horizontal",
+HorizontalAlignment="Right",
+}),
+
+
+
+
+
+
+})
+
+local A={
+{
+Title="Cancel",
+Variant="Secondary",
+Callback=function()end
+},
+{
+Title="Apply",
+Icon="chevron-right",
+Variant="Primary",
+Callback=function()av(Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib),aw.Transparency)end
+}
+}
+
+for B,C in next,A do
+local F=ap(C.Title,C.Icon,C.Callback,C.Variant,z,ay,false)
+F.Size=UDim2.new(0.5,-3,0,40)
+F.AutomaticSize="None"
+end
+
+
+
+local B,C,F
+if aw.Transparency then
+local G=ae("Frame",{
+Size=UDim2.new(1,0,1,0),
+Position=UDim2.fromOffset(0,0),
+BackgroundTransparency=1,
+})
+
+C=ae("ImageLabel",{
+Size=UDim2.new(0,14,0,14),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0,0),
+ThemeTag={
+BackgroundColor3="Text",
+},
+Parent=G,
+
+},{
+ae("UIStroke",{
+Thickness=2,
+Transparency=.1,
+ThemeTag={
+Color="Text",
+},
+}),
+ae("UICorner",{
+CornerRadius=UDim.new(1,0),
+})
+
+})
+
+F=ae("Frame",{
+Size=UDim2.fromScale(1,1),
+},{
+ae("UIGradient",{
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0),
+NumberSequenceKeypoint.new(1,1),
+},
+Rotation=270,
+}),
+ae("UICorner",{
+CornerRadius=UDim.new(0,6),
+}),
+})
+
+B=ae("Frame",{
+Size=UDim2.fromOffset(6,192),
+Position=UDim2.fromOffset(210,40+aw.TextPadding),
+Parent=ay.UIElements.Main,
+BackgroundTransparency=1,
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(1,0),
+}),
+ae("ImageLabel",{
+Image="rbxassetid://14204231522",
+ImageTransparency=0.45,
+ScaleType=Enum.ScaleType.Tile,
+TileSize=UDim2.fromOffset(40,40),
+BackgroundTransparency=1,
+Size=UDim2.fromScale(1,1),
+},{
+ae("UICorner",{
+CornerRadius=UDim.new(1,0),
+}),
+}),
+F,
+G,
+})
+end
+
+function aw.Round(G,H,J)
+if J==0 then
+return math.floor(H)
+end
+H=tostring(H)
+return H:find"%."and tonumber(H:sub(1,H:find"%."+J))or H
+end
+
+
+function aw.Update(G,H,J)
+if H then az,aA,aB=Color3.toHSV(H)else az,aA,aB=aw.Hue,aw.Sat,aw.Vib end
+
+aw.UIElements.SatVibMap.BackgroundColor3=Color3.fromHSV(az,1,1)
+b.Position=UDim2.new(aA,0,1-aB,0)
+b.BackgroundColor3=Color3.fromHSV(az,aA,aB)
+f.BackgroundColor3=Color3.fromHSV(az,aA,aB)
+l.BackgroundColor3=Color3.fromHSV(az,1,1)
+l.Position=UDim2.new(0.5,0,az,0)
+
+p.Frame.Frame.TextBox.Text="#"..Color3.fromHSV(az,aA,aB):ToHex()
+r.Frame.Frame.TextBox.Text=ToRGB(Color3.fromHSV(az,aA,aB)).R
+u.Frame.Frame.TextBox.Text=ToRGB(Color3.fromHSV(az,aA,aB)).G
+v.Frame.Frame.TextBox.Text=ToRGB(Color3.fromHSV(az,aA,aB)).B
+
+if J or aw.Transparency then
+f.BackgroundTransparency=aw.Transparency or J
+F.BackgroundColor3=Color3.fromHSV(az,aA,aB)
+C.BackgroundColor3=Color3.fromHSV(az,aA,aB)
+C.BackgroundTransparency=aw.Transparency or J
+C.Position=UDim2.new(0.5,0,1-aw.Transparency or J,0)
+x.Frame.Frame.TextBox.Text=aw:Round((1-aw.Transparency or J)*100,0).."%"
+end
+end
+
+aw:Update(aw.Default,aw.Transparency)
+
+
+
+
+local function GetRGB()
+local G=Color3.fromHSV(aw.Hue,aw.Sat,aw.Vib)
+return{R=math.floor(G.r*255),G=math.floor(G.g*255),B=math.floor(G.b*255)}
+end
+
+
+
+local function clamp(G,H,J)
+return math.clamp(tonumber(G)or 0,H,J)
+end
+
+aa.AddSignal(p.Frame.Frame.TextBox.FocusLost,function(G)
+if G then
+local H=p.Frame.Frame.TextBox.Text:gsub("#","")
+local J,L=pcall(Color3.fromHex,H)
+if J and typeof(L)=="Color3"then
+aw.Hue,aw.Sat,aw.Vib=Color3.toHSV(L)
+aw:Update()
+aw.Default=L
+end
+end
+end)
+
+local function updateColorFromInput(G,H)
+aa.AddSignal(G.Frame.Frame.TextBox.FocusLost,function(J)
+if J then
+local L=G.Frame.Frame.TextBox
+local M=GetRGB()
+local N=clamp(L.Text,0,255)
+L.Text=tostring(N)
+
+M[H]=N
+local O=Color3.fromRGB(M.R,M.G,M.B)
+aw.Hue,aw.Sat,aw.Vib=Color3.toHSV(O)
+aw:Update()
+end
+end)
+end
+
+updateColorFromInput(r,"R")
+updateColorFromInput(u,"G")
+updateColorFromInput(v,"B")
+
+if aw.Transparency then
+aa.AddSignal(x.Frame.Frame.TextBox.FocusLost,function(G)
+if G then
+local H=x.Frame.Frame.TextBox
+local J=clamp(H.Text,0,100)
+H.Text=tostring(J)
+
+aw.Transparency=1-J*0.01
+aw:Update(nil,aw.Transparency)
+end
+end)
+end
+
+
+
+local G=aw.UIElements.SatVibMap
+aa.AddSignal(G.InputBegan,function(H)
+if H.UserInputType==Enum.UserInputType.MouseButton1 or H.UserInputType==Enum.UserInputType.Touch then
+while aj:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)do
+local J=G.AbsolutePosition.X
+local L=J+G.AbsoluteSize.X
+local M=math.clamp(ao.X,J,L)
+
+local N=G.AbsolutePosition.Y
+local O=N+G.AbsoluteSize.Y
+local P=math.clamp(ao.Y,N,O)
+
+aw.Sat=(M-J)/(L-J)
+aw.Vib=1-((P-N)/(O-N))
+aw:Update()
+
+am:Wait()
+end
+end
+end)
+
+aa.AddSignal(m.InputBegan,function(H)
+if H.UserInputType==Enum.UserInputType.MouseButton1 or H.UserInputType==Enum.UserInputType.Touch then
+while aj:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)do
+local J=m.AbsolutePosition.Y
+local L=J+m.AbsoluteSize.Y
+local M=math.clamp(ao.Y,J,L)
+
+aw.Hue=((M-J)/(L-J))
+aw:Update()
+
+am:Wait()
+end
+end
+end)
+
+if aw.Transparency then
+aa.AddSignal(B.InputBegan,function(H)
+if H.UserInputType==Enum.UserInputType.MouseButton1 or H.UserInputType==Enum.UserInputType.Touch then
+while aj:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)do
+local J=B.AbsolutePosition.Y
+local L=J+B.AbsoluteSize.Y
+local M=math.clamp(ao.Y,J,L)
+
+aw.Transparency=1-((M-J)/(L-J))
+aw:Update()
+
+am:Wait()
+end
+end
+end)
+end
+
+return aw
 end
 
 function ar.New(as,at)
-    local au={
-        __type="Colorpicker",
-        Title=at.Title or"Colorpicker",
-        Desc=at.Desc or nil,
-        Locked=at.Locked or false,
-        LockedTitle=at.LockedTitle,
-        Default=at.Default or Color3.new(1,1,1),
-        Callback=at.Callback or function()end,
-        Transparency=at.Transparency,
-        UIElements={},
-        PickerOpened = false, -- 添加状态锁
-    }
+local au={
+__type="Colorpicker",
+Title=at.Title or"Colorpicker",
+Desc=at.Desc or nil,
+Locked=at.Locked or false,
+LockedTitle=at.LockedTitle,
+Default=at.Default or Color3.new(1,1,1),
+Callback=at.Callback or function()end,
 
-    local av=true
+UIScale=at.UIScale,
+Transparency=at.Transparency,
+UIElements={}
+}
 
-    au.ColorpickerFrame=a.load'B'{
-        Title=au.Title,
-        Desc=au.Desc,
-        Parent=at.Parent,
-        TextOffset=40,
-        Hover=false,
-        Tab=at.Tab,
-        Index=at.Index,
-        Window=at.Window,
-        ElementTable=au,
-        ParentConfig=at,
-        LockedIcon = at.LockedIcon,
-    }
+local av=true
 
-    au.UIElements.Colorpicker=aa.NewRoundFrame(ar.UICorner,"Squircle",{
-        ImageTransparency=0,
-        Active=true,
-        ImageColor3=au.Default,
-        Parent=au.ColorpickerFrame.UIElements.Main,
-        Size=UDim2.new(0,26,0,26),
-        AnchorPoint=Vector2.new(1,0),
-        Position=UDim2.new(1,0,0,0),
-        ZIndex=2
-    },nil,true)
 
-    function au.Update(aw,ax,ay)
-        au.UIElements.Colorpicker.ImageColor3=ax
-        au.Default=ax
-        if ay then au.Transparency=ay end
-    end
 
-    aa.AddSignal(au.UIElements.Colorpicker.MouseButton1Click,function()
-        -- [[ 修复重叠：如果已经打开，则不执行任何操作 ]]
-        if av and not au.PickerOpened then
-            au.PickerOpened = true -- 上锁
-            local picker = ar:Colorpicker(au,at.Window,function(aw_c,ax_t)
-                au:Update(aw_c,ax_t)
-                aa.SafeCallback(au.Callback,aw_c,ax_t)
-            end)
+au.ColorpickerFrame=a.load'B'{
+Title=au.Title,
+Desc=au.Desc,
+Parent=at.Parent,
+TextOffset=40,
+Hover=false,
+Tab=at.Tab,
+Index=at.Index,
+Window=at.Window,
+ElementTable=au,
+ParentConfig=at,
+LockedIcon = at.LockedIcon,
+}
 
-            -- 注入解锁逻辑：当窗口关闭时重置状态
-            local oldClose = picker.ColorpickerFrame.Close
-            picker.ColorpickerFrame.Close = function(...)
-                au.PickerOpened = false -- 解锁
-                return oldClose(...)
-            end
-        end
-    end)
+au.UIElements.Colorpicker=aa.NewRoundFrame(ar.UICorner,"Squircle",{
+ImageTransparency=0,
+Active=true,
+ImageColor3=au.Default,
+Parent=au.ColorpickerFrame.UIElements.Main,
+Size=UDim2.new(0,26,0,26),
+AnchorPoint=Vector2.new(1,0),
+Position=UDim2.new(1,0,0,0),
+ZIndex=2
+},nil,true)
 
-    return au.__type,au
+
+function au.Lock(aw)
+au.Locked=true
+av=false
+return au.ColorpickerFrame:Lock(au.LockedTitle)
+end
+function au.Unlock(aw)
+au.Locked=false
+av=true
+return au.ColorpickerFrame:Unlock()
 end
 
-return ar
+if au.Locked then
+au:Lock()
+end
+
+
+function au.Update(aw,ax,ay)
+au.UIElements.Colorpicker.ImageTransparency=ay or 0
+au.UIElements.Colorpicker.ImageColor3=ax
+au.Default=ax
+if ay then
+au.Transparency=ay
+end
+end
+
+function au.Set(aw,ax,ay)
+return au:Update(ax,ay)
+end
+
+aa.AddSignal(au.UIElements.Colorpicker.MouseButton1Click,function()
+if av then
+ar:Colorpicker(au,at.Window,function(aw,ax)
+au:Update(aw,ax)
+au.Default=aw
+au.Transparency=ax
+aa.SafeCallback(au.Callback,aw,ax)
+end).ColorpickerFrame:Open()
+end
+end)
+
+return au.__type,au
+end
 
 return ar end function a.R()
 local aa=a.load'c'
@@ -12666,28 +12934,22 @@ end
 
 
 
-local sidebarOpened = true
-au.ToggleSidebar = function()
-    sidebarOpened = not sidebarOpened
-    local targetWidth = sidebarOpened and au.SideBarWidth or 0
-    local animTime = 0.5
-    local easing = Enum.EasingStyle.Quint
-    an(au.UIElements.SideBarContainer, animTime, {
-        Size = UDim2.new(0, targetWidth, 1, au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)
-    }, easing, Enum.EasingDirection.Out):Play()
-    an(au.UIElements.MainBar, animTime, {
-        Size = UDim2.new(1, -targetWidth, 1, -au.Topbar.Height)
-    }, easing, Enum.EasingDirection.Out):Play()
-    if aB then
-        an(aB, animTime, {
-            Size = UDim2.new(0, math.max(0, targetWidth - (au.UIPadding/2)), 0, 42+(au.UIPadding))
-        }, easing, Enum.EasingDirection.Out):Play()
-        aB.ClipsDescendants = true
-    end
+local sidebarOpened=true
+au.ToggleSidebar=function()
+sidebarOpened=not sidebarOpened
+local targetWidth=sidebarOpened and au.SideBarWidth or 0
+local animTime=0.5
+local easing=Enum.EasingStyle.Quint
+an(au.UIElements.SideBarContainer,animTime,{Size=UDim2.new(0,targetWidth,1,au.User.Enabled and -au.Topbar.Height-42-(au.UIPadding*2) or -au.Topbar.Height)},easing,Enum.EasingDirection.Out):Play()
+an(au.UIElements.MainBar,animTime,{Size=UDim2.new(1,-targetWidth,1,-au.Topbar.Height)},easing,Enum.EasingDirection.Out):Play()
+if aB then
+an(aB,animTime,{Size=UDim2.new(0,math.max(0,targetWidth-(au.UIPadding/2)),0,42+(au.UIPadding))},easing,Enum.EasingDirection.Out):Play()
+aB.ClipsDescendants=true
 end
-au:CreateTopbarButton("SidebarToggle", "menu", function()
-    au.ToggleSidebar()
-end, 990, true, Color3.fromRGB(255, 255, 255))
+end
+au:CreateTopbarButton("SidebarToggle","menu",function()
+au.ToggleSidebar()
+end,990,true,Color3.fromRGB(255,255,255))
 function au.DisableTopbarButtons(M,N)
 for O,P in next,N do
 for Q,R in next,au.TopBarButtons do
