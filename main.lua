@@ -12821,36 +12821,66 @@ end)
 
 
 
-local a,b,c,d,e=0,0.4,nil,0,nil
-local f,g,h,i=au,at,l,task
-local j,k=f.SetToTheCenter,function()g.WindUI:Notify({Title="Notification",Content="不处",Duration=3})end
-local m,n,o=i.spawn,i.wait,i.delay
-local p,q,r=tick,Enum,nil
-h.Frame.MouseButton1Up:Connect(function()
-local s=p()
-local t=f.Position
-d=d+1
-if d==1 then
-a=s;c=t
-m(function()
-n(b)
-if d>0 then d=0;c=nil end
-end)
-elseif d==2 then
-if s-a<=b and t==c then
-if e then i.cancel(e) end
-e=o(0.25,function()
-if d==2 then j(f);d=0;c=nil end
-end)
+local G = 0
+local H = 0.4
+local J
+local L = 0
+local doubleClickTimer = nil
+
+function onDoubleClick()
+    au:SetToTheCenter()
 end
-elseif d==3 then
-if s-a<=b then
-if e then i.cancel(e);e=nil end
-k()
+
+function onTripleClick()
+    at.WindUI:Notify({
+        Title = "Notification",
+        Content = "不处",
+        Duration = 3,
+    })
 end
-d=0;c=nil;a=0
-end
+
+l.Frame.MouseButton1Up:Connect(function()
+    local M = tick()
+    local N = au.Position
+    L = L + 1
+    if L == 1 then
+        G = M
+        J = N
+        task.spawn(function()
+            task.wait(H)
+            if L > 0 then
+                L = 0
+                J = nil
+            end
+        end)
+
+    elseif L == 2 then
+        if M - G <= H and N == J then
+            if doubleClickTimer then task.cancel(doubleClickTimer) end
+            doubleClickTimer = task.delay(0.25, function() 
+                if L == 2 then
+                    onDoubleClick()
+                    L = 0
+                    J = nil
+                end
+            end)
+        end
+
+    elseif L == 3 then
+        if M - G <= H then
+            if doubleClickTimer then
+                task.cancel(doubleClickTimer)
+                doubleClickTimer = nil
+            end
+            
+            onTripleClick()
+        end
+        L = 0
+        J = nil
+        G = 0
+    end
 end)
+
 
 
 if not au.HideSearchBar then
