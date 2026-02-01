@@ -6249,109 +6249,117 @@ return an,ak
 end
 
 
-function a.G()
-    local aa = a.load'c'
-    local ab = aa.New
-    local ac = aa.Tween
+return aa end function a.G()
+local aa=a.load'c'local ab=
+aa.New local ac=
+aa.Tween
 
-    local ad = a.load'E'.New
-    local ae = a.load'F'.New
+local ad=a.load'E'.New
+local ae=a.load'F'.New
 
-    local af = {}
+local af={}
 
-    function af.New(ag, ah)
-        local ai = {
-            __type = "Toggle",
-            Title = ah.Title or "Toggle",
-            Desc = ah.Desc or nil,
-            Locked = ah.Locked or false,
-            LockedTitle = ah.LockedTitle,
-            Value = ah.Value,
-            Icon = ah.Icon or nil,
-            IconSize = ah.IconSize or 23,
-            Type = ah.Type or "Toggle",
-            Callback = ah.Callback or function() end,
-            UIElements = {}
-        }
+function af.New(ag,ah)
+local ai={
+__type="Toggle",
+Title=ah.Title or"Toggle",
+Desc=ah.Desc or nil,
+Locked=ah.Locked or false,
+LockedTitle=ah.LockedTitle,
+Value=ah.Value,
+Icon=ah.Icon or nil,
+IconSize=ah.IconSize or 23,
+Type=ah.Type or"Toggle",
+Callback=ah.Callback or function()end,
+UIElements={}
+}
+ai.ToggleFrame=a.load'B'{
+Title=ai.Title,
+Desc=ai.Desc,
+LockedIcon = ah.LockedIcon,
 
-        ai.ToggleFrame = a.load'B'{
-            Title = ai.Title,
-            Desc = ai.Desc,
-            LockedIcon = ah.LockedIcon,
-            Window = ah.Window,
-            Parent = ah.Parent,
-            TextOffset = (52),
-            Hover = false,
-            Tab = ah.Tab,
-            Index = ah.Index,
-            ElementTable = ai,
-            ParentConfig = ah,
-        }
 
-        local aj = true
 
-        if ai.Value == nil then
-            ai.Value = false
-        end
+Window=ah.Window,
+Parent=ah.Parent,
+TextOffset=(52),
+Hover=false,
+Tab=ah.Tab,
+Index=ah.Index,
+ElementTable=ai,
+ParentConfig=ah,
+}
 
-        function ai.Lock(ak)
-            ai.Locked = true
-            aj = false
-            return ai.ToggleFrame:Lock(ai.LockedTitle)
-        end
-        function ai.Unlock(ak)
-            ai.Locked = false
-            aj = true
-            return ai.ToggleFrame:Unlock()
-        end
+local aj=true
 
-        if ai.Locked then
-            ai:Lock()
-        end
-        local ak = ai.Value
-        local al, am
-        if ai.Type == "Toggle" then
-            al, am = ad(ak, ai.Icon, ai.IconSize, ai.ToggleFrame.UIElements.Main, ai.Callback, ah.Window.NewElements, ah)
-        elseif ai.Type == "Checkbox" then
-            al, am = ae(ak, ai.Icon, ai.IconSize, ai.ToggleFrame.UIElements.Main, ai.Callback, ah)
-        end
-        al.AnchorPoint = Vector2.new(1, ah.Window.NewElements and 0 or 0.5)
-        al.Position = UDim2.new(1, 0, ah.Window.NewElements and 0 or 0.5, 0)
-        function ai.Set(an, ao, ap, aq)
-            if aj then
-                am:Set(ao, ap, aq or false)
-                ak = ao
-                ai.Value = ao
-            end
-        end
+if ai.Value==nil then
+ai.Value=false
+end
 
-        ai:Set(ak, false, ah.Window.NewElements)
-        if ah.Tab and ah.Tab.ContainerFrame then
-            aa.AddSignal(ah.Tab.ContainerFrame:GetPropertyChangedSignal("Visible"), function()
-                if ah.Tab.ContainerFrame.Visible then
-                    if ai.Value == true then
-                        ai:Set(true, true, ah.Window.NewElements)
-                    else
-                        ai:Set(false, false, ah.Window.NewElements)
-                    end
-                end
-            end)
-        end
-        if ah.Window.NewElements and am.Animate then
-            aa.AddSignal(ai.ToggleFrame.UIElements.Main.InputBegan, function(an)
-                if not ah.Window.IsToggleDragging and (an.UserInputType == Enum.UserInputType.MouseButton1 or an.UserInputType == Enum.UserInputType.Touch) then
-                    am:Animate(an, ai)
-                end
-            end)
-        else
-            aa.AddSignal(ai.ToggleFrame.UIElements.Main.MouseButton1Click, function()
-                ai:Set(not ai.Value, true, ah.Window.NewElements)
-            end)
-        end
-        return ai.__type, ai
-    end
 
-    return af end function a.H()
+
+function ai.Lock(ak)
+ai.Locked=true
+aj=false
+return ai.ToggleFrame:Lock(ai.LockedTitle)
+end
+function ai.Unlock(ak)
+ai.Locked=false
+aj=true
+return ai.ToggleFrame:Unlock()
+end
+
+if ai.Locked then
+ai:Lock()
+end
+
+local ak=ai.Value
+
+local al,am
+if ai.Type=="Toggle"then
+al,am=ad(ak,ai.Icon,ai.IconSize,ai.ToggleFrame.UIElements.Main,ai.Callback,ah.Window.NewElements,ah)
+elseif ai.Type=="Checkbox"then
+al,am=ae(ak,ai.Icon,ai.IconSize,ai.ToggleFrame.UIElements.Main,ai.Callback,ah)
+else
+error("Unknown Toggle Type: "..tostring(ai.Type))
+end
+
+al.AnchorPoint=Vector2.new(1,ah.Window.NewElements and 0 or 0.5)
+al.Position=UDim2.new(1,0,ah.Window.NewElements and 0 or 0.5,0)
+
+function ai.Set(an,ao,ap,aq)
+if aj then
+am:Set(ao,ap,aq or false)
+ak=ao
+ai.Value=ao
+end
+end
+
+ai:Set(ak,false,ah.Window.NewElements)
+
+
+if ah.Window.NewElements and am.Animate then
+aa.AddSignal(ai.ToggleFrame.UIElements.Main.InputBegan,function(an)
+if not ah.Window.IsToggleDragging and an.UserInputType==Enum.UserInputType.MouseButton1 or an.UserInputType==Enum.UserInputType.Touch then
+am:Animate(an,ai)
+end
+end)
+
+
+
+
+
+
+else
+aa.AddSignal(ai.ToggleFrame.UIElements.Main.MouseButton1Click,function()
+ai:Set(not ai.Value,nil,ah.Window.NewElements)
+end)
+end
+
+return ai.__type,ai
+end
+
+return af end function a.H()
 local aa=(cloneref or clonereference or function(aa)return aa end)
 
 
