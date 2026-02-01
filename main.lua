@@ -4,11 +4,10 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.82 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/1/2]
+    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/28/1]
     https://bengscript.lol
     [Update: Added: all - New:LockedIcon]
     Lua
-
     This UI is for personal use only. You may not use it without the permission of the creator (UI). To use it, please contact BENG SCRIPT. Creator (UI) must agree! Please do not add our UI to your GitHub repository!
 
 ]]
@@ -13392,3 +13391,4 @@ return f
 end
 
 return ae
+
