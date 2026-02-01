@@ -7297,11 +7297,6 @@ true
 ay.Size=UDim2.new(0,ax.IconSize or ao.TabIcon,0,ax.IconSize or ao.TabIcon)
 ay.ImageLabel.ImageTransparency=aq=="Dropdown"and.2 or 0
 ax.UIElements.TabIcon=ay
-local icScale = ak("UIScale", {
-Scale = 0
-})
-icScale.Parent = ay
-ax.UIElements.TabIconScale = icScale
 end
 ax.UIElements.TabItem=aj.NewRoundFrame(ao.MenuCorner-ao.MenuPadding,"Squircle",{
 Size=UDim2.new(1,0,0,36),
@@ -7433,63 +7428,84 @@ local az=typeof(an.Value)=="table"and an.Value.Title or an.Value
 ax.Selected=az==ax.Name
 end
 
+-- 在 a.L 模块的 ar.Refresh 函数内部循环创建选项的地方：
+
+-- [初始化阶段] 设置初始偏移
 if ax.Selected and not ax.Locked then
-ax.UIElements.TabItem.ImageTransparency=.95
-ax.UIElements.TabItem.Highlight.ImageTransparency=.75
-ax.UIElements.TabItem.Frame.Title.TextLabel.TextTransparency=0
-if ax.UIElements.TabIcon then
-ax.UIElements.TabIcon.ImageLabel.ImageTransparency=0
-end
+    ax.UIElements.TabItem.ImageTransparency = .95
+    ax.UIElements.TabItem.Highlight.ImageTransparency = .75
+    ax.UIElements.TabItem.Frame.Title.TextLabel.TextTransparency = 0
+    -- 新增：初始选中时文字右移
+    ax.UIElements.TabItem.Frame.UIPadding.PaddingLeft = UDim.new(0, ao.TabPadding + 8) 
+    if ax.UIElements.TabIcon then
+        ax.UIElements.TabIcon.ImageLabel.ImageTransparency = 0
+    end
 end
 
-an.Tabs[av]=ax
+-- [点击阶段] 添加动画
+aj.AddSignal(ax.UIElements.TabItem.MouseButton1Click, function()
+    if ax.Locked then return end
 
-ar:Display()
+    if an.Multi then
+        if not ax.Selected then
+            ax.Selected = true
+            al(ax.UIElements.TabItem, 0.1, {ImageTransparency = .95}):Play()
+            al(ax.UIElements.TabItem.Highlight, 0.1, {ImageTransparency = .75}):Play()
+            al(ax.UIElements.TabItem.Frame.Title.TextLabel, 0.1, {TextTransparency = 0}):Play()
+            -- 新增动画：向右偏移
+            al(ax.UIElements.TabItem.Frame.UIPadding, 0.2, {PaddingLeft = UDim.new(0, ao.TabPadding + 8)}, Enum.EasingStyle.Quint):Play()
+            
+            if ax.UIElements.TabIcon then
+                al(ax.UIElements.TabIcon.ImageLabel, 0.1, {ImageTransparency = 0}):Play()
+            end
+            table.insert(an.Value, ax.Original)
+        else
+            if not an.AllowNone and #an.Value == 1 then return end
+            ax.Selected = false
+            al(ax.UIElements.TabItem, 0.1, {ImageTransparency = 1}):Play()
+            al(ax.UIElements.TabItem.Highlight, 0.1, {ImageTransparency = 1}):Play()
+            al(ax.UIElements.TabItem.Frame.Title.TextLabel, 0.1, {TextTransparency = .4}):Play()
+            -- 新增动画：还原位置
+            al(ax.UIElements.TabItem.Frame.UIPadding, 0.2, {PaddingLeft = UDim.new(0, ao.TabPadding)}, Enum.EasingStyle.Quint):Play()
 
-if aq=="Dropdown"then
-local function playAnim(i,s)
-local d,tX,tS=0.25,s and 8 or 0,s and 1 or 0
-local l=i.UIElements.TabItem.Frame.Title.TextLabel
-al(l,d,{Position=UDim2.new(0,tX,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-if i.UIElements.TabIconScale then al(i.UIElements.TabIconScale,d,{Scale=tS},Enum.EasingStyle.Back,Enum.EasingDirection.Out):Play()end
-if s then
-al(i.UIElements.TabItem,d,{ImageTransparency=.95}):Play()
-al(i.UIElements.TabItem.Highlight,d,{ImageTransparency=.75}):Play()
-al(l,d,{TextTransparency=0}):Play()
-if i.UIElements.TabIcon then al(i.UIElements.TabIcon.ImageLabel,d,{ImageTransparency=0}):Play()end
-else
-al(i.UIElements.TabItem,d,{ImageTransparency=1}):Play()
-al(i.UIElements.TabItem.Highlight,d,{ImageTransparency=1}):Play()
-al(l,d,{TextTransparency=.4}):Play()
-if i.UIElements.TabIcon then al(i.UIElements.TabIcon.ImageLabel,d,{ImageTransparency=.2}):Play()end
-end
-end
-aj.AddSignal(ax.UIElements.TabItem.MouseButton1Click,function()
-if ax.Locked then return end
-if an.Multi then
-if not ax.Selected then
-ax.Selected=true
-playAnim(ax,true)
-table.insert(an.Value,ax.Original)
-else
-if not an.AllowNone and#an.Value==1 then return end
-ax.Selected=false
-playAnim(ax,false)
-for az,aA in next,an.Value do
-if typeof(aA)=="table"and(aA.Title==ax.Name)or(aA==ax.Name)then
-table.remove(an.Value,az)break
-end
-end
-end
-else
-for az,aA in next,an.Tabs do
-if aA.Selected then aA.Selected=false;playAnim(aA,false)end
-end
-ax.Selected=true
-playAnim(ax,true)
-an.Value=ax.Original
-end
-Callback()
+            if ax.UIElements.TabIcon then
+                al(ax.UIElements.TabIcon.ImageLabel, 0.1, {ImageTransparency = .2}):Play()
+            end
+
+            for az, aA in next, an.Value do
+                if typeof(aA) == "table" and (aA.Title == ax.Name) or (aA == ax.Name) then
+                    table.remove(an.Value, az)
+                    break
+                end
+            end
+        end
+    else
+        -- 单选模式：重置所有其他选项的位置
+        for az, aA in next, an.Tabs do
+            al(aA.UIElements.TabItem, 0.1, {ImageTransparency = 1}):Play()
+            al(aA.UIElements.TabItem.Highlight, 0.1, {ImageTransparency = 1}):Play()
+            al(aA.UIElements.TabItem.Frame.Title.TextLabel, 0.1, {TextTransparency = .4}):Play()
+            -- 新增：重置其他选项位置
+            al(aA.UIElements.TabItem.Frame.UIPadding, 0.2, {PaddingLeft = UDim.new(0, ao.TabPadding)}, Enum.EasingStyle.Quint):Play()
+            
+            if aA.UIElements.TabIcon then
+                al(aA.UIElements.TabIcon.ImageLabel, 0.1, {ImageTransparency = .2}):Play()
+            end
+            aA.Selected = false
+        end
+        ax.Selected = true
+        al(ax.UIElements.TabItem, 0.1, {ImageTransparency = .95}):Play()
+        al(ax.UIElements.TabItem.Highlight, 0.1, {ImageTransparency = .75}):Play()
+        al(ax.UIElements.TabItem.Frame.Title.TextLabel, 0.1, {TextTransparency = 0}):Play()
+        -- 新增动画：选中的向右偏移
+        al(ax.UIElements.TabItem.Frame.UIPadding, 0.2, {PaddingLeft = UDim.new(0, ao.TabPadding + 8)}, Enum.EasingStyle.Quint):Play()
+
+        if ax.UIElements.TabIcon then
+            al(ax.UIElements.TabIcon.ImageLabel, 0.1, {ImageTransparency = 0}):Play()
+        end
+        an.Value = ax.Original
+    end
+    Callback()
 end)
 elseif aq=="Menu"then
 if not ax.Locked then
