@@ -6602,7 +6602,26 @@ aA=math.clamp(aA,al.Value.Min or 0,al.Value.Max or 100)
 
 if aA~=aq then
 ag(al.UIElements.SliderIcon.Frame,0.05,{Size=UDim2.new(d,0,1,0)}):Play()
-al.UIElements.SliderContainer.TextBox.Text=FormatValue(aA)
+
+-- [数值滚动动画开始]
+local _label = al.UIElements.SliderContainer.TextBox
+local _newVal = tostring(FormatValue(aA))
+if _label.Text ~= _newVal then
+    al.UIElements.SliderContainer.ClipsDescendants = true
+    local _old = _label:Clone()
+    _old.Parent = _label.Parent
+    _old.Text = _label.Text
+    _old.Visible = true
+    local _isUp = (tonumber(_newVal) or 0) > (tonumber(_label.Text) or 0)
+    _label.Text = _newVal
+    _label.TextTransparency = 1
+    _label.Position = UDim2.new(0, 0, 0, _isUp and 12 or -12)
+    ag(_old, 0.15, {Position = UDim2.new(0, 0, 0, _isUp and -12 or 12), TextTransparency = 1}, Enum.EasingStyle.Sine):Play()
+    ag(_label, 0.15, {Position = UDim2.new(0, 0, 0, 0), TextTransparency = 0.4}, Enum.EasingStyle.Sine):Play()
+    task.delay(0.15, function() _old:Destroy() end)
+end
+-- [数值滚动动画结束]
+
 if ax then ax.TitleFrame.Text=FormatValue(aA)end
 al.Value.Default=FormatValue(aA)
 aq=aA
@@ -6616,7 +6635,26 @@ aA=CalculateValue(al.Value.Min+g*(al.Value.Max-al.Value.Min))
 
 if aA~=aq then
 ag(al.UIElements.SliderIcon.Frame,0.05,{Size=UDim2.new(g,0,1,0)}):Play()
-al.UIElements.SliderContainer.TextBox.Text=FormatValue(aA)
+
+-- [数值滚动动画开始]
+local _label = al.UIElements.SliderContainer.TextBox
+local _newVal = tostring(FormatValue(aA))
+if _label.Text ~= _newVal then
+    al.UIElements.SliderContainer.ClipsDescendants = true
+    local _old = _label:Clone()
+    _old.Parent = _label.Parent
+    _old.Text = _label.Text
+    _old.Visible = true
+    local _isUp = (tonumber(_newVal) or 0) > (tonumber(_label.Text) or 0)
+    _label.Text = _newVal
+    _label.TextTransparency = 1
+    _label.Position = UDim2.new(0, 0, 0, _isUp and 12 or -12)
+    ag(_old, 0.15, {Position = UDim2.new(0, 0, 0, _isUp and -12 or 12), TextTransparency = 1}, Enum.EasingStyle.Sine):Play()
+    ag(_label, 0.15, {Position = UDim2.new(0, 0, 0, 0), TextTransparency = 0.4}, Enum.EasingStyle.Sine):Play()
+    task.delay(0.15, function() _old:Destroy() end)
+end
+-- [数值滚动动画结束]
+
 if ax then ax.TitleFrame.Text=FormatValue(aA)end
 al.Value.Default=FormatValue(aA)
 aq=aA
