@@ -6602,12 +6602,18 @@ aA=math.clamp(aA,al.Value.Min or 0,al.Value.Max or 100)
 
 if aA~=aq then
 ag(al.UIElements.SliderIcon.Frame,0.05,{Size=UDim2.new(d,0,1,0)}):Play()
-al.UIElements.SliderContainer.TextBox.Text=FormatValue(aA)
-if ax then ax.TitleFrame.Text=FormatValue(aA)end
-al.Value.Default=FormatValue(aA)
-aq=aA
-ae.SafeCallback(al.Callback,FormatValue(aA))
+local txtLabel = al.UIElements.SliderContainer.TextBox
+local val = FormatValue(aA)
+if txtLabel.Text ~= tostring(val) then
+local cl = txtLabel:Clone()
+cl.Parent = txtLabel.Parent
+cl.TextTransparency = 1
+cl.Position = txtLabel.Position + UDim2.fromOffset(0, 10)
+ag(txtLabel, 0.15, {Position = txtLabel.Position + UDim2.fromOffset(0, -10), TextTransparency = 1}):Play()
+ag(cl, 0.15, {Position = txtLabel.Position, TextTransparency = 0.4}):Play()
+task.delay(0.15, function() txtLabel.Text = val txtLabel.TextTransparency = 0.4 cl:Destroy() end)
 end
+if ax then ax.TitleFrame.Text=FormatValue(aA)end
 
 an=ad.RenderStepped:Connect(function()
 local f=am and aB.Position.X or ac:GetMouseLocation().X
@@ -6616,7 +6622,7 @@ aA=CalculateValue(al.Value.Min+g*(al.Value.Max-al.Value.Min))
 
 if aA~=aq then
 ag(al.UIElements.SliderIcon.Frame,0.05,{Size=UDim2.new(g,0,1,0)}):Play()
-al.UIElements.SliderContainer.TextBox.Text=FormatValue(aA)
+animateValue(al.UIElements.SliderContainer.TextBox, FormatValue(aA))
 if ax then ax.TitleFrame.Text=FormatValue(aA)end
 al.Value.Default=FormatValue(aA)
 aq=aA
@@ -6646,7 +6652,7 @@ aA=CalculateValue(al.Value.Min+b*(al.Value.Max-al.Value.Min))
 
 if aA~=aq then
 ag(al.UIElements.SliderIcon.Frame,0.05,{Size=UDim2.new(b,0,1,0)}):Play()
-al.UIElements.SliderContainer.TextBox.Text=FormatValue(aA)
+animateValue(al.UIElements.SliderContainer.TextBox, FormatValue(aA))
 if ax then ax.TitleFrame.Text=FormatValue(aA)end
 al.Value.Default=FormatValue(aA)
 aq=aA
