@@ -3582,40 +3582,7 @@ function Funcs:AddSlider(Idx, Info)
             Type = "Slider",
         }
 
-        local AnimValue = Instance.new("NumberValue")
-        AnimValue.Value = Slider.Value
-        local CurrentTween = nil
-
-        local function UpdateUI(Value)
-            local RoundedValue = Round(Value, Slider.Rounding)
-            local CustomDisplayText = nil
-            
-            if Info.FormatDisplayValue then
-                CustomDisplayText = Info.FormatDisplayValue(Slider, RoundedValue)
-            end
-
-            if CustomDisplayText then
-                DisplayLabel.Text = tostring(CustomDisplayText)
-            else
-                if Info.Compact then
-                    DisplayLabel.Text = string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, RoundedValue, Slider.Suffix)
-                elseif Info.HideMax then
-                    DisplayLabel.Text = string.format("%s%s%s", Slider.Prefix, RoundedValue, Slider.Suffix)
-                else
-                    DisplayLabel.Text = string.format("%s%s%s/%s%s%s", Slider.Prefix, RoundedValue, Slider.Suffix, Slider.Prefix, Slider.Max, Slider.Suffix)
-                end
-            end
-
-            local X = (Value - Slider.Min) / (Slider.Max - Slider.Min)
-            TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = UDim2.fromScale(X, 1)
-            }):Play()
-        end
-
-        AnimValue:GetPropertyChangedSignal("Value"):Connect(function()
-            UpdateUI(AnimValue.Value)
-        end)
-
+        -- // 1. 先创建 UI 对象 // --
         local Holder = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, Info.Compact and 13 or 31),
@@ -3664,10 +3631,50 @@ function Funcs:AddSlider(Idx, Info)
 
         local Fill = New("Frame", {
             BackgroundColor3 = "AccentColor",
-            Size = UDim2.fromScale(0, 1),
+            Size = UDim2.fromScale(0, 1), 
             Parent = Bar,
         })
 
+        -- // 2. UI 创建完后，再定义动画逻辑 // --
+        local AnimValue = Instance.new("NumberValue")
+        AnimValue.Value = Slider.Value
+        local CurrentTween = nil
+
+        local function UpdateUI(Value)
+            if not DisplayLabel then return end -- 安全检查
+            
+            local RoundedValue = Round(Value, Slider.Rounding)
+            local CustomDisplayText = nil
+            
+            if Info.FormatDisplayValue then
+                CustomDisplayText = Info.FormatDisplayValue(Slider, RoundedValue)
+            end
+
+            if CustomDisplayText then
+                DisplayLabel.Text = tostring(CustomDisplayText)
+            else
+                if Info.Compact then
+                    DisplayLabel.Text = string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, RoundedValue, Slider.Suffix)
+                elseif Info.HideMax then
+                    DisplayLabel.Text = string.format("%s%s%s", Slider.Prefix, RoundedValue, Slider.Suffix)
+                else
+                    DisplayLabel.Text = string.format("%s%s%s/%s%s%s", Slider.Prefix, RoundedValue, Slider.Suffix, Slider.Prefix, Slider.Max, Slider.Suffix)
+                end
+            end
+
+            local X = (Value - Slider.Min) / (Slider.Max - Slider.Min)
+            -- 进度条长度渐变
+            TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.fromScale(X, 1)
+            }):Play()
+        end
+
+        -- 监听动画数值变化同步 UI
+        AnimValue:GetPropertyChangedSignal("Value"):Connect(function()
+            UpdateUI(AnimValue.Value)
+        end)
+
+        -- // 3. 补全 Slider 的方法 // --
         function Slider:UpdateColors()
             if Library.Unloaded then return end
             if SliderLabel then
@@ -3680,6 +3687,7 @@ function Funcs:AddSlider(Idx, Info)
 
         function Slider:Display()
             if Library.Unloaded then return end
+            
             if CurrentTween then CurrentTween:Cancel() end
             CurrentTween = TweenService:Create(AnimValue, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                 Value = Slider.Value
@@ -3687,9 +3695,7 @@ function Funcs:AddSlider(Idx, Info)
             CurrentTween:Play()
         end
 
-        function Slider:OnChanged(Func)
-            Slider.Changed = Func
-        end
+        function Slider:OnChanged(Func) Slider.Changed = Func end
 
         function Slider:SetMax(Value)
             assert(Value > Slider.Min, "Max value cannot be less than the current min value.")
@@ -3707,84 +3713,48 @@ function Funcs:AddSlider(Idx, Info)
 
         function Slider:SetValue(Str)
             if Slider.Disabled then return end
-
             local Num = tonumber(Str)
             if not Num or Num == Slider.Value then return end
-
             Num = math.clamp(Num, Slider.Min, Slider.Max)
-
             Slider.Value = Num
             Slider:Display()
-
             Library:SafeCallback(Slider.Callback, Slider.Value)
             Library:SafeCallback(Slider.Changed, Slider.Value)
         end
 
         function Slider:SetDisabled(Disabled: boolean)
             Slider.Disabled = Disabled
-            if Slider.TooltipTable then
-                Slider.TooltipTable.Disabled = Slider.Disabled
-            end
+            if Slider.TooltipTable then Slider.TooltipTable.Disabled = Slider.Disabled end
             Bar.Active = not Slider.Disabled
             Slider:UpdateColors()
         end
 
-        UpdateUI(Slider.Value)
-
         function Slider:SetVisible(Visible: boolean)
             Slider.Visible = Visible
-
             Holder.Visible = Slider.Visible
             Groupbox:Resize()
         end
 
-        function Slider:SetText(Text: string)
-            Slider.Text = Text
-            if SliderLabel then
-                SliderLabel.Text = Text
-                return
-            end
-            Slider:Display()
-        end
+        -- 初始化 UI 显示
+        UpdateUI(Slider.Value)
 
-        function Slider:SetPrefix(Prefix: string)
-            Slider.Prefix = Prefix
-            Slider:Display()
-        end
-
-        function Slider:SetSuffix(Suffix: string)
-            Slider.Suffix = Suffix
-            Slider:Display()
-        end
-
+        -- 拖拽逻辑 (保持你原代码中的逻辑)
         Bar.InputBegan:Connect(function(Input: InputObject)
-            if not IsClickInput(Input) or Slider.Disabled then
-                return
-            end
-
-            for _, Side in Library.ActiveTab.Sides do
-                Side.ScrollingEnabled = false
-            end
-
+            if not IsClickInput(Input) or Slider.Disabled then return end
+            for _, Side in Library.ActiveTab.Sides do Side.ScrollingEnabled = false end
             while IsDragInput(Input) do
                 local Location = Mouse.X
                 local Scale = math.clamp((Location - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
-
                 local OldValue = Slider.Value
                 Slider.Value = Round(Slider.Min + ((Slider.Max - Slider.Min) * Scale), Slider.Rounding)
-
                 Slider:Display()
                 if Slider.Value ~= OldValue then
                     Library:SafeCallback(Slider.Callback, Slider.Value)
                     Library:SafeCallback(Slider.Changed, Slider.Value)
                 end
-
                 RunService.RenderStepped:Wait()
             end
-
-            for _, Side in Library.ActiveTab.Sides do
-                Side.ScrollingEnabled = true
-            end
+            for _, Side in Library.ActiveTab.Sides do Side.ScrollingEnabled = true end
         end)
 
         if typeof(Slider.Tooltip) == "string" or typeof(Slider.DisabledTooltip) == "string" then
@@ -3793,14 +3763,9 @@ function Funcs:AddSlider(Idx, Info)
         end
 
         Slider:UpdateColors()
-        Slider:Display()
         Groupbox:Resize()
-
         Slider.Holder = Holder
         table.insert(Groupbox.Elements, Slider)
-
-        Slider.Default = Slider.Value
-
         Options[Idx] = Slider
 
         return Slider
