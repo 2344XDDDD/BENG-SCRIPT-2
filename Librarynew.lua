@@ -281,6 +281,7 @@ local Templates = {
     Window = {
         Title = "No Title",
         Footer = "No Footer",
+        FooterLeft = "Left Footer",
         Position = UDim2.fromOffset(6, 6),
         Size = UDim2.fromOffset(720, 600),
         IconSize = UDim2.fromOffset(30, 30),
@@ -4064,8 +4065,6 @@ local MenuTable = Library:AddContextMenu(
 
                     Button.BackgroundTransparency = Selected and 0 or 1
                     Button.TextTransparency = IsDisabled and 0.8 or Selected and 0 or 0.5
-
-                    Button.UIPadding.PaddingLeft = UDim.new(0, Selected and 15 or 7) 
                 end
 
                 if not IsDisabled then
@@ -5670,18 +5669,33 @@ WindowTitle = New("TextLabel", {
         })
 
         --// Footer
+        
         local FooterSteps = {
             "Initialization in progress",
             "Finalising.",
             "successfully!"
         }
 
-        local FooterLabel = New("TextLabel", {
+        local FooterLeftLabel = New("TextLabel", {
             BackgroundTransparency = 1,
-            Size = UDim2.fromScale(1, 1),
+            Position = UDim2.fromOffset(10, 0),
+            Size = UDim2.new(0.4, -10, 1, 0),
+            Text = WindowInfo.FooterLeft or "",
+            TextSize = 14,
+            TextTransparency = 0.5,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = BottomBar,
+        })
+
+        local FooterLabel = New("TextLabel", {
+            AnchorPoint = Vector2.new(0.5, 0),
+            BackgroundTransparency = 1,
+            Position = UDim2.fromScale(0.5, 0),
+            Size = UDim2.new(0.4, 0, 1, 0),
             Text = FooterSteps[1],
             TextSize = 14,
             TextTransparency = 0.5,
+            TextXAlignment = Enum.TextXAlignment.Center,
             Parent = BottomBar,
         })
 
