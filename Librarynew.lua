@@ -3832,6 +3832,7 @@ function Funcs:AddButton(...)
             Text = typeof(Info.Text) == "string" and Info.Text or nil,
             Value = Info.Multi and {} or nil,
             Values = Info.Values,
+            Locked = Info.Locked,
             DisabledValues = Info.DisabledValues,
             Multi = Info.Multi,
 
@@ -4013,25 +4014,22 @@ local MenuTable = Library:AddContextMenu(
         end
 
         local Buttons = {}
-        function Dropdown:BuildDropdownList()
+function Dropdown:BuildDropdownList()
             local Values = Dropdown.Values
             local DisabledValues = Dropdown.DisabledValues
-
             for Button, _ in Buttons do
                 Button:Destroy()
             end
             table.clear(Buttons)
-
             local Count = 0
             for _, Value in Values do
                 if SearchBox and not tostring(Value):lower():match(SearchBox.Text:lower()) then
                     continue
                 end
-
                 Count += 1
-                local IsDisabled = table.find(DisabledValues, Value)
+                local IsLocked = (Dropdown.Locked == Value)
+                local IsDisabled = table.find(DisabledValues, Value) or IsLocked
                 local Table = {}
-
                 local Button = New("TextButton", {
                     BackgroundColor3 = "MainColor",
                     BackgroundTransparency = 1,
@@ -4043,82 +4041,65 @@ local MenuTable = Library:AddContextMenu(
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = MenuTable.Menu,
                 })
-                New("UIPadding", {
+
+                local Padding = New("UIPadding", {
                     PaddingLeft = UDim.new(0, 7),
                     PaddingRight = UDim.new(0, 7),
                     Parent = Button,
                 })
 
-                local Selected
-                if Info.Multi then
-                    Selected = Dropdown.Value[Value]
-                else
-                    Selected = Dropdown.Value == Value
+                function Table:UpdateButton()
+                    local Selected
+                    if IsLocked then
+                        Selected = true
+                    elseif Info.Multi then
+                        Selected = Dropdown.Value[Value]
+                    else
+                        Selected = Dropdown.Value == Value
+                    end
+
+                    local TargetPadding = Selected and 15 or 7
+                    local TargetTextTrans = IsDisabled and 0.8 or Selected and 0 or 0.5
+                    local TargetBgTrans = Selected and 0 or 1
+                    TweenService:Create(Button, Library.TweenInfo, {
+                        BackgroundTransparency = TargetBgTrans,
+                        TextTransparency = TargetTextTrans
+                    }):Play()
+                    TweenService:Create(Padding, Library.TweenInfo, {
+                        PaddingLeft = UDim.new(0, TargetPadding)
+                    }):Play()
                 end
-
--- 找到对应的位置，替换这整个函数：
-function Table:UpdateButton()
-    if Info.Multi then
-        Selected = Dropdown.Value[Value]
-    else
-        Selected = Dropdown.Value == Value
-    end
-
-    -- 设定目标数值
-    local TargetPadding = Selected and 15 or 7  -- 选中时Padding为15（右移），未选中为7
-    local TargetTextTrans = IsDisabled and 0.8 or Selected and 0 or 0.5
-    local TargetBgTrans = Selected and 0 or 1
-
-    -- 使用 TweenService 执行平滑动画
-    local TweenInfo = Library.TweenInfo -- 使用库自带的动画配置
-
-    -- 1. 文字透明度动画
-    TweenService:Create(Button, TweenInfo, {
-        TextTransparency = TargetTextTrans,
-        BackgroundTransparency = TargetBgTrans
-    }):Play()
-
-    -- 2. 文字位移动画（通过修改 PaddingLeft 实现）
-    local Padding = Button:FindFirstChildOfClass("UIPadding")
-    if Padding then
-        TweenService:Create(Padding, TweenInfo, {
-            PaddingLeft = UDim.new(0, TargetPadding)
-        }):Play()
-    end
-end
 
                 if not IsDisabled then
                     Button.MouseButton1Click:Connect(function()
+                        local Selected = false
+                        if Info.Multi then
+                            Selected = Dropdown.Value[Value]
+                        else
+                            Selected = Dropdown.Value == Value
+                        end
+
                         local Try = not Selected
-
                         if not (Dropdown:GetActiveValues() == 1 and not Try and not Info.AllowNull) then
-                            Selected = Try
                             if Info.Multi then
-                                Dropdown.Value[Value] = Selected and true or nil
+                                Dropdown.Value[Value] = Try and true or nil
                             else
-                                Dropdown.Value = Selected and Value or nil
+                                Dropdown.Value = Try and Value or nil
                             end
-
                             for _, OtherButton in Buttons do
                                 OtherButton:UpdateButton()
                             end
                         end
-
-                        Table:UpdateButton()
                         Dropdown:Display()
-
                         Library:UpdateDependencyBoxes()
                         Library:SafeCallback(Dropdown.Callback, Dropdown.Value)
                         Library:SafeCallback(Dropdown.Changed, Dropdown.Value)
                     end)
                 end
-
                 Table:UpdateButton()
                 Dropdown:Display()
-
                 Buttons[Button] = Table
             end
-
             Dropdown:RecalculateListSize(Count)
         end
 
