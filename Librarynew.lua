@@ -4056,16 +4056,36 @@ local MenuTable = Library:AddContextMenu(
                     Selected = Dropdown.Value == Value
                 end
 
-                function Table:UpdateButton()
-                    if Info.Multi then
-                        Selected = Dropdown.Value[Value]
-                    else
-                        Selected = Dropdown.Value == Value
-                    end
+-- 找到对应的位置，替换这整个函数：
+function Table:UpdateButton()
+    if Info.Multi then
+        Selected = Dropdown.Value[Value]
+    else
+        Selected = Dropdown.Value == Value
+    end
 
-                    Button.BackgroundTransparency = Selected and 0 or 1
-                    Button.TextTransparency = IsDisabled and 0.8 or Selected and 0 or 0.5
-                end
+    -- 设定目标数值
+    local TargetPadding = Selected and 15 or 7  -- 选中时Padding为15（右移），未选中为7
+    local TargetTextTrans = IsDisabled and 0.8 or Selected and 0 or 0.5
+    local TargetBgTrans = Selected and 0 or 1
+
+    -- 使用 TweenService 执行平滑动画
+    local TweenInfo = Library.TweenInfo -- 使用库自带的动画配置
+
+    -- 1. 文字透明度动画
+    TweenService:Create(Button, TweenInfo, {
+        TextTransparency = TargetTextTrans,
+        BackgroundTransparency = TargetBgTrans
+    }):Play()
+
+    -- 2. 文字位移动画（通过修改 PaddingLeft 实现）
+    local Padding = Button:FindFirstChildOfClass("UIPadding")
+    if Padding then
+        TweenService:Create(Padding, TweenInfo, {
+            PaddingLeft = UDim.new(0, TargetPadding)
+        }):Play()
+    end
+end
 
                 if not IsDisabled then
                     Button.MouseButton1Click:Connect(function()
