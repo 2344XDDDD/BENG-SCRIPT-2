@@ -6103,6 +6103,7 @@ WindowTitle = New("TextLabel", {
             WarningBoxScrollingFrame = New("ScrollingFrame", {
                 BackgroundTransparency = 1,
                 BorderSizePixel = 0,
+                ScrollBarImageTransparency = 1,
                 Size = UDim2.fromScale(1, 1),
                 CanvasSize = UDim2.new(0, 0, 0, 0),
                 ScrollBarThickness = 3,
