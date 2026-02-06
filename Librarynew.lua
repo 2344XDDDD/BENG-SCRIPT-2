@@ -3653,41 +3653,41 @@ function Funcs:AddButton(...)
             Fill.BackgroundColor3 = Slider.Disabled and Library.Scheme.OutlineColor or Library.Scheme.AccentColor
             Library.Registry[Fill].BackgroundColor3 = Slider.Disabled and "OutlineColor" or "AccentColor"
         end
+local InternalValue = Instance.new("NumberValue")
+InternalValue.Value = Slider.Value
 
-        function Slider:Display()
-            if Library.Unloaded then
-                return
-            end
-
-            local CustomDisplayText = nil
-            if Info.FormatDisplayValue then
-                CustomDisplayText = Info.FormatDisplayValue(Slider, Slider.Value)
-            end
-
-            if CustomDisplayText then
-                DisplayLabel.Text = tostring(CustomDisplayText)
-            else
-                if Info.Compact then
-                    DisplayLabel.Text =
-                        string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, Slider.Value, Slider.Suffix)
-                elseif Info.HideMax then
-                    DisplayLabel.Text = string.format("%s%s%s", Slider.Prefix, Slider.Value, Slider.Suffix)
-                else
-                    DisplayLabel.Text = string.format(
-                        "%s%s%s/%s%s%s",
-                        Slider.Prefix,
-                        Slider.Value,
-                        Slider.Suffix,
-                        Slider.Prefix,
-                        Slider.Max,
-                        Slider.Suffix
-                    )
-                end
-            end
-
-            local X = (Slider.Value - Slider.Min) / (Slider.Max - Slider.Min)
-            Fill.Size = UDim2.fromScale(X, 1)
+function Slider:Display()
+    if Library.Unloaded then return end
+    
+    local function UpdateUI(val)
+        local roundedVal = Round(val, Slider.Rounding)
+        local CustomDisplayText = nil
+        if Info.FormatDisplayValue then
+            CustomDisplayText = Info.FormatDisplayValue(Slider, roundedVal)
         end
+
+        if CustomDisplayText then
+            DisplayLabel.Text = tostring(CustomDisplayText)
+        else
+            if Info.Compact then
+                DisplayLabel.Text = string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, roundedVal, Slider.Suffix)
+            elseif Info.HideMax then
+                DisplayLabel.Text = string.format("%s%s%s", Slider.Prefix, roundedVal, Slider.Suffix)
+            else
+                DisplayLabel.Text = string.format("%s%s%s/%s%s%s", Slider.Prefix, roundedVal, Slider.Suffix, Slider.Prefix, Slider.Max, Slider.Suffix)
+            end
+        end
+
+        local X = (val - Slider.Min) / (Slider.Max - Slider.Min)
+        Fill.Size = UDim2.fromScale(X, 1)
+    end
+    TweenService:Create(InternalValue, TweenInfo.new(0.15, Enum.EasingStyle.OutQuad), {Value = Slider.Value}):Play()
+end
+InternalValue:GetPropertyChangedSignal("Value"):Connect(function()
+    UpdateUI(InternalValue.Value)
+end)
+
+UpdateUI(Slider.Value)
 
         function Slider:OnChanged(Func)
             Slider.Changed = Func
