@@ -3557,7 +3557,7 @@ function Funcs:AddButton(...)
         return Input
     end
 
-    function Funcs:AddSlider(Idx, Info)
+function Funcs:AddSlider(Idx, Info)
         Info = Library:Validate(Info, Templates.Slider)
 
         local Groupbox = self
@@ -3566,27 +3566,55 @@ function Funcs:AddButton(...)
         local Slider = {
             Text = Info.Text,
             Value = Info.Default,
-
             Min = Info.Min,
             Max = Info.Max,
-
             Prefix = Info.Prefix,
             Suffix = Info.Suffix,
             Compact = Info.Compact,
             Rounding = Info.Rounding,
-
             Tooltip = Info.Tooltip,
             DisabledTooltip = Info.DisabledTooltip,
             TooltipTable = nil,
-
             Callback = Info.Callback,
             Changed = Info.Changed,
-
             Disabled = Info.Disabled,
             Visible = Info.Visible,
-
             Type = "Slider",
         }
+
+        local AnimValue = Instance.new("NumberValue")
+        AnimValue.Value = Slider.Value
+        local CurrentTween = nil
+
+        local function UpdateUI(Value)
+            local RoundedValue = Round(Value, Slider.Rounding)
+            local CustomDisplayText = nil
+            
+            if Info.FormatDisplayValue then
+                CustomDisplayText = Info.FormatDisplayValue(Slider, RoundedValue)
+            end
+
+            if CustomDisplayText then
+                DisplayLabel.Text = tostring(CustomDisplayText)
+            else
+                if Info.Compact then
+                    DisplayLabel.Text = string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, RoundedValue, Slider.Suffix)
+                elseif Info.HideMax then
+                    DisplayLabel.Text = string.format("%s%s%s", Slider.Prefix, RoundedValue, Slider.Suffix)
+                else
+                    DisplayLabel.Text = string.format("%s%s%s/%s%s%s", Slider.Prefix, RoundedValue, Slider.Suffix, Slider.Prefix, Slider.Max, Slider.Suffix)
+                end
+            end
+
+            local X = (Value - Slider.Min) / (Slider.Max - Slider.Min)
+            TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.fromScale(X, 1)
+            }):Play()
+        end
+
+        AnimValue:GetPropertyChangedSignal("Value"):Connect(function()
+            UpdateUI(AnimValue.Value)
+        end)
 
         local Holder = New("Frame", {
             BackgroundTransparency = 1,
@@ -3636,58 +3664,28 @@ function Funcs:AddButton(...)
 
         local Fill = New("Frame", {
             BackgroundColor3 = "AccentColor",
-            Size = UDim2.fromScale(0.5, 1),
+            Size = UDim2.fromScale(0, 1),
             Parent = Bar,
         })
 
         function Slider:UpdateColors()
-            if Library.Unloaded then
-                return
-            end
-
+            if Library.Unloaded then return end
             if SliderLabel then
                 SliderLabel.TextTransparency = Slider.Disabled and 0.8 or 0
             end
             DisplayLabel.TextTransparency = Slider.Disabled and 0.8 or 0
-
             Fill.BackgroundColor3 = Slider.Disabled and Library.Scheme.OutlineColor or Library.Scheme.AccentColor
             Library.Registry[Fill].BackgroundColor3 = Slider.Disabled and "OutlineColor" or "AccentColor"
         end
-local InternalValue = Instance.new("NumberValue")
-InternalValue.Value = Slider.Value
 
-function Slider:Display()
-    if Library.Unloaded then return end
-    
-    local function UpdateUI(val)
-        local roundedVal = Round(val, Slider.Rounding)
-        local CustomDisplayText = nil
-        if Info.FormatDisplayValue then
-            CustomDisplayText = Info.FormatDisplayValue(Slider, roundedVal)
+        function Slider:Display()
+            if Library.Unloaded then return end
+            if CurrentTween then CurrentTween:Cancel() end
+            CurrentTween = TweenService:Create(AnimValue, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Value = Slider.Value
+            })
+            CurrentTween:Play()
         end
-
-        if CustomDisplayText then
-            DisplayLabel.Text = tostring(CustomDisplayText)
-        else
-            if Info.Compact then
-                DisplayLabel.Text = string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, roundedVal, Slider.Suffix)
-            elseif Info.HideMax then
-                DisplayLabel.Text = string.format("%s%s%s", Slider.Prefix, roundedVal, Slider.Suffix)
-            else
-                DisplayLabel.Text = string.format("%s%s%s/%s%s%s", Slider.Prefix, roundedVal, Slider.Suffix, Slider.Prefix, Slider.Max, Slider.Suffix)
-            end
-        end
-
-        local X = (val - Slider.Min) / (Slider.Max - Slider.Min)
-        Fill.Size = UDim2.fromScale(X, 1)
-    end
-    TweenService:Create(InternalValue, TweenInfo.new(0.15, Enum.EasingStyle.OutQuad), {Value = Slider.Value}):Play()
-end
-InternalValue:GetPropertyChangedSignal("Value"):Connect(function()
-    UpdateUI(InternalValue.Value)
-end)
-
-UpdateUI(Slider.Value)
 
         function Slider:OnChanged(Func)
             Slider.Changed = Func
@@ -3695,29 +3693,23 @@ UpdateUI(Slider.Value)
 
         function Slider:SetMax(Value)
             assert(Value > Slider.Min, "Max value cannot be less than the current min value.")
-
-            Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value)) --this will make  so it updates. and im calling this so i dont need to add an if :P
             Slider.Max = Value
+            Slider:SetValue(math.clamp(Slider.Value, Slider.Min, Value))
             Slider:Display()
         end
 
         function Slider:SetMin(Value)
             assert(Value < Slider.Max, "Min value cannot be greater than the current max value.")
-
-            Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max)) --same here. adding these comments for the funny
             Slider.Min = Value
+            Slider:SetValue(math.clamp(Slider.Value, Value, Slider.Max))
             Slider:Display()
         end
 
         function Slider:SetValue(Str)
-            if Slider.Disabled then
-                return
-            end
+            if Slider.Disabled then return end
 
             local Num = tonumber(Str)
-            if not Num or Num == Slider.Value then
-                return
-            end
+            if not Num or Num == Slider.Value then return end
 
             Num = math.clamp(Num, Slider.Min, Slider.Max)
 
@@ -3730,14 +3722,14 @@ UpdateUI(Slider.Value)
 
         function Slider:SetDisabled(Disabled: boolean)
             Slider.Disabled = Disabled
-
             if Slider.TooltipTable then
                 Slider.TooltipTable.Disabled = Slider.Disabled
             end
-
             Bar.Active = not Slider.Disabled
             Slider:UpdateColors()
         end
+
+        UpdateUI(Slider.Value)
 
         function Slider:SetVisible(Visible: boolean)
             Slider.Visible = Visible
