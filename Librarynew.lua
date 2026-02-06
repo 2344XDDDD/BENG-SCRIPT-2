@@ -3582,7 +3582,6 @@ function Funcs:AddSlider(Idx, Info)
             Type = "Slider",
         }
 
-        -- // 1. 先创建 UI 对象 // --
         local Holder = New("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, Info.Compact and 13 or 31),
@@ -3635,13 +3634,12 @@ function Funcs:AddSlider(Idx, Info)
             Parent = Bar,
         })
 
-        -- // 2. UI 创建完后，再定义动画逻辑 // --
         local AnimValue = Instance.new("NumberValue")
         AnimValue.Value = Slider.Value
         local CurrentTween = nil
 
         local function UpdateUI(Value)
-            if not DisplayLabel then return end -- 安全检查
+            if not DisplayLabel then return end
             
             local RoundedValue = Round(Value, Slider.Rounding)
             local CustomDisplayText = nil
@@ -3663,18 +3661,15 @@ function Funcs:AddSlider(Idx, Info)
             end
 
             local X = (Value - Slider.Min) / (Slider.Max - Slider.Min)
-            -- 进度条长度渐变
             TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                 Size = UDim2.fromScale(X, 1)
             }):Play()
         end
 
-        -- 监听动画数值变化同步 UI
         AnimValue:GetPropertyChangedSignal("Value"):Connect(function()
             UpdateUI(AnimValue.Value)
         end)
 
-        -- // 3. 补全 Slider 的方法 // --
         function Slider:UpdateColors()
             if Library.Unloaded then return end
             if SliderLabel then
@@ -3734,11 +3729,7 @@ function Funcs:AddSlider(Idx, Info)
             Holder.Visible = Slider.Visible
             Groupbox:Resize()
         end
-
-        -- 初始化 UI 显示
         UpdateUI(Slider.Value)
-
-        -- 拖拽逻辑 (保持你原代码中的逻辑)
         Bar.InputBegan:Connect(function(Input: InputObject)
             if not IsClickInput(Input) or Slider.Disabled then return end
             for _, Side in Library.ActiveTab.Sides do Side.ScrollingEnabled = false end
@@ -3756,18 +3747,15 @@ function Funcs:AddSlider(Idx, Info)
             end
             for _, Side in Library.ActiveTab.Sides do Side.ScrollingEnabled = true end
         end)
-
         if typeof(Slider.Tooltip) == "string" or typeof(Slider.DisabledTooltip) == "string" then
             Slider.TooltipTable = Library:AddTooltip(Slider.Tooltip, Slider.DisabledTooltip, Bar)
             Slider.TooltipTable.Disabled = Slider.Disabled
         end
-
         Slider:UpdateColors()
         Groupbox:Resize()
         Slider.Holder = Holder
         table.insert(Groupbox.Elements, Slider)
         Options[Idx] = Slider
-
         return Slider
     end
 
