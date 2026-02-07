@@ -7001,87 +7001,119 @@ WindowTitle = New("TextLabel", {
     if WindowInfo.UpdateUI and WindowInfo.LinkGitHub and WindowInfo.GitHub ~= "" then
         task.spawn(function()
             local Success, RemoteContent = pcall(game.HttpGet, game, WindowInfo.GitHub)
-            if Success and RemoteContent then
-                local Lines = RemoteContent:split("\n")
-                local RemoteVersion = Trim(Lines[1])
-                local ChangeLog = ""
-                for i = 2, #Lines do
-                    ChangeLog = ChangeLog .. Lines[i] .. "\n"
+            if not Success or not RemoteContent then return end
+            local UpdateFilePath = "Obsidian/update_seen.txt"
+            local function HasSeenThisUpdate()
+                if isfile and isfile(UpdateFilePath) then
+                    return readfile(UpdateFilePath) == RemoteContent
                 end
-                if RemoteVersion ~= Library.Version then
-                    local Overlay = New("Frame", {
-                        BackgroundColor3 = Color3.new(0, 0, 0),
-                        BackgroundTransparency = 1,
-                        Size = UDim2.fromScale(1, 1),
-                        ZIndex = 500,
-                        Parent = MainFrame,
-                    })
-                    New("UICorner", { CornerRadius = UDim.new(0, WindowInfo.CornerRadius), Parent = Overlay })
-                    local UpdateBox = New("Frame", {
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        BackgroundColor3 = Color3.fromRGB(15, 15, 15),
-                        Position = UDim2.fromScale(0.5, 1.5),
-                        Size = UDim2.new(0.8, 0, 0, 180),
-                        ZIndex = 501,
-                        Parent = Overlay,
-                    })
-                    New("UICorner", { CornerRadius = UDim.new(0, 10), Parent = UpdateBox })
-                    Library:AddOutline(UpdateBox)
-                    local Title = New("TextLabel", {
-                        Position = UDim2.fromOffset(20, 15),
-                        Size = UDim2.fromOffset(100, 30),
-                        Text = "UPDATE",
-                        TextColor3 = Library.Scheme.AccentColor,
-                        TextSize = 18,
-                        FontFace = Font.fromEnum(Enum.Font.GothamBold),
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        Parent = UpdateBox,
-                    })
-                    local Desc = New("TextLabel", {
-                        Position = UDim2.fromOffset(20, 45),
-                        Size = UDim2.new(1, -40, 0, 70),
-                        Text = "A new version [".. RemoteVersion .."] is available.\n\n" .. ChangeLog,
-                        TextColor3 = Color3.fromRGB(160, 160, 160),
-                        TextSize = 13,
-                        TextWrapped = true,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        TextYAlignment = Enum.TextYAlignment.Top,
-                        Parent = UpdateBox,
-                    })
-                    local ConfirmBtn = New("TextButton", {
-                        AnchorPoint = Vector2.new(0.5, 1),
-                        BackgroundColor3 = Library.Scheme.AccentColor,
-                        Position = UDim2.new(0.5, 0, 1, -15),
-                        Size = UDim2.new(0.4, 0, 0, 32),
-                        Text = "Confirm",
-                        TextColor3 = Color3.new(1, 1, 1),
-                        TextSize = 14,
-                        FontFace = Font.fromEnum(Enum.Font.GothamBold),
-                        Parent = UpdateBox,
-                    })
-                    New("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ConfirmBtn })
-                    if WindowInfo.Animation then
-                        TweenService:Create(Overlay, TweenInfo.new(0.4), {BackgroundTransparency = 0.3}):Play()
-                        TweenService:Create(UpdateBox, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                            Position = UDim2.fromScale(0.5, 0.5)
-                        }):Play()
-                    else
-                        Overlay.BackgroundTransparency = 0.3
-                        UpdateBox.Position = UDim2.fromScale(0.5, 0.5)
-                    end
-                    ConfirmBtn.MouseButton1Click:Connect(function()
-                        if WindowInfo.Animation then
-                            local Close = TweenService:Create(UpdateBox, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-                                Position = UDim2.fromScale(0.5, 1.5)
-                            })
-                            TweenService:Create(Overlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
-                            Close:Play()
-                            Close.Completed:Wait()
-                        end
-                        Overlay:Destroy()
+                return false
+            end
+            if HasSeenThisUpdate() then return end
+            local Lines = RemoteContent:split("\n")
+            local RemoteVersion = Trim(Lines[1])
+            local ChangeLog = ""
+            for i = 2, #Lines do
+                ChangeLog = ChangeLog .. Lines[i] .. "\n"
+            end
+            local Overlay = New("Frame", {
+                BackgroundColor3 = Color3.new(0, 0, 0),
+                BackgroundTransparency = 1,
+                Size = UDim2.fromScale(1, 1),
+                ZIndex = 600,
+                Parent = MainFrame,
+            })
+            New("UICorner", { CornerRadius = UDim.new(0, WindowInfo.CornerRadius), Parent = Overlay })
+            local Container = New("Frame", {
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                BackgroundTransparency = 1,
+                Position = UDim2.fromScale(0.5, 1.5),
+                Size = UDim2.new(0.75, 0, 0, 200),
+                ZIndex = 601,
+                Parent = Overlay,
+            })
+            local InfoBox = New("Frame", {
+                BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+                Size = UDim2.new(1, 0, 0, 140),
+                Parent = Container,
+            })
+            New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = InfoBox })
+            Library:AddOutline(InfoBox)
+            local Title = New("TextLabel", {
+                BackgroundTransparency = 1,
+                Position = UDim2.fromOffset(15, 12),
+                Size = UDim2.fromOffset(100, 20),
+                Text = "Update",
+                TextColor3 = Color3.new(1, 1, 1),
+                TextSize = 18,
+                FontFace = Font.fromEnum(Enum.Font.GothamBold),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = InfoBox,
+            })
+
+            local SubTitle = New("TextLabel", {
+                BackgroundTransparency = 1,
+                Position = UDim2.fromOffset(15, 32),
+                Size = UDim2.fromOffset(100, 15),
+                Text = "New version: " .. RemoteVersion,
+                TextColor3 = Color3.fromRGB(120, 120, 120),
+                TextSize = 12,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = InfoBox,
+            })
+            local ScrollFrame = New("ScrollingFrame", {
+                BackgroundTransparency = 1,
+                Position = UDim2.fromOffset(15, 60),
+                Size = UDim2.new(1, -30, 0, 65),
+                CanvasSize = UDim2.fromScale(0, 0),
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                ScrollBarThickness = 0,
+                Parent = InfoBox,
+            })
+            local Content = New("TextLabel", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                Text = ChangeLog,
+                TextColor3 = Color3.fromRGB(200, 200, 200),
+                TextSize = 14,
+                TextWrapped = true,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Top,
+                Parent = ScrollFrame,
+            })
+            local ConfirmBtn = New("TextButton", {
+                BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+                Position = UDim2.new(0, 0, 0, 150),
+                Size = UDim2.new(1, 0, 0, 45),
+                Text = "Confirm",
+                TextColor3 = Color3.new(1, 1, 1),
+                TextSize = 16,
+                FontFace = Font.fromEnum(Enum.Font.GothamBold),
+                Parent = Container,
+            })
+            New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = ConfirmBtn })
+            Library:AddOutline(ConfirmBtn)
+            TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 0.4}):Play()
+            TweenService:Create(Container, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Position = UDim2.fromScale(0.5, 0.5)
+            }):Play()
+            ConfirmBtn.MouseButton1Click:Connect(function()
+                if writefile then
+                    pcall(function()
+                        if not isfolder("Obsidian") then makefolder("Obsidian") end
+                        writefile(UpdateFilePath, RemoteContent)
                     end)
                 end
-            end
+                local OutTween = TweenService:Create(Container, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                    Position = UDim2.fromScale(0.5, 1.5)
+                })
+                TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+                
+                OutTween:Play()
+                OutTween.Completed:Wait()
+                Overlay:Destroy()
+            end)
         end)
     end
     return Window
