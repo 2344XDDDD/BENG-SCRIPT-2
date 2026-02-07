@@ -6998,7 +6998,6 @@ WindowTitle = New("TextLabel", {
     Library:GiveSignal(UserInputService.WindowFocusReleased:Connect(function()
         Library.IsRobloxFocused = false
     end))
--- // [更新检测与主 UI 锁定整合]
     if WindowInfo.UpdateUI and WindowInfo.LinkGitHub and WindowInfo.GitHub ~= "" then
         task.spawn(function()
             local Success, RemoteContent = pcall(game.HttpGet, game, WindowInfo.GitHub)
@@ -7012,41 +7011,34 @@ WindowTitle = New("TextLabel", {
                 return false
             end
             if HasSeenThisUpdate() then return end
-
             local Lines = RemoteContent:split("\n")
             local RemoteVersion = Trim(Lines[1])
             local ChangeLog = ""
             for i = 2, #Lines do
                 ChangeLog = ChangeLog .. Lines[i] .. "\n"
             end
-
-            -- // 遮罩层：改为 TextButton 以拦截所有点击，实现主 UI 锁定
             local Overlay = New("TextButton", {
                 Name = "UpdateModalOverlay",
-                Text = "", -- 空文本
+                Text = "",
                 AutoButtonColor = false,
-                Active = true, -- 激活状态以拦截点击
-                Modal = true,  -- 核心：锁定鼠标并防止交互穿透到下层 UI
+                Active = true,
+                Modal = true,
                 BackgroundColor3 = Color3.new(0, 0, 0),
                 BackgroundTransparency = 1,
                 Size = UDim2.fromScale(1, 1),
-                ZIndex = 600, -- 确保在所有主 UI 元素之上
+                ZIndex = 600,
                 ClipsDescendants = true,
                 Parent = MainFrame,
             })
             New("UICorner", { CornerRadius = UDim.new(0, WindowInfo.CornerRadius), Parent = Overlay })
-
-            -- // 更新公告容器
             local Container = New("Frame", {
                 AnchorPoint = Vector2.new(0.5, 0.5),
                 BackgroundTransparency = 1,
-                Position = UDim2.fromScale(0.5, 1.2), -- 初始在底部边缘外
+                Position = UDim2.fromScale(0.5, 1.2),
                 Size = UDim2.new(0.8, 0, 0, 200),
                 ZIndex = 601,
                 Parent = Overlay,
             })
-
-            -- // 内容盒子 (InfoBox)
             local InfoBox = New("Frame", {
                 BackgroundColor3 = Color3.fromRGB(20, 20, 20),
                 Size = UDim2.new(1, 0, 0, 140),
@@ -7054,30 +7046,27 @@ WindowTitle = New("TextLabel", {
             })
             New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = InfoBox })
             Library:AddOutline(InfoBox)
-
             local Title = New("TextLabel", {
                 BackgroundTransparency = 1,
                 Position = UDim2.fromOffset(15, 12),
                 Size = UDim2.fromOffset(100, 20),
-                Text = "Software Update",
+                Text = "Script Update",
                 TextColor3 = Color3.new(1, 1, 1),
                 TextSize = 18,
                 FontFace = Font.fromEnum(Enum.Font.GothamBold),
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = InfoBox,
             })
-
             local SubTitle = New("TextLabel", {
                 BackgroundTransparency = 1,
                 Position = UDim2.fromOffset(15, 32),
                 Size = UDim2.fromOffset(100, 15),
-                Text = "Version " .. RemoteVersion .. " is ready",
-                TextColor3 = Color3.fromRGB(125, 85, 255), -- 使用主题色强调版本
+                Text = "Script Version " .. RemoteVersion .. "",
+                TextColor3 = Color3.fromRGB(125, 85, 255),
                 TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = InfoBox,
             })
-
             local ScrollFrame = New("ScrollingFrame", {
                 BackgroundTransparency = 1,
                 Position = UDim2.fromOffset(15, 60),
@@ -7088,7 +7077,6 @@ WindowTitle = New("TextLabel", {
                 ScrollBarImageColor3 = Color3.fromRGB(125, 85, 255),
                 Parent = InfoBox,
             })
-
             local Content = New("TextLabel", {
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 0, 0),
@@ -7101,13 +7089,11 @@ WindowTitle = New("TextLabel", {
                 TextYAlignment = Enum.TextYAlignment.Top,
                 Parent = ScrollFrame,
             })
-
-            -- // 确认按钮 (点击后解锁主 UI)
             local ConfirmBtn = New("TextButton", {
                 BackgroundColor3 = Color3.fromRGB(25, 25, 25),
                 Position = UDim2.new(0, 0, 0, 150),
                 Size = UDim2.new(1, 0, 0, 45),
-                Text = "I Understand",
+                Text = "Confirm",
                 TextColor3 = Color3.new(1, 1, 1),
                 TextSize = 16,
                 FontFace = Font.fromEnum(Enum.Font.GothamBold),
@@ -7115,33 +7101,23 @@ WindowTitle = New("TextLabel", {
             })
             New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = ConfirmBtn })
             Library:AddOutline(ConfirmBtn)
-
-            -- // [加载动画]：向上滑动并使背景变暗
             TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 0.3}):Play()
             TweenService:Create(Container, TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
                 Position = UDim2.fromScale(0.5, 0.5)
             }):Play()
-
-            -- // [按钮逻辑]：解除锁定并滑出
             ConfirmBtn.MouseButton1Click:Connect(function()
-                -- 记录已读，防止下次再弹
                 if writefile then
                     pcall(function()
                         if not isfolder("Obsidian") then makefolder("Obsidian") end
                         writefile(UpdateFilePath, RemoteContent)
                     end)
                 end
-
-                -- 退出动画：向下滑动
                 local OutTween = TweenService:Create(Container, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                     Position = UDim2.fromScale(0.5, 1.2)
                 })
                 TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-                
                 OutTween:Play()
                 OutTween.Completed:Wait()
-                
-                -- 销毁遮罩，主 UI 恢复点击功能
                 Overlay:Destroy()
             end)
         end)
