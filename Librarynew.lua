@@ -5059,10 +5059,9 @@ end
 function Library:Notify(...)
     local Data = {}
     local Info = select(1, ...)
-
     if typeof(Info) == "table" then
-        Data.Title = tostring(Info.Title)
-        Data.Description = tostring(Info.Description)
+        Data.Title = tostring(Info.Title or "")
+        Data.Description = tostring(Info.Description or "")
         Data.Time = Info.Time or 5
         Data.SoundId = Info.SoundId
         Data.Steps = Info.Steps
@@ -5071,20 +5070,17 @@ function Library:Notify(...)
         Data.Description = tostring(Info)
         Data.Time = select(2, ...) or 5
         Data.SoundId = select(3, ...)
+        Data.Title = ""
     end
     Data.Destroyed = false
-
     local DeletedInstance = false
     local DeleteConnection = nil
     if typeof(Data.Time) == "Instance" then
         DeleteConnection = Data.Time.Destroying:Connect(function()
             DeletedInstance = true
-
-            DeleteConnection:Disconnect()
-            DeleteConnection = nil
+            if DeleteConnection then DeleteConnection:Disconnect() end
         end)
     end
-
     local FakeBackground = New("Frame", {
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
@@ -5092,7 +5088,6 @@ function Library:Notify(...)
         Visible = false,
         Parent = NotificationArea,
     })
-
     local Holder = New("Frame", {
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundColor3 = "MainColor",
@@ -5101,31 +5096,14 @@ function Library:Notify(...)
         ZIndex = 5,
         Parent = FakeBackground,
     })
-    New("UICorner", {
-        CornerRadius = UDim.new(0, Library.CornerRadius),
-        Parent = Holder,
-    })
-    New("UIListLayout", {
-        Padding = UDim.new(0, 4),
-        Parent = Holder,
-    })
-    New("UIPadding", {
-        PaddingBottom = UDim.new(0, 8),
-        PaddingLeft = UDim.new(0, 8),
-        PaddingRight = UDim.new(0, 8),
-        PaddingTop = UDim.new(0, 8),
-        Parent = Holder,
-    })
+    New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Holder })
+    New("UIListLayout", { Padding = UDim.new(0, 4), Parent = Holder })
+    New("UIPadding", { PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 8), Parent = Holder })
     Library:AddOutline(Holder)
-
-    local Title
-    local Desc
-    local TitleX = 0
-    local DescX = 0
-
+    local Title, Desc
+    local TitleX, DescX = 0, 0
     local TimerFill
-
-    if Data.Title then
+    if Data.Title ~= "" then
         Title = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
@@ -5137,8 +5115,7 @@ function Library:Notify(...)
             Parent = Holder,
         })
     end
-
-    if Data.Description then
+    if Data.Description ~= "" then
         Desc = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
@@ -5150,77 +5127,59 @@ function Library:Notify(...)
             Parent = Holder,
         })
     end
-
     function Data:Resize()
+        local MaxWidth = (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24
         if Title then
-            local X, Y =
-                Library:GetTextBounds(Title.Text, Title.FontFace, Title.TextSize, (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24)
-            Title.Size = UDim2.fromOffset(0, Y)
+            local X, Y = Library:GetTextBounds(Title.Text, Title.FontFace, Title.TextSize, MaxWidth)
+            Title.Size = UDim2.new(0, MaxWidth, 0, Y)
             TitleX = X
         end
-
         if Desc then
-            local X, Y =
-                Library:GetTextBounds(Desc.Text, Desc.FontFace, Desc.TextSize, (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24)
-            Desc.Size = UDim2.fromOffset(0, Y)
+            local X, Y = Library:GetTextBounds(Desc.Text, Desc.FontFace, Desc.TextSize, MaxWidth)
+            Desc.Size = UDim2.new(0, MaxWidth, 0, Y)
             DescX = X
         end
-
-        FakeBackground.Size = UDim2.fromOffset(math.max(TitleX, DescX) + 24, 0)
+        FakeBackground.Size = UDim2.fromOffset(math.max(TitleX, DescX, 120) + 24, 0)
     end
-
     function Data:ChangeTitle(Text)
         if Title then
-            Data.Title = tostring(Text)
-            Title.Text = Data.Title
+            Title.Text = tostring(Text)
             Data:Resize()
         end
     end
-
     function Data:ChangeDescription(Text)
         if Desc then
-            Data.Description = tostring(Text)
-            Desc.Text = Data.Description
+            Desc.Text = tostring(Text)
             Data:Resize()
         end
     end
-
-    function Data:ChangeStep(NewStep)
-        if TimerFill and Data.Steps then
-            NewStep = math.clamp(NewStep or 0, 0, Data.Steps)
-            TimerFill.Size = UDim2.fromScale(NewStep / Data.Steps, 1)
+    function Data:SetProgress(Percent)
+        if TimerFill then
+            local Clamped = math.clamp(Percent / 100, 0, 1)
+            TweenService:Create(TimerFill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.fromScale(Clamped, 1)
+            }):Play()
+            if Percent >= 100 and not Data.Destroyed then
+                task.delay(0.3, function() Data:Destroy() end)
+            end
         end
     end
-
     function Data:Destroy()
+        if Data.Destroyed then return end
         Data.Destroyed = true
-
-        if typeof(Data.Time) == "Instance" then
-            pcall(Data.Time.Destroy, Data.Time)
-        end
-
-        if DeleteConnection then
-            DeleteConnection:Disconnect()
-        end
-
-        TweenService
-            :Create(Holder, Library.NotifyTweenInfo, {
-                Position = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2),
-            })
-            :Play()
-
+        if DeleteConnection then DeleteConnection:Disconnect() end
+        local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2)
+        TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = OutPos }):Play()
         task.delay(Library.NotifyTweenInfo.Time, function()
             Library.Notifications[FakeBackground] = nil
             FakeBackground:Destroy()
         end)
     end
-
     Data:Resize()
-
     local TimerHolder = New("Frame", {
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 0, 7),
-        Visible = (Data.Persist ~= true and typeof(Data.Time) ~= "Instance") or typeof(Data.Steps) == "number",
+        Visible = true,
         Parent = Holder,
     })
     local TimerBar = New("Frame", {
@@ -5233,48 +5192,30 @@ function Library:Notify(...)
     })
     TimerFill = New("Frame", {
         BackgroundColor3 = "AccentColor",
-        Size = UDim2.fromScale(1, 1),
+        Size = UDim2.fromScale(0, 1),
         Parent = TimerBar,
     })
-
-    if typeof(Data.Time) == "Instance" then
-        TimerFill.Size = UDim2.fromScale(0, 1)
-    end
     if Data.SoundId then
-        local SoundId = Data.SoundId
-        if typeof(SoundId) == "number" then
-            SoundId = string.format("rbxassetid://%d", SoundId)
-        end
-
-        New("Sound", {
-            SoundId = SoundId,
-            Volume = 3,
-            PlayOnRemove = true,
-            Parent = SoundService,
-        }):Destroy()
+        local sid = typeof(Data.SoundId) == "number" and "rbxassetid://" .. Data.SoundId or Data.SoundId
+        local s = Instance.new("Sound", SoundService)
+        s.SoundId = sid; s.Volume = 3; s:Play()
+        s.Ended:Connect(function() s:Destroy() end)
     end
-
     Library.Notifications[FakeBackground] = Data
-
     FakeBackground.Visible = true
-    TweenService:Create(Holder, Library.NotifyTweenInfo, {
-        Position = UDim2.fromOffset(0, 0),
-    }):Play()
-
-    task.delay(Library.NotifyTweenInfo.Time, function()
+    TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = UDim2.fromOffset(0, 0) }):Play()
+    task.spawn(function()
         if Data.Persist then
             return
         elseif typeof(Data.Time) == "Instance" then
-            repeat
-                task.wait()
-            until DeletedInstance or Data.Destroyed
+            repeat task.wait() until DeletedInstance or Data.Destroyed
         else
-            TweenService
-                :Create(TimerFill, TweenInfo.new(Data.Time, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {
-                    Size = UDim2.fromScale(0, 1),
-                })
-                :Play()
-            task.wait(Data.Time)
+            TimerFill.Size = UDim2.fromScale(1, 1)
+            local Tween = TweenService:Create(TimerFill, TweenInfo.new(Data.Time, Enum.EasingStyle.Linear), {
+                Size = UDim2.fromScale(0, 1)
+            })
+            Tween:Play()
+            Tween.Completed:Wait()
         end
 
         if not Data.Destroyed then
