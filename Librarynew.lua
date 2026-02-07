@@ -6945,17 +6945,14 @@ WindowTitle = New("TextLabel", {
     if WindowInfo.AutoShow then
         task.spawn(Library.Toggle)
     end
-
     if Library.IsMobile then
         local ToggleButton = Library:AddDraggableButton("Toggle", function()
             Library:Toggle()
         end, true)
-
         local LockButton = Library:AddDraggableButton("Lock", function(self)
             Library.CantDragForced = not Library.CantDragForced
             self:SetText(Library.CantDragForced and "Unlock" or "Lock")
         end, true)
-
         if WindowInfo.MobileButtonsSide == "Right" then
             ToggleButton.Button.Position = UDim2.new(1, -6, 0, 6)
             ToggleButton.Button.AnchorPoint = Vector2.new(1, 0)
@@ -6971,16 +6968,13 @@ WindowTitle = New("TextLabel", {
     SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
         Library:UpdateSearch(SearchBox.Text)
     end)
-
     Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input: InputObject)
         if Library.Unloaded then
             return
         end
-
         if UserInputService:GetFocusedTextBox() then
             return
         end
-
         if
             (
                 typeof(Library.ToggleKeybind) == "table"
@@ -6991,7 +6985,6 @@ WindowTitle = New("TextLabel", {
             Library.Toggle()
         end
     end))
-
     Library:GiveSignal(UserInputService.WindowFocused:Connect(function()
         Library.IsRobloxFocused = true
     end))
@@ -7002,6 +6995,7 @@ WindowTitle = New("TextLabel", {
         task.spawn(function()
             local Success, RemoteContent = pcall(game.HttpGet, game, WindowInfo.GitHub)
             if not Success or not RemoteContent then return end
+            
             local UpdateFilePath = "Obsidian/update_seen.txt"
             local function HasSeenThisUpdate()
                 if isfile and isfile(UpdateFilePath) then
@@ -7021,14 +7015,15 @@ WindowTitle = New("TextLabel", {
                 BackgroundTransparency = 1,
                 Size = UDim2.fromScale(1, 1),
                 ZIndex = 600,
+                ClipsDescendants = true,
                 Parent = MainFrame,
             })
             New("UICorner", { CornerRadius = UDim.new(0, WindowInfo.CornerRadius), Parent = Overlay })
             local Container = New("Frame", {
                 AnchorPoint = Vector2.new(0.5, 0.5),
                 BackgroundTransparency = 1,
-                Position = UDim2.fromScale(0.5, 1.5),
-                Size = UDim2.new(0.75, 0, 0, 200),
+                Position = UDim2.fromScale(0.5, 1.2), 
+                Size = UDim2.new(0.8, 0, 0, 200),
                 ZIndex = 601,
                 Parent = Overlay,
             })
@@ -7043,19 +7038,18 @@ WindowTitle = New("TextLabel", {
                 BackgroundTransparency = 1,
                 Position = UDim2.fromOffset(15, 12),
                 Size = UDim2.fromOffset(100, 20),
-                Text = "Update",
+                Text = "Software Update",
                 TextColor3 = Color3.new(1, 1, 1),
                 TextSize = 18,
                 FontFace = Font.fromEnum(Enum.Font.GothamBold),
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = InfoBox,
             })
-
             local SubTitle = New("TextLabel", {
                 BackgroundTransparency = 1,
                 Position = UDim2.fromOffset(15, 32),
                 Size = UDim2.fromOffset(100, 15),
-                Text = "New version: " .. RemoteVersion,
+                Text = "New version available: " .. RemoteVersion,
                 TextColor3 = Color3.fromRGB(120, 120, 120),
                 TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -7067,7 +7061,8 @@ WindowTitle = New("TextLabel", {
                 Size = UDim2.new(1, -30, 0, 65),
                 CanvasSize = UDim2.fromScale(0, 0),
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                ScrollBarThickness = 0,
+                ScrollBarThickness = 2,
+                ScrollBarImageColor3 = "AccentColor",
                 Parent = InfoBox,
             })
             local Content = New("TextLabel", {
@@ -7083,10 +7078,10 @@ WindowTitle = New("TextLabel", {
                 Parent = ScrollFrame,
             })
             local ConfirmBtn = New("TextButton", {
-                BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+                BackgroundColor3 = Color3.fromRGB(25, 25, 25),
                 Position = UDim2.new(0, 0, 0, 150),
                 Size = UDim2.new(1, 0, 0, 45),
-                Text = "Confirm",
+                Text = "Got it",
                 TextColor3 = Color3.new(1, 1, 1),
                 TextSize = 16,
                 FontFace = Font.fromEnum(Enum.Font.GothamBold),
@@ -7095,7 +7090,7 @@ WindowTitle = New("TextLabel", {
             New("UICorner", { CornerRadius = UDim.new(0, 8), Parent = ConfirmBtn })
             Library:AddOutline(ConfirmBtn)
             TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 0.4}):Play()
-            TweenService:Create(Container, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+            TweenService:Create(Container, TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
                 Position = UDim2.fromScale(0.5, 0.5)
             }):Play()
             ConfirmBtn.MouseButton1Click:Connect(function()
@@ -7105,8 +7100,8 @@ WindowTitle = New("TextLabel", {
                         writefile(UpdateFilePath, RemoteContent)
                     end)
                 end
-                local OutTween = TweenService:Create(Container, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-                    Position = UDim2.fromScale(0.5, 1.5)
+                local OutTween = TweenService:Create(Container, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                    Position = UDim2.fromScale(0.5, 1.2)
                 })
                 TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
                 
