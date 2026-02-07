@@ -6578,7 +6578,7 @@ function Window:AddKeyTab(...)
         local ToggleCallback = function() end
         local ToggleValue = false
 
-        --// 参数解析 (支持表格式和 positional 格式)
+        --// 参数解析 (兼容表格式和 positional 格式)
         local Args = {...}
         if #Args == 1 and typeof(Args[1]) == "table" then
             local Info = Args[1]
@@ -6606,7 +6606,7 @@ function Window:AddKeyTab(...)
 
         Icon = if Icon == "key" then KeyIcon else Library:GetCustomIcon(Icon)
         
-        --// 创建 Tab 按钮 (侧边栏)
+        --// 创建 Tab 按钮
         do
             TabButton = New("TextButton", {
                 BackgroundColor3 = "MainColor",
@@ -6648,7 +6648,7 @@ function Window:AddKeyTab(...)
                 })
             end
 
-            --// 整合：侧边栏开关 UI
+            --// 整合：侧边栏 Toggle UI
             local Switch, Ball
             if IsToggleable and not IsCompact then
                 Switch = New("Frame", {
@@ -6659,7 +6659,7 @@ function Window:AddKeyTab(...)
                     Parent = TabButton,
                 })
                 New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Switch })
-                New("UIStroke", { Color = "OutlineColor", Parent = Switch })
+                local SwitchStroke = New("UIStroke", { Color = "OutlineColor", Parent = Switch })
                 
                 Ball = New("Frame", {
                     BackgroundColor3 = "FontColor",
@@ -6680,7 +6680,7 @@ function Window:AddKeyTab(...)
                 Icon = TabIcon,
             })
 
-            --// Tab 内容容器
+            --// Tab Container (带有滚动功能)
             TabContainer = New("ScrollingFrame", {
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
@@ -6703,12 +6703,12 @@ function Window:AddKeyTab(...)
             })
         end
 
-        --// Tab 对象
+        --// Tab Table \\--
         local Tab = {
             Elements = {},
             IsKeyTab = true,
-            IsToggleTab = IsToggleable,
             ToggleValue = ToggleValue,
+            IsToggleTab = IsToggleable,
         }
 
         function Tab:AddKeyBox(Callback)
@@ -6755,15 +6755,35 @@ function Window:AddKeyTab(...)
             end)
         end
 
+        function Tab:RefreshSides() end
+        function Tab:Resize() end
+
+        function Tab:Hover(Hovering)
+            if Library.ActiveTab == Tab then return end
+            TweenService:Create(TabLabel, Library.TweenInfo, {
+                TextTransparency = Hovering and 0.25 or 0.5,
+            }):Play()
+            if TabIcon then
+                TweenService:Create(TabIcon, Library.TweenInfo, {
+                    ImageTransparency = Hovering and 0.25 or 0.5,
+                }):Play()
+            end
+        end
+
         function Tab:Show()
-            -- 开关切换逻辑
+            --// 开关逻辑
             if IsToggleable then
                 ToggleValue = not ToggleValue
                 Tab.ToggleValue = ToggleValue
                 if Ball then
                     local Offset = ToggleValue and 1 or 0
-                    TweenService:Create(Ball, Library.TweenInfo, { AnchorPoint = Vector2.new(Offset, 0), Position = UDim2.fromScale(Offset, 0) }):Play()
-                    TweenService:Create(Ball.Parent, Library.TweenInfo, { BackgroundColor3 = ToggleValue and Library.Scheme.AccentColor or Library.Scheme.MainColor }):Play()
+                    TweenService:Create(Ball, Library.TweenInfo, { 
+                        AnchorPoint = Vector2.new(Offset, 0), 
+                        Position = UDim2.fromScale(Offset, 0) 
+                    }):Play()
+                    TweenService:Create(Ball.Parent, Library.TweenInfo, { 
+                        BackgroundColor3 = ToggleValue and Library.Scheme.AccentColor or Library.Scheme.MainColor 
+                    }):Play()
                 end
                 Library:SafeCallback(ToggleCallback, ToggleValue)
             end
@@ -6771,13 +6791,21 @@ function Window:AddKeyTab(...)
             if Library.ActiveTab == Tab then return end
             if Library.ActiveTab then Library.ActiveTab:Hide() end
 
-            -- 按钮动画
+            -- 侧边栏视觉更新
             TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 0 }):Play()
-            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0, Position = SelectedLabelPos }):Play()
-            if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0 }):Play() end
+            TweenService:Create(TabLabel, Library.TweenInfo, {
+                TextTransparency = 0,
+                Position = SelectedLabelPos
+            }):Play()
 
-            --// 容器弹出动画
+            if TabIcon then
+                TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0 }):Play()
+            end
+
+            --// 整合动画：打开时的弹出效果
             TabContainer.Visible = true
+            
+            -- 如果有开关，使用 Back (回弹) 动画，幅度稍大
             local AnimStyle = IsToggleable and Enum.EasingStyle.Back or Enum.EasingStyle.Quart
             local AnimOffset = IsToggleable and 45 or 20
             
@@ -6788,35 +6816,37 @@ function Window:AddKeyTab(...)
 
             if Description then
                 Window:ShowTabInfo(Name, Description)
-            else
-                Window:HideTabInfo()
             end
 
+            Tab:RefreshSides()
             Library.ActiveTab = Tab
+            if Library.Searching then Library:UpdateSearch(Library.SearchText) end
         end
 
         function Tab:Hide()
             TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 1 }):Play()
-            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.5, Position = OriginalLabelPos }):Play()
-            if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0.5 }):Play() end
+            TweenService:Create(TabLabel, Library.TweenInfo, {
+                TextTransparency = 0.5,
+                Position = OriginalLabelPos
+            }):Play()
+            if TabIcon then
+                TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0.5 }):Play()
+            end
             TabContainer.Visible = false
         end
 
-        function Tab:Hover(Hovering)
-            if Library.ActiveTab == Tab then return end
-            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = Hovering and 0.25 or 0.5 }):Play()
-            if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = Hovering and 0.25 or 0.5 }):Play() end
+        --// 执行逻辑
+        if not Library.ActiveTab then
+            Tab:Show()
         end
 
-        --// 绑定事件
         TabButton.MouseEnter:Connect(function() Tab:Hover(true) end)
         TabButton.MouseLeave:Connect(function() Tab:Hover(false) end)
         TabButton.MouseButton1Click:Connect(function() Tab:Show() end)
 
-        if not Library.ActiveTab then Tab:Show() end
-
         Tab.Container = TabContainer
         setmetatable(Tab, BaseGroupbox)
+
         Library.Tabs[Name] = Tab
 
         return Tab
