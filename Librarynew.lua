@@ -148,7 +148,7 @@ local Library = {
     DevicePlatform = nil,
     IsMobile = false,
     IsRobloxFocused = true,
-
+    Version = "1.0.0",
     ScreenGui = nil,
 
     SearchText = "",
@@ -297,6 +297,10 @@ local Templates = {
         ToggleKeybind = Enum.KeyCode.RightControl,
         MobileButtonsSide = "Left",
         UnlockMouseWhileOpen = true,
+        UpdateUI = false,
+        Animation = true,
+        LinkGitHub = false,
+        GitHub = "",
 
         EnableSidebarResize = false,
         EnableCompacting = true,
@@ -6994,7 +6998,92 @@ WindowTitle = New("TextLabel", {
     Library:GiveSignal(UserInputService.WindowFocusReleased:Connect(function()
         Library.IsRobloxFocused = false
     end))
-
+    if WindowInfo.UpdateUI and WindowInfo.LinkGitHub and WindowInfo.GitHub ~= "" then
+        task.spawn(function()
+            local Success, RemoteContent = pcall(game.HttpGet, game, WindowInfo.GitHub)
+            if Success and RemoteContent then
+                local Lines = RemoteContent:split("\n")
+                local RemoteVersion = Trim(Lines[1])
+                local ChangeLog = ""
+                for i = 2, #Lines do
+                    ChangeLog = ChangeLog .. Lines[i] .. "\n"
+                end
+                if RemoteVersion ~= Library.Version then
+                    local Overlay = New("Frame", {
+                        BackgroundColor3 = Color3.new(0, 0, 0),
+                        BackgroundTransparency = 1,
+                        Size = UDim2.fromScale(1, 1),
+                        ZIndex = 500,
+                        Parent = MainFrame,
+                    })
+                    New("UICorner", { CornerRadius = UDim.new(0, WindowInfo.CornerRadius), Parent = Overlay })
+                    local UpdateBox = New("Frame", {
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+                        Position = UDim2.fromScale(0.5, 1.5),
+                        Size = UDim2.new(0.8, 0, 0, 180),
+                        ZIndex = 501,
+                        Parent = Overlay,
+                    })
+                    New("UICorner", { CornerRadius = UDim.new(0, 10), Parent = UpdateBox })
+                    Library:AddOutline(UpdateBox)
+                    local Title = New("TextLabel", {
+                        Position = UDim2.fromOffset(20, 15),
+                        Size = UDim2.fromOffset(100, 30),
+                        Text = "UPDATE",
+                        TextColor3 = Library.Scheme.AccentColor,
+                        TextSize = 18,
+                        FontFace = Font.fromEnum(Enum.Font.GothamBold),
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Parent = UpdateBox,
+                    })
+                    local Desc = New("TextLabel", {
+                        Position = UDim2.fromOffset(20, 45),
+                        Size = UDim2.new(1, -40, 0, 70),
+                        Text = "A new version [".. RemoteVersion .."] is available.\n\n" .. ChangeLog,
+                        TextColor3 = Color3.fromRGB(160, 160, 160),
+                        TextSize = 13,
+                        TextWrapped = true,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        TextYAlignment = Enum.TextYAlignment.Top,
+                        Parent = UpdateBox,
+                    })
+                    local ConfirmBtn = New("TextButton", {
+                        AnchorPoint = Vector2.new(0.5, 1),
+                        BackgroundColor3 = Library.Scheme.AccentColor,
+                        Position = UDim2.new(0.5, 0, 1, -15),
+                        Size = UDim2.new(0.4, 0, 0, 32),
+                        Text = "Confirm",
+                        TextColor3 = Color3.new(1, 1, 1),
+                        TextSize = 14,
+                        FontFace = Font.fromEnum(Enum.Font.GothamBold),
+                        Parent = UpdateBox,
+                    })
+                    New("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ConfirmBtn })
+                    if WindowInfo.Animation then
+                        TweenService:Create(Overlay, TweenInfo.new(0.4), {BackgroundTransparency = 0.3}):Play()
+                        TweenService:Create(UpdateBox, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Position = UDim2.fromScale(0.5, 0.5)
+                        }):Play()
+                    else
+                        Overlay.BackgroundTransparency = 0.3
+                        UpdateBox.Position = UDim2.fromScale(0.5, 0.5)
+                    end
+                    ConfirmBtn.MouseButton1Click:Connect(function()
+                        if WindowInfo.Animation then
+                            local Close = TweenService:Create(UpdateBox, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                                Position = UDim2.fromScale(0.5, 1.5)
+                            })
+                            TweenService:Create(Overlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+                            Close:Play()
+                            Close.Completed:Wait()
+                        end
+                        Overlay:Destroy()
+                    end)
+                end
+            end
+        end)
+    end
     return Window
 end
 
