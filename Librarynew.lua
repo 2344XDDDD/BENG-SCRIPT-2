@@ -5066,11 +5066,13 @@ function Library:Notify(...)
         Data.SoundId = Info.SoundId
         Data.Steps = Info.Steps
         Data.Persist = Info.Persist
+        Data.Animation = Info.Animation or false
     else
         Data.Description = tostring(Info)
         Data.Time = select(2, ...) or 5
         Data.SoundId = select(3, ...)
         Data.Title = ""
+        Data.Animation = false
     end
     Data.Destroyed = false
     local DeletedInstance = false
@@ -5103,7 +5105,7 @@ function Library:Notify(...)
     local Title, Desc
     local TitleX, DescX = 0, 0
     local TimerFill
-    if Data.Title ~= "" then
+    if Data.Title ~= "" or Data.Animation then
         Title = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
@@ -5112,10 +5114,11 @@ function Library:Notify(...)
             TextSize = 15,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
+            Visible = Data.Title ~= "",
             Parent = Holder,
         })
     end
-    if Data.Description ~= "" then
+    if Data.Description ~= "" or Data.Animation then
         Desc = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
@@ -5124,31 +5127,60 @@ function Library:Notify(...)
             TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
+            Visible = Data.Description ~= "",
             Parent = Holder,
         })
     end
     function Data:Resize()
         local MaxWidth = (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24
-        if Title then
+        if Title and Title.Visible then
             local X, Y = Library:GetTextBounds(Title.Text, Title.FontFace, Title.TextSize, MaxWidth)
             Title.Size = UDim2.new(0, MaxWidth, 0, Y)
             TitleX = X
         end
-        if Desc then
+        if Desc and Desc.Visible then
             local X, Y = Library:GetTextBounds(Desc.Text, Desc.FontFace, Desc.TextSize, MaxWidth)
             Desc.Size = UDim2.new(0, MaxWidth, 0, Y)
             DescX = X
         end
-        FakeBackground.Size = UDim2.fromOffset(math.max(TitleX, DescX, 120) + 24, 0)
+        local TargetWidth = math.max(TitleX, DescX, 120) + 24
+        local TargetSize = UDim2.fromOffset(TargetWidth, 0)
+        if Data.Animation and FakeBackground.Visible then
+            TweenService:Create(FakeBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = TargetSize
+            }):Play()
+        else
+            FakeBackground.Size = TargetSize
+        end
     end
     function Data:ChangeTitle(Text)
-        if Title then
+        if not Title then return end
+        Title.Visible = true
+        if Data.Animation then
+            local FadeOut = TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
+            FadeOut:Play()
+            FadeOut.Completed:Once(function()
+                Title.Text = tostring(Text)
+                Data:Resize()
+                TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
+            end)
+        else
             Title.Text = tostring(Text)
             Data:Resize()
         end
     end
     function Data:ChangeDescription(Text)
-        if Desc then
+        if not Desc then return end
+        Desc.Visible = true
+        if Data.Animation then
+            local FadeOut = TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
+            FadeOut:Play()
+            FadeOut.Completed:Once(function()
+                Desc.Text = tostring(Text)
+                Data:Resize()
+                TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
+            end)
+        else
             Desc.Text = tostring(Text)
             Data:Resize()
         end
@@ -5159,6 +5191,7 @@ function Library:Notify(...)
             TweenService:Create(TimerFill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                 Size = UDim2.fromScale(Clamped, 1)
             }):Play()
+            
             if Percent >= 100 and not Data.Destroyed then
                 task.delay(0.3, function() Data:Destroy() end)
             end
@@ -5195,19 +5228,21 @@ function Library:Notify(...)
         Size = UDim2.fromScale(0, 1),
         Parent = TimerBar,
     })
+
     if Data.SoundId then
         local sid = typeof(Data.SoundId) == "number" and "rbxassetid://" .. Data.SoundId or Data.SoundId
         local s = Instance.new("Sound", SoundService)
         s.SoundId = sid; s.Volume = 3; s:Play()
         s.Ended:Connect(function() s:Destroy() end)
     end
+
     Library.Notifications[FakeBackground] = Data
     FakeBackground.Visible = true
     TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = UDim2.fromOffset(0, 0) }):Play()
+
     task.spawn(function()
-        if Data.Persist then
-            return
-        elseif typeof(Data.Time) == "Instance" then
+        if Data.Persist then return end
+        if typeof(Data.Time) == "Instance" then
             repeat task.wait() until DeletedInstance or Data.Destroyed
         else
             TimerFill.Size = UDim2.fromScale(1, 1)
@@ -5217,10 +5252,7 @@ function Library:Notify(...)
             Tween:Play()
             Tween.Completed:Wait()
         end
-
-        if not Data.Destroyed then
-            Data:Destroy()
-        end
+        if not Data.Destroyed then Data:Destroy() end
     end)
 
     return Data
