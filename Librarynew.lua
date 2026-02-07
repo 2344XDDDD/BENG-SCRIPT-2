@@ -5839,21 +5839,220 @@ WindowTitle = New("TextLabel", {
         end)
     end
 
-    function Window:AddTab(...)
+function Window:AddTab(...)
         local Name = nil
         local Icon = nil
         local Description = nil
-
-        if select("#", ...) == 1 and typeof(...) == "table" then
-            local Info = select(1, ...)
+        local IsToggleable = false
+        local ToggleCallback = function() end
+        local ToggleValue = false
+        local Args = {...}
+        if #Args == 1 and typeof(Args[1]) == "table" then
+            local Info = Args[1]
             Name = Info.Name or "Tab"
             Icon = Info.Icon
             Description = Info.Description
+            IsToggleable = Info.Toggleable or false
+            ToggleCallback = Info.Callback or function() end
+            ToggleValue = Info.Default or false
         else
-            Name = select(1, ...)
-            Icon = select(2, ...)
-            Description = select(3, ...)
+            Name = Args[1]
+            Icon = Args[2]
+            Description = Args[3]
         end
+
+        local TabButton: TextButton
+        local TabLabel
+        local TabIcon
+        local TabContainer
+        local TabLeft
+        local TabRight
+
+        local OriginalLabelPos = UDim2.fromOffset(30, 0)
+        local SelectedLabelPos = UDim2.fromOffset(38, 0)
+
+        Icon = Library:GetCustomIcon(Icon)
+        do
+            TabButton = New("TextButton", {
+                BackgroundColor3 = "MainColor",
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 40),
+                Text = "",
+                Parent = Tabs,
+            })
+            local ButtonPadding = New("UIPadding", {
+                PaddingBottom = UDim.new(0, IsCompact and 6 or 11),
+                PaddingLeft = UDim.new(0, IsCompact and 6 or 12),
+                PaddingRight = UDim.new(0, IsCompact and 6 or 12),
+                PaddingTop = UDim.new(0, IsCompact and 6 or 11),
+                Parent = TabButton,
+            })
+
+            TabLabel = New("TextLabel", {
+                BackgroundTransparency = 1,
+                Position = OriginalLabelPos,
+                Size = UDim2.new(1, IsToggleable and -65 or -30, 1, 0),
+                Text = Name,
+                TextSize = 16,
+                TextTransparency = 0.5,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Visible = not IsCompact,
+                Parent = TabButton,
+            })
+
+            if Icon then
+                TabIcon = New("ImageLabel", {
+                    Image = Icon.Url,
+                    ImageColor3 = Icon.Custom and "WhiteColor" or "AccentColor",
+                    ImageRectOffset = Icon.ImageRectOffset,
+                    ImageRectSize = Icon.ImageRectSize,
+                    ImageTransparency = 0.5,
+                    ScaleType = Enum.ScaleType.Fit,
+                    Size = UDim2.fromScale(1, 1),
+                    SizeConstraint = IsCompact and Enum.SizeConstraint.RelativeXY or Enum.SizeConstraint.RelativeYY,
+                    Parent = TabButton,
+                })
+            end
+
+            local Switch, Ball
+            if IsToggleable and not IsCompact then
+                Switch = New("Frame", {
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    BackgroundColor3 = ToggleValue and "AccentColor" or "MainColor",
+                    Position = UDim2.new(1, 0, 0.5, 0),
+                    Size = UDim2.fromOffset(28, 14),
+                    Parent = TabButton,
+                })
+                New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Switch })
+                local SwitchStroke = New("UIStroke", { Color = "OutlineColor", Parent = Switch })
+                
+                Ball = New("Frame", {
+                    BackgroundColor3 = "FontColor",
+                    Size = UDim2.fromScale(1, 1),
+                    SizeConstraint = Enum.SizeConstraint.RelativeYY,
+                    AnchorPoint = Vector2.new(ToggleValue and 1 or 0, 0),
+                    Position = UDim2.fromScale(ToggleValue and 1 or 0, 0),
+                    Parent = Switch,
+                })
+                New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Ball })
+
+                Library:AddToRegistry(Switch, { BackgroundColor3 = function() return ToggleValue and Library.Scheme.AccentColor or Library.Scheme.MainColor end })
+            end
+
+            --// Tab Container \\--
+            TabContainer = New("Frame", {
+                BackgroundTransparency = 1,
+                Size = UDim2.fromScale(1, 1),
+                Visible = false,
+                Parent = Container,
+            })
+
+            TabLeft = New("ScrollingFrame", {
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                CanvasSize = UDim2.fromScale(0, 0),
+                ScrollBarImageTransparency = 1,
+                ScrollBarThickness = 0,
+                Size = UDim2.new(0.5, -3, 1, 0),
+                Parent = TabContainer,
+            })
+            New("UIListLayout", { Padding = UDim.new(0, 2), Parent = TabLeft })
+            New("UIPadding", { PaddingBottom = UDim.new(0, 2), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2), PaddingTop = UDim.new(0, 2), Parent = TabLeft })
+            TabRight = New("ScrollingFrame", {
+                AnchorPoint = Vector2.new(1, 0),
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                CanvasSize = UDim2.fromScale(0, 0),
+                Position = UDim2.fromScale(1, 0),
+                ScrollBarImageTransparency = 1,
+                ScrollBarThickness = 0,
+                Size = UDim2.new(0.5, -3, 1, 0),
+                Parent = TabContainer,
+            })
+            New("UIListLayout", { Padding = UDim.new(0, 2), Parent = TabRight })
+            New("UIPadding", { PaddingBottom = UDim.new(0, 2), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2), PaddingTop = UDim.new(0, 2), Parent = TabRight })
+        end
+
+        local Tab = {
+            Groupboxes = {},
+            Tabboxes = {},
+            DependencyGroupboxes = {},
+            Sides = { TabLeft, TabRight },
+            IsToggleTab = IsToggleable,
+            ToggleValue = ToggleValue,
+            WarningBox = { IsNormal = false, LockSize = false, Visible = false, Title = "WARNING", Text = "" },
+        }
+
+        function Tab:Show()
+            if IsToggleable then
+                ToggleValue = not ToggleValue
+                Tab.ToggleValue = ToggleValue
+                if Ball then
+                    local Offset = ToggleValue and 1 or 0
+                    TweenService:Create(Ball, Library.TweenInfo, { AnchorPoint = Vector2.new(Offset, 0), Position = UDim2.fromScale(Offset, 0) }):Play()
+                    TweenService:Create(Ball.Parent, Library.TweenInfo, { BackgroundColor3 = ToggleValue and Library.Scheme.AccentColor or Library.Scheme.MainColor }):Play()
+                end
+                Library:SafeCallback(ToggleCallback, ToggleValue)
+            end
+
+            if Library.ActiveTab == Tab then return end
+            if Library.ActiveTab then Library.ActiveTab:Hide() end
+            TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 0 }):Play()
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0, Position = SelectedLabelPos }):Play()
+            if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0 }):Play() end
+            TabContainer.Visible = true
+            local AnimStyle = IsToggleable and Enum.EasingStyle.Back or Enum.EasingStyle.Quart
+            local AnimOffset = IsToggleable and 45 or 20
+            
+            TabContainer.Position = UDim2.fromOffset(0, AnimOffset)
+            TweenService:Create(TabContainer, TweenInfo.new(0.5, AnimStyle, Enum.EasingDirection.Out), {
+                Position = UDim2.fromOffset(0, 0)
+            }):Play()
+
+            if Description then
+                Window:ShowTabInfo(Name, Description)
+            else
+                Window:HideTabInfo()
+            end
+
+            Tab:RefreshSides()
+            Library.ActiveTab = Tab
+        end
+
+        function Tab:Hide()
+            TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 1 }):Play()
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.5, Position = OriginalLabelPos }):Play()
+            if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0.5 }):Play() end
+            TabContainer.Visible = false
+        end
+
+        function Tab:RefreshSides()
+            local Offset = WarningBoxHolder and WarningBoxHolder.Visible and WarningBox.Size.Y.Offset + 8 or 0
+            for _, Side in Tab.Sides do
+                Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
+                Side.Size = UDim2.new(0.5, -3, 1, -Offset)
+            end
+        end
+
+        function Tab:Resize(ResizeWarningBox)
+        end
+
+        function Tab:Hover(Hovering)
+            if Library.ActiveTab == Tab then return end
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = Hovering and 0.25 or 0.5 }):Play()
+            if TabIcon then TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = Hovering and 0.25 or 0.5 }):Play() end
+        end
+
+        TabButton.MouseEnter:Connect(function() Tab:Hover(true) end)
+        TabButton.MouseLeave:Connect(function() Tab:Hover(false) end)
+        TabButton.MouseButton1Click:Connect(function() Tab:Show() end)
+        if not Library.ActiveTab then Tab:Show() end
+        Tab.Container = TabContainer
+        setmetatable(Tab, BaseGroupbox)
+
+        Library.Tabs[Name] = Tab
+        return Tab
+    end
 
     local TabButton: TextButton
     local TabLabel
