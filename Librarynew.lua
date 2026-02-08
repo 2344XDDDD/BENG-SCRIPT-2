@@ -5088,18 +5088,21 @@ function Library:Notify(...)
         end)
     end
 
+    -- 【关键】外层容器：初始为 AutomaticSize 以适应文字内容
     local FakeBackground = New("Frame", {
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
-        Size = UDim2.fromScale(1, 0),
+        Size = UDim2.new(1, 0, 0, 0), -- 宽度100%，高度由内容决定
         Visible = false,
         Parent = NotificationArea,
     })
 
+    -- 内部显示的面板
     local Holder = New("Frame", {
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundColor3 = "MainColor",
-        Position = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2),
+        -- 初始位置在屏幕外
+        Position = Library.NotifySide:lower() == "left" and UDim2.new(-1, -30, 0, 0) or UDim2.new(1, 30, 0, 0),
         Size = UDim2.fromScale(1, 1),
         ZIndex = 5,
         Parent = FakeBackground,
@@ -5121,6 +5124,7 @@ function Library:Notify(...)
             Size = UDim2.fromScale(0, 0),
             Text = Data.Title,
             TextSize = 15,
+            FontFace = Font.fromEnum(Enum.Font.Code, Enum.FontWeight.Bold),
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
             Visible = Data.Title ~= "",
@@ -5155,79 +5159,39 @@ function Library:Notify(...)
             DescX = X
         end
         local TargetWidth = math.max(TitleX, DescX, 120) + 24
-        local TargetSize = UDim2.fromOffset(TargetWidth, 0)
-        if Data.Animation and FakeBackground.Visible then
-            TweenService:Create(FakeBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                Size = TargetSize
-            }):Play()
-        else
-            FakeBackground.Size = TargetSize
-        end
+        FakeBackground.Size = UDim2.fromOffset(TargetWidth, 0)
     end
 
-    function Data:ChangeTitle(Text)
-        if not Title then return end
-        Title.Visible = true
-        if Data.Animation then
-            local FadeOut = TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
-            FadeOut:Play()
-            FadeOut.Completed:Once(function()
-                Title.Text = tostring(Text)
-                Data:Resize()
-                TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
-            end)
-        else
-            Title.Text = tostring(Text)
-            Data:Resize()
-        end
-    end
-
-    function Data:ChangeDescription(Text)
-        if not Desc then return end
-        Desc.Visible = true
-        if Data.Animation then
-            local FadeOut = TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
-            FadeOut:Play()
-            FadeOut.Completed:Once(function()
-                Desc.Text = tostring(Text)
-                Data:Resize()
-                TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
-            end)
-        else
-            Desc.Text = tostring(Text)
-            Data:Resize()
-        end
-    end
-
-    function Data:SetProgress(Percent)
-        if TimerFill then
-            local Clamped = math.clamp(Percent / 100, 0, 1)
-            TweenService:Create(TimerFill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = UDim2.fromScale(Clamped, 1)
-            }):Play()
-            
-            if Percent >= 100 and not Data.Destroyed then
-                task.delay(0.3, function() Data:Destroy() end)
-            end
-        end
-    end
-
+    -- 【核心修改】平滑折叠销毁函数
     function Data:Destroy()
         if Data.Destroyed then return end
         Data.Destroyed = true
         if DeleteConnection then DeleteConnection:Disconnect() end
-        local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2)
-        local SlideOut = TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = OutPos })
+
+        -- 1. 侧滑出去动画
+        local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1, -30, 0, 0) or UDim2.new(1, 30, 0, 0)
+        local SlideOut = TweenService:Create(Holder, Library.NotifyTweenInfo, { 
+            Position = OutPos,
+            BackgroundTransparency = 1 
+        })
         SlideOut:Play()
-        SlideOut.Completed:Once(function()
+
+        -- 2. 侧滑完成后，执行高度折叠动画
+        SlideOut.Completed:Connect(function()
+            -- 获取当前真实高度（像素级别）并转换回 UDim2
+            local CurrentHeight = FakeBackground.AbsoluteSize.Y / Library.DPIScale
+            
+            -- 必须关闭自动尺寸，Tween 才会生效
             FakeBackground.AutomaticSize = Enum.AutomaticSize.None
+            FakeBackground.Size = UDim2.new(0, FakeBackground.AbsoluteSize.X / Library.DPIScale, 0, CurrentHeight)
             
-            local Shrink = TweenService:Create(FakeBackground, Library.NotifyTweenInfo, { 
-                Size = UDim2.new(FakeBackground.Size.X.Scale, FakeBackground.Size.X.Offset, 0, 0) 
+            -- 动画高度减到 0
+            local Collapse = TweenService:Create(FakeBackground, Library.NotifyTweenInfo, { 
+                Size = UDim2.new(0, FakeBackground.AbsoluteSize.X / Library.DPIScale, 0, 0) 
             })
-            Shrink:Play()
-            
-            Shrink.Completed:Once(function()
+            Collapse:Play()
+
+            Collapse.Completed:Connect(function()
                 Library.Notifications[FakeBackground] = nil
                 FakeBackground:Destroy()
             end)
@@ -5235,6 +5199,8 @@ function Library:Notify(...)
     end
 
     Data:Resize()
+
+    -- 进度条部分
     local TimerHolder = New("Frame", {
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 0, 7),
@@ -5255,6 +5221,7 @@ function Library:Notify(...)
         Parent = TimerBar,
     })
 
+    -- 声音播放
     if Data.SoundId then
         local sid = typeof(Data.SoundId) == "number" and "rbxassetid://" .. Data.SoundId or Data.SoundId
         local s = Instance.new("Sound", SoundService)
@@ -5262,8 +5229,10 @@ function Library:Notify(...)
         s.Ended:Connect(function() s:Destroy() end)
     end
 
+    -- 入场动画
     Library.Notifications[FakeBackground] = Data
     FakeBackground.Visible = true
+    -- 让 Holder 从侧面滑入中心
     TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = UDim2.fromOffset(0, 0) }):Play()
 
     task.spawn(function()
