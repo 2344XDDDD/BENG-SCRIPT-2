@@ -5079,7 +5079,6 @@ function Library:Notify(...)
         Data.Animation = false
     end
     Data.Destroyed = false
-    
     local DeletedInstance = false
     local DeleteConnection = nil
     if typeof(Data.Time) == "Instance" then
@@ -5089,24 +5088,19 @@ function Library:Notify(...)
         end)
     end
 
-    -- 1. 创建外层容器（务必设置初始宽度，否则可能不可见）
     local FakeBackground = New("Frame", {
-        Name = "NotificationContainer",
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
-        Size = UDim2.new(0, 200, 0, 0), -- 初始给个宽度
+        Size = UDim2.fromScale(1, 0),
         Visible = false,
         Parent = NotificationArea,
     })
 
-    -- 2. 内容 Holder
     local Holder = New("Frame", {
-        Name = "NotificationHolder",
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundColor3 = "MainColor",
-        -- 初始位置在屏幕侧边外
-        Position = Library.NotifySide:lower() == "left" and UDim2.new(-1.2, 0, 0, 0) or UDim2.new(1.2, 0, 0, 0),
-        Size = UDim2.new(1, 0, 0, 0),
+        Position = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2),
+        Size = UDim2.fromScale(1, 1),
         ZIndex = 5,
         Parent = FakeBackground,
     })
@@ -5120,129 +5114,159 @@ function Library:Notify(...)
     local TitleX, DescX = 0, 0
     local TimerFill
 
-    -- 安全地创建标题和描述
-    if Data.Title ~= "" then
+    if Data.Title ~= "" or Data.Animation then
         Title = New("TextLabel", {
-            AutomaticSize = Enum.AutomaticSize.XY,
+            AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
+            Size = UDim2.fromScale(0, 0),
             Text = Data.Title,
             TextSize = 15,
-            FontFace = Font.fromEnum(Enum.Font.Code, Enum.FontWeight.Bold),
             TextXAlignment = Enum.TextXAlignment.Left,
-            Visible = true,
+            TextWrapped = true,
+            Visible = Data.Title ~= "",
             Parent = Holder,
         })
     end
 
-    if Data.Description ~= "" then
+    if Data.Description ~= "" or Data.Animation then
         Desc = New("TextLabel", {
-            AutomaticSize = Enum.AutomaticSize.XY,
+            AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
+            Size = UDim2.fromScale(0, 0),
             Text = Data.Description,
             TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
-            Visible = true,
+            Visible = Data.Description ~= "",
             Parent = Holder,
         })
     end
 
-    -- 修正 Resize 函数，添加安全检查
     function Data:Resize()
-        if not FakeBackground or not Holder then return end
-        
         local MaxWidth = (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24
-        TitleX = 0
-        DescX = 0
-
-        if Title and Title.Parent then
+        if Title and Title.Visible then
             local X, Y = Library:GetTextBounds(Title.Text, Title.FontFace, Title.TextSize, MaxWidth)
-            Title.Size = UDim2.new(0, math.min(X, MaxWidth), 0, Y)
+            Title.Size = UDim2.new(0, MaxWidth, 0, Y)
             TitleX = X
         end
-        if Desc and Desc.Parent then
+        if Desc and Desc.Visible then
             local X, Y = Library:GetTextBounds(Desc.Text, Desc.FontFace, Desc.TextSize, MaxWidth)
-            Desc.Size = UDim2.new(0, math.min(X, MaxWidth), 0, Y)
+            Desc.Size = UDim2.new(0, MaxWidth, 0, Y)
             DescX = X
         end
-
-        local TargetWidth = math.clamp(math.max(TitleX, DescX, 150), 150, MaxWidth) + 24
-        FakeBackground.Size = UDim2.new(0, TargetWidth, 0, 0) -- Y 轴靠内容撑开
+        local TargetWidth = math.max(TitleX, DescX, 120) + 24
+        local TargetSize = UDim2.fromOffset(TargetWidth, 0)
+        if Data.Animation and FakeBackground.Visible then
+            TweenService:Create(FakeBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = TargetSize
+            }):Play()
+        else
+            FakeBackground.Size = TargetSize
+        end
     end
 
-    -- 销毁动画逻辑
+    function Data:ChangeTitle(Text)
+        if not Title then return end
+        Title.Visible = true
+        if Data.Animation then
+            local FadeOut = TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
+            FadeOut:Play()
+            FadeOut.Completed:Once(function()
+                Title.Text = tostring(Text)
+                Data:Resize()
+                TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
+            end)
+        else
+            Title.Text = tostring(Text)
+            Data:Resize()
+        end
+    end
+
+    function Data:ChangeDescription(Text)
+        if not Desc then return end
+        Desc.Visible = true
+        if Data.Animation then
+            local FadeOut = TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
+            FadeOut:Play()
+            FadeOut.Completed:Once(function()
+                Desc.Text = tostring(Text)
+                Data:Resize()
+                TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
+            end)
+        else
+            Desc.Text = tostring(Text)
+            Data:Resize()
+        end
+    end
+
+    function Data:SetProgress(Percent)
+        if TimerFill then
+            local Clamped = math.clamp(Percent / 100, 0, 1)
+            TweenService:Create(TimerFill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.fromScale(Clamped, 1)
+            }):Play()
+            
+            if Percent >= 100 and not Data.Destroyed then
+                task.delay(0.3, function() Data:Destroy() end)
+            end
+        end
+    end
+
     function Data:Destroy()
         if Data.Destroyed then return end
         Data.Destroyed = true
         if DeleteConnection then DeleteConnection:Disconnect() end
-
-        -- 阶段 1: 侧滑退出
-        local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1.5, 0, 0, 0) or UDim2.new(1.5, 0, 0, 0)
-        local SlideOut = TweenService:Create(Holder, Library.NotifyTweenInfo, { 
-            Position = OutPos,
-            BackgroundTransparency = 1 
-        })
+        local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2)
+        local SlideOut = TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = OutPos })
         SlideOut:Play()
 
-        -- 阶段 2: 侧滑快结束时，收缩高度实现“丝滑顶上去”
-        SlideOut.Completed:Connect(function()
-            if not FakeBackground then return end
-            
-            -- 锁定当前物理高度，关闭自动尺寸
-            local CurrentHeight = FakeBackground.AbsoluteSize.Y / Library.DPIScale
+        SlideOut.Completed:Once(function()
             FakeBackground.AutomaticSize = Enum.AutomaticSize.None
-            FakeBackground.Size = UDim2.new(0, FakeBackground.AbsoluteSize.X / Library.DPIScale, 0, CurrentHeight)
             
-            local Collapse = TweenService:Create(FakeBackground, Library.NotifyTweenInfo, { 
-                Size = UDim2.new(0, FakeBackground.AbsoluteSize.X / Library.DPIScale, 0, 0) 
+            local Shrink = TweenService:Create(FakeBackground, Library.NotifyTweenInfo, { 
+                Size = UDim2.new(FakeBackground.Size.X.Scale, FakeBackground.Size.X.Offset, 0, 0) 
             })
-            Collapse:Play()
-
-            Collapse.Completed:Connect(function()
+            Shrink:Play()
+            
+            Shrink.Completed:Once(function()
                 Library.Notifications[FakeBackground] = nil
                 FakeBackground:Destroy()
             end)
         end)
     end
 
-    -- 进度条
+    Data:Resize()
     local TimerHolder = New("Frame", {
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 4),
+        Size = UDim2.new(1, 0, 0, 7),
+        Visible = true,
         Parent = Holder,
     })
     local TimerBar = New("Frame", {
         BackgroundColor3 = "BackgroundColor",
-        BorderSizePixel = 0,
+        BorderColor3 = "OutlineColor",
+        BorderSizePixel = 1,
+        Position = UDim2.fromOffset(0, 3),
         Size = UDim2.new(1, 0, 0, 2),
-        Position = UDim2.fromOffset(0, 1),
         Parent = TimerHolder,
     })
     TimerFill = New("Frame", {
         BackgroundColor3 = "AccentColor",
-        BorderSizePixel = 0,
         Size = UDim2.fromScale(0, 1),
         Parent = TimerBar,
     })
 
-    -- 声音
     if Data.SoundId then
-        task.spawn(function()
-            local sid = typeof(Data.SoundId) == "number" and "rbxassetid://" .. Data.SoundId or Data.SoundId
-            local s = Instance.new("Sound", SoundService)
-            s.SoundId = sid; s.Volume = 2; s:Play()
-            s.Ended:Connect(function() s:Destroy() end)
-        end)
+        local sid = typeof(Data.SoundId) == "number" and "rbxassetid://" .. Data.SoundId or Data.SoundId
+        local s = Instance.new("Sound", SoundService)
+        s.SoundId = sid; s.Volume = 3; s:Play()
+        s.Ended:Connect(function() s:Destroy() end)
     end
 
-    -- 初始化显示
-    Data:Resize()
+    Library.Notifications[FakeBackground] = Data
     FakeBackground.Visible = true
-    
-    -- 入场动画：从侧边滑入
     TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = UDim2.fromOffset(0, 0) }):Play()
 
-    -- 计时逻辑
     task.spawn(function()
         if Data.Persist then return end
         if typeof(Data.Time) == "Instance" then
