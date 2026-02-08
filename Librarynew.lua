@@ -5078,9 +5078,11 @@ function Library:Notify(...)
         Data.Title = ""
         Data.Animation = false
     end
+
     Data.Destroyed = false
     local DeletedInstance = false
     local DeleteConnection = nil
+    
     if typeof(Data.Time) == "Instance" then
         DeleteConnection = Data.Time.Destroying:Connect(function()
             DeletedInstance = true
@@ -5089,18 +5091,20 @@ function Library:Notify(...)
     end
 
     local FakeBackground = New("Frame", {
+        Name = "Notify_Container",
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
-        Size = UDim2.fromScale(1, 0),
+        Size = UDim2.new(0, 120, 0, 0),
         Visible = false,
         Parent = NotificationArea,
     })
 
     local Holder = New("Frame", {
+        Name = "Notify_Holder",
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundColor3 = "MainColor",
-        Position = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2),
-        Size = UDim2.fromScale(1, 1),
+        Position = Library.NotifySide:lower() == "left" and UDim2.new(-1.2, 0, 0, 0) or UDim2.new(1.2, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 0),
         ZIndex = 5,
         Parent = FakeBackground,
     })
@@ -5109,53 +5113,59 @@ function Library:Notify(...)
     New("UIListLayout", { Padding = UDim.new(0, 4), Parent = Holder })
     New("UIPadding", { PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 8), Parent = Holder })
     Library:AddOutline(Holder)
-
-    local Title, Desc
-    local TitleX, DescX = 0, 0
-    local TimerFill
-
-    if Data.Title ~= "" or Data.Animation then
-        Title = New("TextLabel", {
+    local TitleLabel, DescLabel, TimerFill
+    local ManualProgress = false
+    local function CreateTitle(Text)
+        TitleLabel = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(0, 0),
-            Text = Data.Title,
+            Text = Text,
             TextSize = 15,
+            FontFace = Font.fromEnum(Enum.Font.Code, Enum.FontWeight.Bold),
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
-            Visible = Data.Title ~= "",
             Parent = Holder,
         })
+        return TitleLabel
     end
 
-    if Data.Description ~= "" or Data.Animation then
-        Desc = New("TextLabel", {
+    local function CreateDesc(Text)
+        DescLabel = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
             Size = UDim2.fromScale(0, 0),
-            Text = Data.Description,
+            Text = Text,
             TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
-            Visible = Data.Description ~= "",
             Parent = Holder,
         })
+        return DescLabel
     end
+
+    if Data.Title ~= "" then CreateTitle(Data.Title) end
+    if Data.Description ~= "" then CreateDesc(Data.Description) end
 
     function Data:Resize()
         local MaxWidth = (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24
-        if Title and Title.Visible then
-            local X, Y = Library:GetTextBounds(Title.Text, Title.FontFace, Title.TextSize, MaxWidth)
-            Title.Size = UDim2.new(0, MaxWidth, 0, Y)
+        local TitleX = 0
+        local DescX = 0
+
+        if TitleLabel then
+            local X, Y = Library:GetTextBounds(TitleLabel.Text, TitleLabel.FontFace, TitleLabel.TextSize, MaxWidth)
+            TitleLabel.Size = UDim2.new(0, MaxWidth, 0, Y)
             TitleX = X
         end
-        if Desc and Desc.Visible then
-            local X, Y = Library:GetTextBounds(Desc.Text, Desc.FontFace, Desc.TextSize, MaxWidth)
-            Desc.Size = UDim2.new(0, MaxWidth, 0, Y)
+        if DescLabel then
+            local X, Y = Library:GetTextBounds(DescLabel.Text, DescLabel.FontFace, DescLabel.TextSize, MaxWidth)
+            DescLabel.Size = UDim2.new(0, MaxWidth, 0, Y)
             DescX = X
         end
+
         local TargetWidth = math.max(TitleX, DescX, 120) + 24
-        local TargetSize = UDim2.fromOffset(TargetWidth, 0)
+        local TargetSize = UDim2.new(0, TargetWidth, 0, FakeBackground.Size.Y.Offset)
+        
         if Data.Animation and FakeBackground.Visible then
             TweenService:Create(FakeBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
                 Size = TargetSize
@@ -5166,49 +5176,50 @@ function Library:Notify(...)
     end
 
     function Data:ChangeTitle(Text)
-        if not Title then return end
-        Title.Visible = true
+        if not TitleLabel then CreateTitle("") end
+        TitleLabel.Visible = true
+        
         if Data.Animation then
-            local FadeOut = TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
-            FadeOut:Play()
-            FadeOut.Completed:Once(function()
-                Title.Text = tostring(Text)
+            local Tween = TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
+            Tween:Play()
+            Tween.Completed:Once(function()
+                TitleLabel.Text = tostring(Text)
                 Data:Resize()
-                TweenService:Create(Title, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
+                TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
             end)
         else
-            Title.Text = tostring(Text)
+            TitleLabel.Text = tostring(Text)
             Data:Resize()
         end
     end
 
     function Data:ChangeDescription(Text)
-        if not Desc then return end
-        Desc.Visible = true
+        if not DescLabel then CreateDesc("") end
+        DescLabel.Visible = true
+        
         if Data.Animation then
-            local FadeOut = TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
-            FadeOut:Play()
-            FadeOut.Completed:Once(function()
-                Desc.Text = tostring(Text)
+            local Tween = TweenService:Create(DescLabel, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 1})
+            Tween:Play()
+            Tween.Completed:Once(function()
+                DescLabel.Text = tostring(Text)
                 Data:Resize()
-                TweenService:Create(Desc, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
+                TweenService:Create(DescLabel, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {TextTransparency = 0}):Play()
             end)
         else
-            Desc.Text = tostring(Text)
+            DescLabel.Text = tostring(Text)
             Data:Resize()
         end
     end
 
     function Data:SetProgress(Percent)
-        if TimerFill then
-            local Clamped = math.clamp(Percent / 100, 0, 1)
-            TweenService:Create(TimerFill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = UDim2.fromScale(Clamped, 1)
-            }):Play()
-            
-            if Percent >= 100 and not Data.Destroyed then
-                task.delay(0.3, function() Data:Destroy() end)
-            end
+        if not TimerFill then return end
+        ManualProgress = true
+        local Clamped = math.clamp(Percent / 100, 0, 1)
+        TweenService:Create(TimerFill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.fromScale(Clamped, 1)
+        }):Play()
+        if Percent >= 100 and not Data.Destroyed then
+            task.delay(0.3, function() Data:Destroy() end)
         end
     end
 
@@ -5216,15 +5227,16 @@ function Library:Notify(...)
         if Data.Destroyed then return end
         Data.Destroyed = true
         if DeleteConnection then DeleteConnection:Disconnect() end
-        local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2)
+        local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1.2, 0, 0, 0) or UDim2.new(1.2, 0, 0, 0)
         local SlideOut = TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = OutPos })
         SlideOut:Play()
-
         SlideOut.Completed:Once(function()
+            local CurrentHeight = FakeBackground.AbsoluteSize.Y / Library.DPIScale
             FakeBackground.AutomaticSize = Enum.AutomaticSize.None
+            FakeBackground.Size = UDim2.new(0, FakeBackground.Size.X.Offset, 0, CurrentHeight)
             
             local Shrink = TweenService:Create(FakeBackground, Library.NotifyTweenInfo, { 
-                Size = UDim2.new(FakeBackground.Size.X.Scale, FakeBackground.Size.X.Offset, 0, 0) 
+                Size = UDim2.new(0, FakeBackground.Size.X.Offset, 0, 0) 
             })
             Shrink:Play()
             
@@ -5235,23 +5247,21 @@ function Library:Notify(...)
         end)
     end
 
-    Data:Resize()
     local TimerHolder = New("Frame", {
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 7),
-        Visible = true,
+        Size = UDim2.new(1, 0, 0, 4),
         Parent = Holder,
     })
     local TimerBar = New("Frame", {
         BackgroundColor3 = "BackgroundColor",
-        BorderColor3 = "OutlineColor",
-        BorderSizePixel = 1,
-        Position = UDim2.fromOffset(0, 3),
+        BorderSizePixel = 0,
+        Position = UDim2.fromOffset(0, 1),
         Size = UDim2.new(1, 0, 0, 2),
         Parent = TimerHolder,
     })
     TimerFill = New("Frame", {
         BackgroundColor3 = "AccentColor",
+        BorderSizePixel = 0,
         Size = UDim2.fromScale(0, 1),
         Parent = TimerBar,
     })
@@ -5263,22 +5273,26 @@ function Library:Notify(...)
         s.Ended:Connect(function() s:Destroy() end)
     end
 
-    Library.Notifications[FakeBackground] = Data
+    Data:Resize()
     FakeBackground.Visible = true
     TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = UDim2.fromOffset(0, 0) }):Play()
-
     task.spawn(function()
         if Data.Persist then return end
         if typeof(Data.Time) == "Instance" then
             repeat task.wait() until DeletedInstance or Data.Destroyed
         else
-            TimerFill.Size = UDim2.fromScale(1, 1)
-            local Tween = TweenService:Create(TimerFill, TweenInfo.new(Data.Time, Enum.EasingStyle.Linear), {
-                Size = UDim2.fromScale(0, 1)
-            })
-            Tween:Play()
-            Tween.Completed:Wait()
+            if not ManualProgress then
+                TimerFill.Size = UDim2.fromScale(1, 1)
+                local Tween = TweenService:Create(TimerFill, TweenInfo.new(Data.Time, Enum.EasingStyle.Linear), {
+                    Size = UDim2.fromScale(0, 1)
+                })
+                Tween:Play()
+                Tween.Completed:Wait()
+            else
+                task.wait(Data.Time)
+            end
         end
+        
         if not Data.Destroyed then Data:Destroy() end
     end)
 
