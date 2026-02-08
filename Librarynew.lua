@@ -193,7 +193,7 @@ local Library = {
     OriginalMinSize = Vector2.new(480, 360),
     MinSize = Vector2.new(480, 360),
     DPIScale = 1,
-    CornerRadius = 4,
+    CornerRadius = 20, -- 已修改为 20
 
     IsLightTheme = false,
     Scheme = {
@@ -290,7 +290,7 @@ local Templates = {
         Resizable = true,
         SearchbarSize = UDim2.fromScale(1, 1),
         GlobalSearch = false,
-        CornerRadius = 4,
+        CornerRadius = 20, -- 已修改为 20
         NotifySide = "Right",
         ShowCustomCursor = true,
         Font = Enum.Font.Code,
@@ -1698,6 +1698,12 @@ function Library:AddContextMenu(
         })
     end
     
+    -- 为展开列表添加圆角 (修改点 1)
+    New("UICorner", {
+        CornerRadius = UDim.new(0, Library.CornerRadius),
+        Parent = Menu,
+    })
+
     table.insert(
         Library.Scales,
         New("UIScale", {
@@ -1977,7 +1983,6 @@ function Library:SetIconModule(module: IconModule)
     FetchIcons = true
     Icons = module
 
-    -- Top ten fixes 🚀
     CheckIcon = Library:GetIcon("check")
     ArrowIcon = Library:GetIcon("chevron-up")
     ResizeIcon = Library:GetIcon("move-diagonal-2")
@@ -2197,6 +2202,9 @@ function Funcs:AddKeyPicker(Idx, Info)
             Text = "",
             Parent = ToggleLabel,
         })
+        
+        -- 为主体添加圆角
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Holder })
 
         local HolderTransparency = New("ImageLabel", {
             Image = CustomImageManager.GetAsset("TransparencyTexture"),
@@ -2206,6 +2214,7 @@ function Funcs:AddKeyPicker(Idx, Info)
             TileSize = UDim2.fromOffset(9, 9),
             Parent = Holder,
         })
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = HolderTransparency })
 
         --// Color Menu \\--
         local ColorMenu = Library:AddContextMenu(
@@ -2352,6 +2361,7 @@ function Funcs:AddKeyPicker(Idx, Info)
             TextSize = 14,
             Parent = InfoHolder,
         })
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = HueBox })
 
         local RgbBox = New("TextBox", {
             BackgroundColor3 = "MainColor",
@@ -2363,6 +2373,7 @@ function Funcs:AddKeyPicker(Idx, Info)
             TextSize = 14,
             Parent = InfoHolder,
         })
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = RgbBox })
 
         --// Context Menu \\--
         local ContextMenu = Library:AddContextMenu(Holder, UDim2.fromOffset(93, 0), function()
@@ -2832,6 +2843,12 @@ function Funcs:AddButton(...)
                 Text = "", 
                 ClipsDescendants = true, 
                 Parent = Holder,
+            })
+            
+            -- 为按钮添加圆角 (修改点 2)
+            New("UICorner", {
+                CornerRadius = UDim.new(0, Library.CornerRadius),
+                Parent = Base,
             })
 
             local Stroke = New("UIStroke", {
@@ -3460,6 +3477,12 @@ function Funcs:AddButton(...)
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = Holder,
         })
+        
+        -- 为输入框添加圆角 (修改点 3)
+        New("UICorner", {
+            CornerRadius = UDim.new(0, Library.CornerRadius),
+            Parent = Box,
+        })
 
         New("UIPadding", {
             PaddingBottom = UDim.new(0, 3),
@@ -3616,6 +3639,8 @@ function Funcs:AddSlider(Idx, Info)
             Text = "",
             Parent = Holder,
         })
+        -- Slider 也添加圆角
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius / 2), Parent = Bar })
 
         local DisplayLabel = New("TextLabel", {
             BackgroundTransparency = 1,
@@ -3637,6 +3662,7 @@ function Funcs:AddSlider(Idx, Info)
             Size = UDim2.fromScale(0, 1), 
             Parent = Bar,
         })
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius / 2), Parent = Fill })
 
         local AnimValue = Instance.new("NumberValue")
         AnimValue.Value = Slider.Value
@@ -3830,6 +3856,12 @@ function Funcs:AddSlider(Idx, Info)
             TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = Holder,
+        })
+        
+        -- 为下拉框主体添加圆角 (修改点 4)
+        New("UICorner", {
+            CornerRadius = UDim.new(0, Library.CornerRadius),
+            Parent = Display,
         })
 
         New("UIPadding", {
@@ -4288,6 +4320,8 @@ function Dropdown:BuildDropdownList()
             Size = UDim2.fromScale(1, 1),
             Parent = Holder,
         })
+        -- Viewport 也添加圆角
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Box })
 
         New("UIPadding", {
             PaddingBottom = UDim.new(0, 3),
@@ -4526,6 +4560,7 @@ function Dropdown:BuildDropdownList()
             Size = UDim2.fromScale(1, 1),
             Parent = Holder,
         })
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Box })
 
         New("UIPadding", {
             PaddingBottom = UDim.new(0, 3),
@@ -4667,6 +4702,7 @@ function Dropdown:BuildDropdownList()
             Size = UDim2.fromScale(1, 1),
             Parent = Holder,
         })
+        New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Box })
 
         New("UIPadding", {
             PaddingBottom = UDim.new(0, 3),
@@ -5858,24 +5894,6 @@ WindowTitle = New("TextLabel", {
         end)
     end
 
-    function Window:HideTabInfo()
-        if not CurrentTabInfo.Visible then return end
-
-        if not WindowInfo.DisableSearch then
-            TweenService:Create(SearchBox, InfoAnimation, {Size = UDim2.fromScale(1, 1)}):Play()
-        end
-
-        local fade1 = TweenService:Create(CurrentTabLabel, Library.TweenInfo, {TextTransparency = 1, Position = UDim2.fromOffset(0, 5)})
-        local fade2 = TweenService:Create(CurrentTabDescription, Library.TweenInfo, {TextTransparency = 1, Position = UDim2.fromOffset(0, 5)})
-        
-        fade1:Play()
-        fade2:Play()
-
-        fade1.Completed:Once(function()
-            CurrentTabInfo.Visible = false
-        end)
-    end
-
     function Window:AddTab(...)
         local Name = nil
         local Icon = nil
@@ -6069,11 +6087,7 @@ WindowTitle = New("TextLabel", {
                 ScrollingDirection = Enum.ScrollingDirection.Y,
                 Parent = WarningBox,
             })
-            local WarningBoxLayout = New("UIListLayout", {
-                Padding = UDim.new(0, 10),
-                SortOrder = Enum.SortOrder.LayoutOrder,
-                Parent = WarningBoxScrollingFrame
-            })
+            
             New("UIPadding", {
                 PaddingBottom = UDim.new(0, 4),
                 PaddingLeft = UDim.new(0, 6),
@@ -6154,60 +6168,10 @@ WindowTitle = New("TextLabel", {
                 Tab.WarningBox.Text = Info.Text
             end
 
-        if Tab.WarningBoxButtons then
-        for _, b in ipairs(Tab.WarningBoxButtons) do b:Destroy() end
-    end
-    Tab.WarningBoxButtons = {}
-
             WarningBoxHolder.Visible = Tab.WarningBox.Visible
             WarningTitle.Text = Tab.WarningBox.Title
             WarningText.Text = Tab.WarningBox.Text
             Tab:Resize(true)
-
-                if Info.Buttons and typeof(Info.Buttons) == "table" then
-        for _, btnData in ipairs(Info.Buttons) do
-            local Radius = math.clamp(btnData.Radius or 20, 0, 25)
-            local NewBtn = New("TextButton", {
-                BackgroundColor3 = "MainColor",
-                Size = UDim2.new(0.8, 0, 0, 32),
-                AnchorPoint = Vector2.new(0.5, 0),
-                Position = UDim2.fromScale(0.5, 0),
-                Text = btnData.Title or "Button",
-                TextSize = 14,
-                Font = Enum.Font.GothamBold,
-                LayoutOrder = 10,
-                Parent = WarningBoxScrollingFrame,
-            })
-            
-            New("UICorner", {
-                CornerRadius = UDim.new(0, Radius),
-                Parent = NewBtn,
-            })
-            Library:AddOutline(NewBtn)
-            if btnData.Icon then
-                local Icon = Library:GetCustomIcon(btnData.Icon)
-                if Icon then
-                    New("ImageLabel", {
-                        Image = Icon.Url,
-                        ImageRectOffset = Icon.ImageRectOffset,
-                        ImageRectSize = Icon.ImageRectSize,
-                        Size = UDim2.fromOffset(18, 18),
-                        Position = UDim2.new(0, 10, 0.5, -9),
-                        BackgroundTransparency = 1,
-                        Parent = NewBtn
-                    })
-                end
-            end
-
-            NewBtn.MouseButton1Click:Connect(function()
-                if btnData.Callback then btnData.Callback() end
-            end)
-
-            table.insert(Tab.WarningBoxButtons, NewBtn)
-        end
-    end
-
-    Tab:Resize(true)
 
             WarningBox.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor
                 or Color3.fromRGB(127, 0, 0)
@@ -6539,7 +6503,6 @@ WindowTitle = New("TextLabel", {
                     TabboxHolder.Size = UDim2.new(1, 0, 0, (List.AbsoluteContentSize.Y / Library.DPIScale) + 49)
                 end
 
-                --// Execution \\--
                 if not Tabbox.ActiveTab then
                     Tab:Show()
                 end
@@ -6644,7 +6607,6 @@ WindowTitle = New("TextLabel", {
         TabContainer.Visible = false
     end
 
-        --// Execution \\--
         if not Library.ActiveTab then
             Tab:Show()
         end
@@ -6757,7 +6719,6 @@ WindowTitle = New("TextLabel", {
             })
         end
 
-        --// Tab Table \\--
         local Tab = {
             Elements = {},
             IsKeyTab = true,
@@ -6782,6 +6743,8 @@ WindowTitle = New("TextLabel", {
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = Holder,
             })
+            -- 添加圆角
+            New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Box })
             New("UIPadding", {
                 PaddingLeft = UDim.new(0, 8),
                 PaddingRight = UDim.new(0, 8),
@@ -6799,6 +6762,8 @@ WindowTitle = New("TextLabel", {
                 TextSize = 14,
                 Parent = Holder,
             })
+            -- 添加圆角
+            New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Button })
 
             Button.InputBegan:Connect(function(Input)
                 if not IsClickInput(Input) then
@@ -6881,7 +6846,6 @@ WindowTitle = New("TextLabel", {
             Library.ActiveTab = nil
         end
 
-        --// Execution \\--
         if not Library.ActiveTab then
             Tab:Show()
         end
@@ -7059,7 +7023,6 @@ WindowTitle = New("TextLabel", {
         end
     end
 
-    --// Execution \\--
     SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
         Library:UpdateSearch(SearchBox.Text)
     end)
