@@ -5087,6 +5087,7 @@ function Library:Notify(...)
             if DeleteConnection then DeleteConnection:Disconnect() end
         end)
     end
+
     local FakeBackground = New("Frame", {
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
@@ -5094,6 +5095,7 @@ function Library:Notify(...)
         Visible = false,
         Parent = NotificationArea,
     })
+
     local Holder = New("Frame", {
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundColor3 = "MainColor",
@@ -5102,13 +5104,16 @@ function Library:Notify(...)
         ZIndex = 5,
         Parent = FakeBackground,
     })
+
     New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = Holder })
     New("UIListLayout", { Padding = UDim.new(0, 4), Parent = Holder })
     New("UIPadding", { PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), PaddingTop = UDim.new(0, 8), Parent = Holder })
     Library:AddOutline(Holder)
+
     local Title, Desc
     local TitleX, DescX = 0, 0
     local TimerFill
+
     if Data.Title ~= "" or Data.Animation then
         Title = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
@@ -5122,6 +5127,7 @@ function Library:Notify(...)
             Parent = Holder,
         })
     end
+
     if Data.Description ~= "" or Data.Animation then
         Desc = New("TextLabel", {
             AutomaticSize = Enum.AutomaticSize.X,
@@ -5135,6 +5141,7 @@ function Library:Notify(...)
             Parent = Holder,
         })
     end
+
     function Data:Resize()
         local MaxWidth = (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24
         if Title and Title.Visible then
@@ -5157,6 +5164,7 @@ function Library:Notify(...)
             FakeBackground.Size = TargetSize
         end
     end
+
     function Data:ChangeTitle(Text)
         if not Title then return end
         Title.Visible = true
@@ -5173,6 +5181,7 @@ function Library:Notify(...)
             Data:Resize()
         end
     end
+
     function Data:ChangeDescription(Text)
         if not Desc then return end
         Desc.Visible = true
@@ -5189,6 +5198,7 @@ function Library:Notify(...)
             Data:Resize()
         end
     end
+
     function Data:SetProgress(Percent)
         if TimerFill then
             local Clamped = math.clamp(Percent / 100, 0, 1)
@@ -5201,17 +5211,29 @@ function Library:Notify(...)
             end
         end
     end
+
     function Data:Destroy()
         if Data.Destroyed then return end
         Data.Destroyed = true
         if DeleteConnection then DeleteConnection:Disconnect() end
         local OutPos = Library.NotifySide:lower() == "left" and UDim2.new(-1, -8, 0, -2) or UDim2.new(1, 8, 0, -2)
-        TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = OutPos }):Play()
-        task.delay(Library.NotifyTweenInfo.Time, function()
-            Library.Notifications[FakeBackground] = nil
-            FakeBackground:Destroy()
+        local SlideOut = TweenService:Create(Holder, Library.NotifyTweenInfo, { Position = OutPos })
+        SlideOut:Play()
+        SlideOut.Completed:Once(function()
+            FakeBackground.AutomaticSize = Enum.AutomaticSize.None
+            
+            local Shrink = TweenService:Create(FakeBackground, Library.NotifyTweenInfo, { 
+                Size = UDim2.new(FakeBackground.Size.X.Scale, FakeBackground.Size.X.Offset, 0, 0) 
+            })
+            Shrink:Play()
+            
+            Shrink.Completed:Once(function()
+                Library.Notifications[FakeBackground] = nil
+                FakeBackground:Destroy()
+            end)
         end)
     end
+
     Data:Resize()
     local TimerHolder = New("Frame", {
         BackgroundTransparency = 1,
@@ -6570,28 +6592,20 @@ WindowTitle = New("TextLabel", {
         return Tab
     end
 
-function Window:AddKeyTab(...)
+    function Window:AddKeyTab(...)
         local Name = nil
         local Icon = nil
         local Description = nil
-        local IsToggleable = false
-        local ToggleCallback = function() end
-        local ToggleValue = false
 
-        --// 参数解析 (兼容表格式和 positional 格式)
-        local Args = {...}
-        if #Args == 1 and typeof(Args[1]) == "table" then
-            local Info = Args[1]
+        if select("#", ...) == 1 and typeof(...) == "table" then
+            local Info = select(1, ...)
             Name = Info.Name or "Tab"
             Icon = Info.Icon
             Description = Info.Description
-            IsToggleable = Info.Toggleable or false
-            ToggleCallback = Info.Callback or function() end
-            ToggleValue = Info.Default or false
         else
-            Name = Args[1] or "Tab"
-            Icon = Args[2]
-            Description = Args[3]
+            Name = select(1, ...) or "Tab"
+            Icon = select(2, ...)
+            Description = select(3, ...)
         end
 
         Icon = Icon or "key"
@@ -6599,14 +6613,10 @@ function Window:AddKeyTab(...)
         local TabButton: TextButton
         local TabLabel
         local TabIcon
+
         local TabContainer
 
-        local OriginalLabelPos = UDim2.fromOffset(30, 0)
-        local SelectedLabelPos = UDim2.fromOffset(38, 0)
-
         Icon = if Icon == "key" then KeyIcon else Library:GetCustomIcon(Icon)
-        
-        --// 创建 Tab 按钮
         do
             TabButton = New("TextButton", {
                 BackgroundColor3 = "MainColor",
@@ -6625,8 +6635,8 @@ function Window:AddKeyTab(...)
 
             TabLabel = New("TextLabel", {
                 BackgroundTransparency = 1,
-                Position = OriginalLabelPos,
-                Size = UDim2.new(1, IsToggleable and -65 or -30, 1, 0),
+                Position = UDim2.fromOffset(30, 0),
+                Size = UDim2.new(1, -30, 1, 0),
                 Text = Name,
                 TextSize = 16,
                 TextTransparency = 0.5,
@@ -6648,39 +6658,13 @@ function Window:AddKeyTab(...)
                 })
             end
 
-            --// 整合：侧边栏 Toggle UI
-            local Switch, Ball
-            if IsToggleable and not IsCompact then
-                Switch = New("Frame", {
-                    AnchorPoint = Vector2.new(1, 0.5),
-                    BackgroundColor3 = ToggleValue and "AccentColor" or "MainColor",
-                    Position = UDim2.new(1, 0, 0.5, 0),
-                    Size = UDim2.fromOffset(28, 14),
-                    Parent = TabButton,
-                })
-                New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Switch })
-                local SwitchStroke = New("UIStroke", { Color = "OutlineColor", Parent = Switch })
-                
-                Ball = New("Frame", {
-                    BackgroundColor3 = "FontColor",
-                    Size = UDim2.fromScale(1, 1),
-                    SizeConstraint = Enum.SizeConstraint.RelativeYY,
-                    AnchorPoint = Vector2.new(ToggleValue and 1 or 0, 0),
-                    Position = UDim2.fromScale(ToggleValue and 1 or 0, 0),
-                    Parent = Switch,
-                })
-                New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Ball })
-
-                Library:AddToRegistry(Switch, { BackgroundColor3 = function() return ToggleValue and Library.Scheme.AccentColor or Library.Scheme.MainColor end })
-            end
-
             table.insert(Library.TabButtons, {
                 Label = TabLabel,
                 Padding = ButtonPadding,
                 Icon = TabIcon,
             })
 
-            --// Tab Container (带有滚动功能)
+            --// Tab Container \\--
             TabContainer = New("ScrollingFrame", {
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
@@ -6707,8 +6691,6 @@ function Window:AddKeyTab(...)
         local Tab = {
             Elements = {},
             IsKeyTab = true,
-            ToggleValue = ToggleValue,
-            IsToggleTab = IsToggleable,
         }
 
         function Tab:AddKeyBox(Callback)
@@ -6749,8 +6731,14 @@ function Window:AddKeyTab(...)
             })
 
             Button.InputBegan:Connect(function(Input)
-                if not IsClickInput(Input) then return end
-                if not Library:MouseIsOverFrame(Button, Input.Position) then return end
+                if not IsClickInput(Input) then
+                    return
+                end
+
+                if not Library:MouseIsOverFrame(Button, Input.Position) then
+                    return
+                end
+
                 Callback(Box.Text)
             end)
         end
@@ -6759,7 +6747,10 @@ function Window:AddKeyTab(...)
         function Tab:Resize() end
 
         function Tab:Hover(Hovering)
-            if Library.ActiveTab == Tab then return end
+            if Library.ActiveTab == Tab then
+                return
+            end
+
             TweenService:Create(TabLabel, Library.TweenInfo, {
                 TextTransparency = Hovering and 0.25 or 0.5,
             }):Play()
@@ -6771,78 +6762,67 @@ function Window:AddKeyTab(...)
         end
 
         function Tab:Show()
-            --// 开关逻辑
-            if IsToggleable then
-                ToggleValue = not ToggleValue
-                Tab.ToggleValue = ToggleValue
-                if Ball then
-                    local Offset = ToggleValue and 1 or 0
-                    TweenService:Create(Ball, Library.TweenInfo, { 
-                        AnchorPoint = Vector2.new(Offset, 0), 
-                        Position = UDim2.fromScale(Offset, 0) 
-                    }):Play()
-                    TweenService:Create(Ball.Parent, Library.TweenInfo, { 
-                        BackgroundColor3 = ToggleValue and Library.Scheme.AccentColor or Library.Scheme.MainColor 
-                    }):Play()
-                end
-                Library:SafeCallback(ToggleCallback, ToggleValue)
+            if Library.ActiveTab then
+                Library.ActiveTab:Hide()
             end
 
-            if Library.ActiveTab == Tab then return end
-            if Library.ActiveTab then Library.ActiveTab:Hide() end
-
-            -- 侧边栏视觉更新
-            TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 0 }):Play()
+            TweenService:Create(TabButton, Library.TweenInfo, {
+                BackgroundTransparency = 0,
+            }):Play()
             TweenService:Create(TabLabel, Library.TweenInfo, {
                 TextTransparency = 0,
-                Position = SelectedLabelPos
             }):Play()
-
             if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0 }):Play()
+                TweenService:Create(TabIcon, Library.TweenInfo, {
+                    ImageTransparency = 0,
+                }):Play()
             end
-
-            --// 整合动画：打开时的弹出效果
             TabContainer.Visible = true
-            
-            -- 如果有开关，使用 Back (回弹) 动画，幅度稍大
-            local AnimStyle = IsToggleable and Enum.EasingStyle.Back or Enum.EasingStyle.Quart
-            local AnimOffset = IsToggleable and 45 or 20
-            
-            TabContainer.Position = UDim2.fromOffset(0, AnimOffset)
-            TweenService:Create(TabContainer, TweenInfo.new(0.5, AnimStyle, Enum.EasingDirection.Out), {
-                Position = UDim2.fromOffset(0, 0)
-            }):Play()
 
             if Description then
                 Window:ShowTabInfo(Name, Description)
             end
 
             Tab:RefreshSides()
+
             Library.ActiveTab = Tab
-            if Library.Searching then Library:UpdateSearch(Library.SearchText) end
+
+            if Library.Searching then
+                Library:UpdateSearch(Library.SearchText)
+            end
         end
 
         function Tab:Hide()
-            TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 1 }):Play()
+            TweenService:Create(TabButton, Library.TweenInfo, {
+                BackgroundTransparency = 1,
+            }):Play()
             TweenService:Create(TabLabel, Library.TweenInfo, {
                 TextTransparency = 0.5,
-                Position = OriginalLabelPos
             }):Play()
             if TabIcon then
-                TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0.5 }):Play()
+                TweenService:Create(TabIcon, Library.TweenInfo, {
+                    ImageTransparency = 0.5,
+                }):Play()
             end
             TabContainer.Visible = false
+
+            Window:HideTabInfo()
+
+            Library.ActiveTab = nil
         end
 
-        --// 执行逻辑
+        --// Execution \\--
         if not Library.ActiveTab then
             Tab:Show()
         end
 
-        TabButton.MouseEnter:Connect(function() Tab:Hover(true) end)
-        TabButton.MouseLeave:Connect(function() Tab:Hover(false) end)
-        TabButton.MouseButton1Click:Connect(function() Tab:Show() end)
+        TabButton.MouseEnter:Connect(function()
+            Tab:Hover(true)
+        end)
+        TabButton.MouseLeave:Connect(function()
+            Tab:Hover(false)
+        end)
+        TabButton.MouseButton1Click:Connect(Tab.Show)
 
         Tab.Container = TabContainer
         setmetatable(Tab, BaseGroupbox)
