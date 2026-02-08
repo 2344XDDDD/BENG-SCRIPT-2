@@ -6069,6 +6069,11 @@ WindowTitle = New("TextLabel", {
                 ScrollingDirection = Enum.ScrollingDirection.Y,
                 Parent = WarningBox,
             })
+            local WarningBoxLayout = New("UIListLayout", {
+                Padding = UDim.new(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Parent = WarningBoxScrollingFrame
+            })
             New("UIPadding", {
                 PaddingBottom = UDim.new(0, 4),
                 PaddingLeft = UDim.new(0, 6),
@@ -6132,9 +6137,6 @@ WindowTitle = New("TextLabel", {
             },
         }
 
-        local WarnDragging = false
-        local WarnLastPos = Vector2.zero
-
         function Tab:UpdateWarningBox(Info)
             if typeof(Info.IsNormal) == "boolean" then
                 Tab.WarningBox.IsNormal = Info.IsNormal
@@ -6151,50 +6153,114 @@ WindowTitle = New("TextLabel", {
             if typeof(Info.Text) == "string" then
                 Tab.WarningBox.Text = Info.Text
             end
-            
-            WarningBoxScrollingFrame.Active = true
-            WarningBoxScrollingFrame.Selectable = true
+
+        if Tab.WarningBoxButtons then
+        for _, b in ipairs(Tab.WarningBoxButtons) do b:Destroy() end
+    end
+    Tab.WarningBoxButtons = {}
+
             WarningBoxHolder.Visible = Tab.WarningBox.Visible
             WarningTitle.Text = Tab.WarningBox.Title
             WarningText.Text = Tab.WarningBox.Text
             Tab:Resize(true)
-            local function UpdateWarnColors()
-                WarningBox.BackgroundColor3 = Tab.WarningBox.IsNormal and Library.Scheme.BackgroundColor or Color3.fromRGB(127, 0, 0)
-                WarningBoxShadowOutline.Color = Tab.WarningBox.IsNormal and Library.Scheme.DarkColor or Color3.fromRGB(85, 0, 0)
-                WarningBoxOutline.Color = Tab.WarningBox.IsNormal and Library.Scheme.OutlineColor or Color3.fromRGB(255, 50, 50)
-                WarningTitle.TextColor3 = Tab.WarningBox.IsNormal and Library.Scheme.FontColor or Color3.fromRGB(255, 50, 50)
-                WarningStroke.Color = Tab.WarningBox.IsNormal and Library.Scheme.OutlineColor or Color3.fromRGB(169, 0, 0)
+
+                if Info.Buttons and typeof(Info.Buttons) == "table" then
+        for _, btnData in ipairs(Info.Buttons) do
+            local Radius = math.clamp(btnData.Radius or 20, 0, 25)
+            local NewBtn = New("TextButton", {
+                BackgroundColor3 = "MainColor",
+                Size = UDim2.new(0.8, 0, 0, 32),
+                AnchorPoint = Vector2.new(0.5, 0),
+                Position = UDim2.fromScale(0.5, 0),
+                Text = btnData.Title or "Button",
+                TextSize = 14,
+                Font = Enum.Font.GothamBold,
+                LayoutOrder = 10,
+                Parent = WarningBoxScrollingFrame,
+            })
+            
+            New("UICorner", {
+                CornerRadius = UDim.new(0, Radius),
+                Parent = NewBtn,
+            })
+            Library:AddOutline(NewBtn)
+            if btnData.Icon then
+                local Icon = Library:GetCustomIcon(btnData.Icon)
+                if Icon then
+                    New("ImageLabel", {
+                        Image = Icon.Url,
+                        ImageRectOffset = Icon.ImageRectOffset,
+                        ImageRectSize = Icon.ImageRectSize,
+                        Size = UDim2.fromOffset(18, 18),
+                        Position = UDim2.new(0, 10, 0.5, -9),
+                        BackgroundTransparency = 1,
+                        Parent = NewBtn
+                    })
+                end
             end
-            UpdateWarnColors()
+
+            NewBtn.MouseButton1Click:Connect(function()
+                if btnData.Callback then btnData.Callback() end
+            end)
+
+            table.insert(Tab.WarningBoxButtons, NewBtn)
+        end
+    end
+
+    Tab:Resize(true)
+
+            WarningBox.BackgroundColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor
+                or Color3.fromRGB(127, 0, 0)
+
+            WarningBoxShadowOutline.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.DarkColor
+                or Color3.fromRGB(85, 0, 0)
+            WarningBoxOutline.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
+                or Color3.fromRGB(255, 50, 50)
+
+            WarningTitle.TextColor3 = Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor
+                or Color3.fromRGB(255, 50, 50)
+            WarningStroke.Color = Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor
+                or Color3.fromRGB(169, 0, 0)
+
             if not Library.Registry[WarningBox] then
-                Library:AddToRegistry(WarningBox, { BackgroundColor3 = function() return Tab.WarningBox.IsNormal and "BackgroundColor" or Color3.fromRGB(127, 0, 0) end })
-                Library:AddToRegistry(WarningBoxShadowOutline, { Color = function() return Tab.WarningBox.IsNormal and "DarkColor" or Color3.fromRGB(85, 0, 0) end })
-                Library:AddOutline(WarningBox)
-                WarningBoxScrollingFrame.InputBegan:Connect(function(input)
-                    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-                        WarnDragging = true
-                        WarnLastPos = input.Position
-                    end
-                end)
+                Library:AddToRegistry(WarningBox, {})
+            end
+            if not Library.Registry[WarningBoxShadowOutline] then
+                Library:AddToRegistry(WarningBoxShadowOutline, {})
+            end
+            if not Library.Registry[WarningBoxOutline] then
+                Library:AddToRegistry(WarningBoxOutline, {})
+            end
+            if not Library.Registry[WarningTitle] then
+                Library:AddToRegistry(WarningTitle, {})
+            end
+            if not Library.Registry[WarningStroke] then
+                Library:AddToRegistry(WarningStroke, {})
+            end
 
-                Library:GiveSignal(UserInputService.InputChanged:Connect(function(input)
-                    if WarnDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        local Delta = input.Position - WarnLastPos
-                        WarnLastPos = input.Position
-                        WarningBoxScrollingFrame.CanvasPosition = WarningBoxScrollingFrame.CanvasPosition - Vector2.new(0, Delta.Y)
-                    end
-                end))
+            Library.Registry[WarningBox].BackgroundColor3 = function()
+                return Tab.WarningBox.IsNormal == true and Library.Scheme.BackgroundColor or Color3.fromRGB(127, 0, 0)
+            end
 
-                Library:GiveSignal(UserInputService.InputEnded:Connect(function(input)
-                    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-                        WarnDragging = false
-                    end
-                end))
+            Library.Registry[WarningBoxShadowOutline].Color = function()
+                return Tab.WarningBox.IsNormal == true and Library.Scheme.DarkColor or Color3.fromRGB(85, 0, 0)
+            end
+
+            Library.Registry[WarningBoxOutline].Color = function()
+                return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(255, 50, 50)
+            end
+
+            Library.Registry[WarningTitle].TextColor3 = function()
+                return Tab.WarningBox.IsNormal == true and Library.Scheme.FontColor or Color3.fromRGB(255, 50, 50)
+            end
+
+            Library.Registry[WarningStroke].Color = function()
+                return Tab.WarningBox.IsNormal == true and Library.Scheme.OutlineColor or Color3.fromRGB(169, 0, 0)
             end
         end
 
         function Tab:RefreshSides()
-            local Offset = WarningBoxHolder.Visible and (WarningBox.Size.Y.Offset + 15) or 0
+            local Offset = WarningBoxHolder.Visible and WarningBox.Size.Y.Offset + 8 or 0
             for _, Side in Tab.Sides do
                 Side.Position = UDim2.new(Side.Position.X.Scale, 0, 0, Offset)
                 Side.Size = UDim2.new(0.5, -3, 1, -Offset)
@@ -6203,26 +6269,24 @@ WindowTitle = New("TextLabel", {
 
         function Tab:Resize(ResizeWarningBox: boolean?)
             if ResizeWarningBox then
-                local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y * 0.35)
+                local MaximumSize = math.floor(TabContainer.AbsoluteSize.Y / 3.25)
                 local _, YText = Library:GetTextBounds(
                     WarningText.Text,
                     Library.Scheme.Font,
                     WarningText.TextSize,
-                    WarningBox.AbsoluteSize.X - 25
+                    WarningText.AbsoluteSize.X
                 )
 
-                local TotalRequiredHeight = 24 + YText + 10 
-                if Tab.WarningBox.LockSize == true and TotalRequiredHeight > MaximumSize then
-                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, TotalRequiredHeight)
-                    WarningBoxScrollingFrame.ScrollBarImageTransparency = 0.5
-                    WarningBox.Size = UDim2.new(1, -5, 0, MaximumSize)
+                local YBox = 24 + YText
+                if Tab.WarningBox.LockSize == true and YBox >= MaximumSize then
+                    WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, YBox)
+                    YBox = MaximumSize
                 else
                     WarningBoxScrollingFrame.CanvasSize = UDim2.fromOffset(0, 0)
-                    WarningBoxScrollingFrame.ScrollBarImageTransparency = 1
-                    WarningBox.Size = UDim2.new(1, -5, 0, TotalRequiredHeight)
                 end
 
                 WarningText.Size = UDim2.new(1, -4, 0, YText)
+                WarningBox.Size = UDim2.new(1, -5, 0, YBox + 4)
             end
 
             Tab:RefreshSides()
