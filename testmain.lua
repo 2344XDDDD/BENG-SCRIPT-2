@@ -10594,13 +10594,16 @@ PaddingBottom=UDim.new(0,an.Padding),
 })
 })
 
+-- 修复后的搜索框背景代码
 local ar = af.NewRoundFrame(an.Radius, "Squircle", {
     Size = UDim2.new(1, 0, 1, 0),
     ThemeTag = {
         ImageColor3 = "WindowSearchBarBackground",
     },
-    ImageTransparency = al.Searchboxtransparent or 0.3, 
+    -- 修复：不再从 al 访问属性，直接设置默认透明度 0.3
+    ImageTransparency = 0.3, 
 }, {
+    -- 灰色渐变层
     ah("UIGradient", {
         Name = "SearchGradient",
         Color = ColorSequence.new({
@@ -10610,6 +10613,7 @@ local ar = af.NewRoundFrame(an.Radius, "Squircle", {
         }),
         Offset = Vector2.new(-1, 0)
     }),
+    -- 内部 Frame 结构
     af.NewRoundFrame(an.Radius, "Squircle", {
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
@@ -10624,6 +10628,7 @@ local ar = af.NewRoundFrame(an.Radius, "Squircle", {
             Size = UDim2.new(1, 0, 0, 46),
             BackgroundTransparency = 1,
         }, {
+            -- 搜索图标和输入框布局
             ah("Frame", {
                 Size = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
@@ -10637,8 +10642,8 @@ local ar = af.NewRoundFrame(an.Radius, "Squircle", {
                     ImageTransparency = 0.1,
                     Size = UDim2.new(0, an.IconSize, 0, an.IconSize)
                 }),
-                ao,
-                ap,
+                ao, -- TextBox
+                ap, -- Close Button
                 ah("UIListLayout", {
                     Padding = UDim.new(0, an.Padding),
                     FillDirection = "Horizontal",
@@ -10650,6 +10655,7 @@ local ar = af.NewRoundFrame(an.Radius, "Squircle", {
                 })
             })
         }),
+        -- 结果区域
         ah("Frame", {
             BackgroundTransparency = 1,
             AutomaticSize = "Y",
@@ -10661,9 +10667,8 @@ local ar = af.NewRoundFrame(an.Radius, "Squircle", {
                 ThemeTag = { BackgroundColor3 = "Outline" },
                 BackgroundTransparency = 0.9,
                 Visible = false,
-                Name = "Separator"
             }),
-            aq,
+            aq, -- ScrollingFrame
             ah("UISizeConstraint", {
                 MaxSize = Vector2.new(an.Width, an.MaxHeight),
             }),
@@ -10675,6 +10680,7 @@ local ar = af.NewRoundFrame(an.Radius, "Squircle", {
     })
 })
 
+-- 保持渐变动画
 task.spawn(function()
     local grad = ar:FindFirstChild("SearchGradient")
     if grad then
