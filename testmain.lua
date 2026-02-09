@@ -10922,20 +10922,20 @@ return au
 end
 
 local isSearching = false
+
 function an.Search(at, au)
     au = au or ""
 
-        if au ~= "" then
+    if au ~= "" then
         aq.Visible = true
-        local resultsFrame = ar.Frame.Results:FindFirstChild("Frame")
-        if resultsFrame then resultsFrame.Visible = true end
-        
+        ar.Frame.Results.Frame.Visible = true
         if loadingLabel then loadingLabel.Visible = true end
     end
 
     if isSearching then return end
     isSearching = true
-    task.wait(0.12)
+    task.wait(0.1)
+
     for _, child in next, aq:GetChildren() do
         if child:IsA("TextButton") or child.Name == "NotFound" then
             child:Destroy()
@@ -10946,20 +10946,22 @@ function an.Search(at, au)
     local targetTab = string.lower(searchParts[1] or "")
     local targetItem = string.lower(searchParts[2] or "")
     local isAdvanced = #searchParts >= 2 and targetItem ~= ""
+
     local resultsFound = false
     
     if au ~= "" then
         for tabIndex, tabData in next, ak.Tabs do
             local tabTitle = string.lower(tabData.Title or "")
             local tabMatches = isAdvanced and (tabTitle == targetTab) or (string.find(tabTitle, string.lower(au), 1, true) ~= nil)
+
             if tabMatches or isAdvanced then
                 local elementsToShow = {}
                 local query = isAdvanced and targetItem or string.lower(au)
+                
                 for elIndex, element in next, tabData.Elements do
                     if element.__type ~= "Section" then
                         local elTitle = string.lower(element.Title or "")
-                        local elDesc = string.lower(element.Desc or "")
-                        if string.find(elTitle, query, 1, true) or string.find(elDesc, query, 1, true) then
+                        if string.find(elTitle, query, 1, true) then
                             elementsToShow[elIndex] = element
                         end
                     end
@@ -10971,9 +10973,9 @@ function an.Search(at, au)
                         an:Close()
                         ak:SelectTab(tabIndex)
                     end)
+                    
                     for _, elData in next, elementsToShow do
-                        local b = an.Icons[elData.__type] or "circle"
-                        CreateSearchTab(elData.Title, elData.Desc, b, az:FindFirstChild"ParentContainer" and az.ParentContainer.Frame or nil, false, function()
+                        CreateSearchTab(elData.Title, elData.Desc, an.Icons[elData.__type] or "circle", az.ParentContainer.Frame, false, function()
                             an:Close()
                             ak:SelectTab(tabIndex)
                             if tabData.ScrollToTheElement then
@@ -10987,15 +10989,13 @@ function an.Search(at, au)
     end
 
     if loadingLabel then loadingLabel.Visible = false end
-
     if not resultsFound and au ~= "" then
         ah("TextLabel", {
             Size = UDim2.new(1, 0, 0, 70),
             BackgroundTransparency = 1,
-            Text = "No results matched your search.",
-            TextSize = 16,
+            Text = "No results found",
             ThemeTag = { TextColor3 = "Text" },
-            TextTransparency = .5,
+            TextTransparency = 0.5,
             FontFace = Font.new(af.Font, Enum.FontWeight.Medium),
             Parent = aq,
             Name = "NotFound",
@@ -11004,7 +11004,6 @@ function an.Search(at, au)
 
     local contentHeight = aq.UIListLayout.AbsoluteContentSize.Y + (an.Padding * 2)
     local targetHeight = math.clamp(contentHeight, 0, an.MaxHeight)
-
     if au ~= "" then
         aj(as, 0.5, {Size = UDim2.new(0, an.Width, 0, targetHeight + 46)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
         aj(aq, 0.5, {Size = UDim2.new(1, 0, 0, targetHeight)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
@@ -11026,24 +11025,41 @@ end)
 
 function an.Open(at)
     task.spawn(function()
-        ar.Frame.Visible = true
         as.Visible = true
+        ar.Frame.Visible = true
+        as.UIScale.Scale = 0.9
+        as.Size = UDim2.new(0, an.Width, 0, 46)
+
         aj(as.UIScale, 0.2, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        aj(ar, 0.2, {ImageTransparency = 0.3}):Play()
     end)
 end
 
-function an.Close(at, au)
+function an.Close(at, isDestroy)
     task.spawn(function()
-        ar.Frame.Visible = false
         aj(as.UIScale, 0.15, {Scale = 0.9}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+        aj(ar, 0.15, {ImageTransparency = 1}):Play()
         task.wait(0.15)
         as.Visible = false
-        if au then as:Destroy() end
+        ar.Frame.Visible = false
+        aq.Visible = false
+        ao.Text = "" 
+        if am then 
+            am() 
+        end
+
+        if isDestroy then
+            as:Destroy()
+        end
     end)
 end
 
+af.AddSignal(ao:GetPropertyChangedSignal"Text", function()
+    an:Search(ao.Text)
+end)
+
 af.AddSignal(ap.TextButton.MouseButton1Click, function()
-    an:Close(true)
+    an:Close(false)
 end)
 
 an:Open()
