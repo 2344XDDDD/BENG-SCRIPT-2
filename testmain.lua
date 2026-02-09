@@ -10659,14 +10659,14 @@ Icons=a.load'Y'
                     ThemeTag = { BackgroundColor3 = "Outline" },
                     BackgroundTransparency = 0.9,
                     Visible = false,
-                    Name = "Separator"
+                    Name = "Frame"
                 }),
                 aq,
                 ah("UISizeConstraint", { MaxSize = Vector2.new(an.Width, an.MaxHeight) }),
             }),
+            }),
             ah("UIListLayout", { Padding = UDim.new(0, 0), FillDirection = "Vertical" }),
         })
-    })
 
     task.spawn(function()
         local grad = ar:FindFirstChild("SearchGradient", true)
@@ -10924,9 +10924,12 @@ end
 local isSearching = false
 function an.Search(at, au)
     au = au or ""
-    if au ~= "" then
+
+        if au ~= "" then
         aq.Visible = true
-        ar.Frame.Results.Frame.Visible = true
+        local resultsFrame = ar.Frame.Results:FindFirstChild("Frame")
+        if resultsFrame then resultsFrame.Visible = true end
+        
         if loadingLabel then loadingLabel.Visible = true end
     end
 
