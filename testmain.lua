@@ -10594,89 +10594,98 @@ PaddingBottom=UDim.new(0,an.Padding),
 })
 })
 
-local ar=af.NewRoundFrame(an.Radius,"Squircle",{
-Size=UDim2.new(1,0,1,0),
-ThemeTag={
-ImageColor3="WindowSearchBarBackground",
-},
-ImageTransparency=0,
-},{
-af.NewRoundFrame(an.Radius,"Squircle",{
-Size=UDim2.new(1,0,1,0),
-BackgroundTransparency=1,
-
-Visible=false,
-ThemeTag={
-ImageColor3="White",
-},
-ImageTransparency=1,
-Name="Frame",
-},{
-ah("Frame",{
-Size=UDim2.new(1,0,0,46),
-BackgroundTransparency=1,
-},{
-
-
-
-
-
-
-
-
-ah("Frame",{
-Size=UDim2.new(1,0,1,0),
-BackgroundTransparency=1,
-},{
-ah("ImageLabel",{
-Image=af.Icon"search"[1],
-ImageRectSize=af.Icon"search"[2].ImageRectSize,
-ImageRectOffset=af.Icon"search"[2].ImageRectPosition,
-BackgroundTransparency=1,
-ThemeTag={
-ImageColor3="Icon",
-},
-ImageTransparency=.1,
-Size=UDim2.new(0,an.IconSize,0,an.IconSize)
-}),
-ao,
-ap,
-ah("UIListLayout",{
-Padding=UDim.new(0,an.Padding),
-FillDirection="Horizontal",
-VerticalAlignment="Center",
-}),
-ah("UIPadding",{
-PaddingLeft=UDim.new(0,an.Padding),
-PaddingRight=UDim.new(0,an.Padding),
+local ar = af.NewRoundFrame(an.Radius, "Squircle", {
+    Size = UDim2.new(1, 0, 1, 0),
+    ThemeTag = {
+        ImageColor3 = "WindowSearchBarBackground",
+    },
+    ImageTransparency = al.Searchboxtransparent or 0.3, 
+}, {
+    ah("UIGradient", {
+        Name = "SearchGradient",
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 60, 60)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(110, 110, 110)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 60, 60))
+        }),
+        Offset = Vector2.new(-1, 0)
+    }),
+    af.NewRoundFrame(an.Radius, "Squircle", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Visible = true,
+        ThemeTag = {
+            ImageColor3 = "White",
+        },
+        ImageTransparency = 1,
+        Name = "Frame",
+    }, {
+        ah("Frame", {
+            Size = UDim2.new(1, 0, 0, 46),
+            BackgroundTransparency = 1,
+        }, {
+            ah("Frame", {
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+            }, {
+                ah("ImageLabel", {
+                    Image = af.Icon "search" [1],
+                    ImageRectSize = af.Icon "search" [2].ImageRectSize,
+                    ImageRectOffset = af.Icon "search" [2].ImageRectPosition,
+                    BackgroundTransparency = 1,
+                    ThemeTag = { ImageColor3 = "Icon" },
+                    ImageTransparency = 0.1,
+                    Size = UDim2.new(0, an.IconSize, 0, an.IconSize)
+                }),
+                ao,
+                ap,
+                ah("UIListLayout", {
+                    Padding = UDim.new(0, an.Padding),
+                    FillDirection = "Horizontal",
+                    VerticalAlignment = "Center",
+                }),
+                ah("UIPadding", {
+                    PaddingLeft = UDim.new(0, an.Padding),
+                    PaddingRight = UDim.new(0, an.Padding),
+                })
+            })
+        }),
+        ah("Frame", {
+            BackgroundTransparency = 1,
+            AutomaticSize = "Y",
+            Size = UDim2.new(1, 0, 0, 0),
+            Name = "Results",
+        }, {
+            ah("Frame", {
+                Size = UDim2.new(1, 0, 0, 1),
+                ThemeTag = { BackgroundColor3 = "Outline" },
+                BackgroundTransparency = 0.9,
+                Visible = false,
+                Name = "Separator"
+            }),
+            aq,
+            ah("UISizeConstraint", {
+                MaxSize = Vector2.new(an.Width, an.MaxHeight),
+            }),
+        }),
+        ah("UIListLayout", {
+            Padding = UDim.new(0, 0),
+            FillDirection = "Vertical",
+        }),
+    })
 })
-})
-}),
-ah("Frame",{
-BackgroundTransparency=1,
-AutomaticSize="Y",
-Size=UDim2.new(1,0,0,0),
-Name="Results",
-},{
-ah("Frame",{
-Size=UDim2.new(1,0,0,1),
-ThemeTag={
-BackgroundColor3="Outline",
-},
-BackgroundTransparency=.9,
-Visible=false,
-}),
-aq,
-ah("UISizeConstraint",{
-MaxSize=Vector2.new(an.Width,an.MaxHeight),
-}),
-}),
-ah("UIListLayout",{
-Padding=UDim.new(0,0),
-FillDirection="Vertical",
-}),
-})
-})
+
+task.spawn(function()
+    local grad = ar:FindFirstChild("SearchGradient")
+    if grad then
+        while ar and ar.Parent do
+            local tween = aj(grad, 3, {Offset = Vector2.new(1, 0)}, Enum.EasingStyle.Linear)
+            tween:Play()
+            tween.Completed:Wait()
+            grad.Offset = Vector2.new(-1, 0)
+        end
+    end
+end)
 
 local as=ah("Frame",{
 Size=UDim2.new(0,an.Width,0,0),
@@ -10981,10 +10990,6 @@ an:Search(ao.Text)
 end)
 
 af.AddSignal(aq.UIListLayout:GetPropertyChangedSignal"AbsoluteContentSize",function()
-    local listHeight = math.clamp(aq.UIListLayout.AbsoluteContentSize.Y + (an.Padding * 2), 0, an.MaxHeight)
-    aj(aq, 0.25, {Size = UDim2.new(1, 0, 0, listHeight)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-    local targetTotalHeight = (au == "" and 46 or (listHeight + 46))
-    aj(as, 0.3, {Size = UDim2.new(0, an.Width, 0, targetTotalHeight)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 
 aj(aq,.06,{Size=UDim2.new(
 1,
@@ -11027,13 +11032,6 @@ end)
 an:Open()
 
 return an
-function an.UpdateTransparency(val)
-    ar.ImageTransparency = val
-    as.Outline.ImageTransparency = val + 0.4
-end
-function an.UpdateCorners(val)
-    ar.UICorner.CornerRadius = UDim.new(0, val)
-    as.Outline.UICorner.CornerRadius = UDim.new(0, val)
 end
 
 return ae end function a._()
