@@ -10598,87 +10598,119 @@ Icons=a.load'Y'
         Parent = aq,
     })
 
+-- [[ 1. 首先定义用于显示 Tab 名字的标签 (解决重叠的关键) ]]
+        local tabTag = ah("TextLabel", {
+            Text = "",
+            ThemeTag = { TextColor3 = "Text" },
+            BackgroundTransparency = 0.8,
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            Visible = false, -- 初始隐藏
+            FontFace = Font.new(af.Font, Enum.FontWeight.Bold),
+            TextSize = 13,
+            AutomaticSize = "XY",
+            LayoutOrder = 2, -- 排序在图标之后
+        }, {
+            ah("UICorner", { CornerRadius = UDim.new(0, 6) }),
+            ah("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) })
+        })
+
+        -- 配置输入框 (移除固定坐标，开启自动布局支持)
+        ao.LayoutOrder = 3
+        ao.Size = UDim2.new(1, -120, 0, 30) -- 宽度会自动受 ListLayout 限制
+
+        -- [[ 2. 整合后的核心背景 ar ]]
         local ar = af.NewRoundFrame(an.Radius, "Squircle", {
             Size = UDim2.new(1, 0, 1, 0),
-            ImageColor3 = Color3.fromRGB(25, 25, 25),
-            ImageTransparency = 0.3,
+            ImageColor3 = Color3.fromRGB(25, 25, 25), -- 强制深灰色
+            ImageTransparency = 0.3, -- 0.3 透明度
         }, {
+            -- 灰色渐变流光
             ah("UIGradient", {
                 Name = "SearchGradient",
                 Color = ColorSequence.new({
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(70, 70, 70)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(75, 75, 75)),
                     ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 40))
                 }),
                 Offset = Vector2.new(-1, 0)
             }),
 
+            -- 内部内容容器
             af.NewRoundFrame(an.Radius, "Squircle", {
                 Size = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
-                ImageTransparency = 1,
+                ImageTransparency = 1, -- 必须设为1，否则会显示白色块
                 Name = "Frame",
             }, {
-            ah("Frame", {
-                Size = UDim2.new(1, 0, 0, 46),
-                BackgroundTransparency = 1,
-            }, {
+                -- 顶部输入栏 (修复重叠逻辑)
                 ah("Frame", {
-                    Size = UDim2.new(1, 0, 1, 0),
+                    Size = UDim2.new(1, 0, 0, 46),
                     BackgroundTransparency = 1,
                 }, {
-                    ah("ImageLabel", {
-                        Image = af.Icon "search" [1],
-                        ImageRectSize = af.Icon "search" [2].ImageRectSize,
-                        ImageRectOffset = af.Icon "search" [2].ImageRectPosition,
+                    ah("Frame", {
+                        Size = UDim2.new(1, 0, 1, 0),
                         BackgroundTransparency = 1,
-                        ThemeTag = { ImageColor3 = "Icon" },
-                        ImageTransparency = 0.1,
-                        Size = UDim2.new(0, an.IconSize, 0, an.IconSize)
-                    }),
-                    ao, ap,
-                    ah("UIListLayout", {
-                        Padding = UDim.new(0, an.Padding),
-                        FillDirection = "Horizontal",
-                        VerticalAlignment = "Center",
-                    }),
-                    ah("UIPadding", {
-                        PaddingLeft = UDim.new(0, an.Padding),
-                        PaddingRight = UDim.new(0, an.Padding),
+                    }, {
+                        -- 核心布局控制
+                        ah("UIListLayout", {
+                            Padding = UDim.new(0, 10), -- 元素间的间距
+                            FillDirection = "Horizontal",
+                            VerticalAlignment = "Center",
+                            SortOrder = "LayoutOrder", -- 严格按照序号排列
+                        }),
+                        ah("UIPadding", {
+                            PaddingLeft = UDim.new(0, 14),
+                            PaddingRight = UDim.new(0, 14),
+                        }),
+
+                        ah("ImageLabel", {
+                            Image = af.Icon "search" [1],
+                            ImageRectSize = af.Icon "search" [2].ImageRectSize,
+                            ImageRectOffset = af.Icon "search" [2].ImageRectPosition,
+                            BackgroundTransparency = 1,
+                            ThemeTag = { ImageColor3 = "Icon" },
+                            ImageTransparency = 0.2,
+                            Size = UDim2.new(0, an.IconSize, 0, an.IconSize),
+                            LayoutOrder = 1,
+                        }),
+
+                        tabTag,
+                        ao,
+                        ap,
                     })
-                })
-            }),
-            ah("Frame", {
-                BackgroundTransparency = 1,
-                AutomaticSize = "Y",
-                Size = UDim2.new(1, 0, 0, 0),
-                Name = "Results",
-            }, {
-                ah("Frame", {
-                    Size = UDim2.new(1, 0, 0, 1),
-                    ThemeTag = { BackgroundColor3 = "Outline" },
-                    BackgroundTransparency = 0.9,
-                    Visible = false,
-                    Name = "Frame"
                 }),
-                aq,
-                ah("UISizeConstraint", { MaxSize = Vector2.new(an.Width, an.MaxHeight) }),
-            }),
-            }),
-            ah("UIListLayout", { Padding = UDim.new(0, 0), FillDirection = "Vertical" }),
+
+                ah("Frame", {
+                    BackgroundTransparency = 1,
+                    AutomaticSize = "Y",
+                    Size = UDim2.new(1, 0, 0, 0),
+                    Name = "Results",
+                }, {
+                    ah("Frame", {
+                        Size = UDim2.new(1, 0, 0, 1),
+                        ThemeTag = { BackgroundColor3 = "Outline" },
+                        BackgroundTransparency = 0.9,
+                        Visible = false,
+                        Name = "Frame"
+                    }),
+                    aq,
+                    ah("UISizeConstraint", { MaxSize = Vector2.new(an.Width, an.MaxHeight) }),
+                }),
+                ah("UIListLayout", { Padding = UDim.new(0, 0), FillDirection = "Vertical" }),
+            })
         })
 
-    task.spawn(function()
-        local grad = ar:FindFirstChild("SearchGradient", true)
-        if grad then
-            while ar and ar.Parent do
-                local tween = aj(grad, 3, {Offset = Vector2.new(1, 0)}, Enum.EasingStyle.Linear)
-                tween:Play()
-                tween.Completed:Wait()
-                grad.Offset = Vector2.new(-1, 0)
+        task.spawn(function()
+            local grad = ar:FindFirstChild("SearchGradient", true)
+            if grad then
+                while ar and ar.Parent do
+                    local tween = aj(grad, 3, {Offset = Vector2.new(1, 0)}, Enum.EasingStyle.Linear)
+                    tween:Play()
+                    tween.Completed:Wait()
+                    grad.Offset = Vector2.new(-1, 0)
+                end
             end
-        end
-    end)
+        end)
 
 local as=ah("Frame",{
 Size=UDim2.new(0,an.Width,0,0),
