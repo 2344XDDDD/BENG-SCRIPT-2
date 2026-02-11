@@ -4,7 +4,7 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/9/2]
+    V1.6.83 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
     https://bengscript.lol
     [Update: Added: all - New:LockedIcon]
     Lua
@@ -5145,7 +5145,7 @@ Scalable=af.Scalable,
 Parent=af.Parent,
 Justify=af.Justify or"Between",
 UIPadding=af.Window.ElementConfig.UIPadding,
-UICorner=af.Window.ElementConfig.UICorner,
+UICorner=af.Radius or af.Window.ElementConfig.UICorner,
 Size=af.Size or"Default",
 UIElements={},
 LockedIcon = af.LockedIcon or "lock",
@@ -5801,6 +5801,7 @@ local ag=true
 af.ButtonFrame=a.load'B'{
 Title=af.Title,
 Desc=af.Desc,
+Radius=ae.Radius,
 Parent=ae.Parent,
 LockedIcon = ae.LockedIcon,
 
@@ -6275,6 +6276,7 @@ UIElements={}
 ai.ToggleFrame=a.load'B'{
 Title=ai.Title,
 Desc=ai.Desc,
+Radius=ah.Radius,
 LockedIcon = ah.LockedIcon,
 
 
@@ -6464,6 +6466,7 @@ end
 al.SliderFrame=a.load'B'{
 Title=al.Title,
 Desc=al.Desc,
+Radius=ak.Radius,
 Parent=ak.Parent,
 TextOffset=al.Width,
 Hover=false,
@@ -6912,6 +6915,7 @@ local ak=true
 aj.InputFrame=a.load'B'{
 Title=aj.Title,
 Desc=aj.Desc,
+Radius=ai.Radius,
 Parent=ai.Parent,
 TextOffset=aj.Width,
 Hover=false,
@@ -10527,190 +10531,156 @@ MaxHeight=380,
 Icons=a.load'Y'
 }
 
-    local ao = ah("TextBox", {
-        Text = "",
-        PlaceholderText = "Search...",
-        ThemeTag = {
-            PlaceholderColor3 = "Placeholder",
-            TextColor3 = "Text",
-        },
-        Size = UDim2.new(1, -((an.IconSize * 2) + (an.Padding * 2)), 0, 0),
-        AutomaticSize = "Y",
-        ClipsDescendants = true,
-        ClearTextOnFocus = false,
-        BackgroundTransparency = 1,
-        TextXAlignment = "Left",
-        FontFace = Font.new(af.Font, Enum.FontWeight.Regular),
-        TextSize = 18,
-    })
 
-    local ap = ah("ImageLabel", {
-        Image = af.Icon "x" [1],
-        ImageRectSize = af.Icon "x" [2].ImageRectSize,
-        ImageRectOffset = af.Icon "x" [2].ImageRectPosition,
-        BackgroundTransparency = 1,
-        ThemeTag = { ImageColor3 = "Icon" },
-        ImageTransparency = 0.1,
-        Size = UDim2.new(0, an.IconSize, 0, an.IconSize)
-    }, {
-        ah("TextButton", {
-            Size = UDim2.new(1, 8, 1, 8),
-            BackgroundTransparency = 1,
-            Active = true,
-            ZIndex = 999999999,
-            AnchorPoint = Vector2.new(0.5, 0.5),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            Text = "",
-        })
-    })
+local ao=ah("TextBox",{
+Text="",
+PlaceholderText="Search...",
+ThemeTag={
+PlaceholderColor3="Placeholder",
+TextColor3="Text",
+},
+Size=UDim2.new(
+1,
+-((an.IconSize*2)+(an.Padding*2)),
+0,
+0
+),
+AutomaticSize="Y",
+ClipsDescendants=true,
+ClearTextOnFocus=false,
+BackgroundTransparency=1,
+TextXAlignment="Left",
+FontFace=Font.new(af.Font,Enum.FontWeight.Regular),
+TextSize=18,
+})
 
-    local aq = ah("ScrollingFrame", {
-        Size = UDim2.new(1, 0, 0, 0),
-        AutomaticCanvasSize = "Y",
-        ScrollingDirection = "Y",
-        ElasticBehavior = "Never",
-        ScrollBarThickness = 0,
-        CanvasSize = UDim2.new(0, 0, 0, 0),
-        BackgroundTransparency = 1,
-        Visible = false
-    }, {
-        ah("UIListLayout", {
-            Padding = UDim.new(0, 0),
-            FillDirection = "Vertical",
-        }),
-        ah("UIPadding", {
-            PaddingTop = UDim.new(0, an.Padding),
-            PaddingLeft = UDim.new(0, an.Padding),
-            PaddingRight = UDim.new(0, an.Padding),
-            PaddingBottom = UDim.new(0, an.Padding),
-        })
-    })
+local ap=ah("ImageLabel",{
+Image=af.Icon"x"[1],
+ImageRectSize=af.Icon"x"[2].ImageRectSize,
+ImageRectOffset=af.Icon"x"[2].ImageRectPosition,
+BackgroundTransparency=1,
+ThemeTag={
+ImageColor3="Icon",
+},
+ImageTransparency=.1,
+Size=UDim2.new(0,an.IconSize,0,an.IconSize)
+},{
+ah("TextButton",{
+Size=UDim2.new(1,8,1,8),
+BackgroundTransparency=1,
+Active=true,
+ZIndex=999999999,
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+Text="",
+})
+})
 
-    local loadingLabel = ah("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 40),
-        BackgroundTransparency = 1,
-        Text = "Searching...",
-        ThemeTag = { TextColor3 = "Text" },
-        TextTransparency = 0.5,
-        Visible = false,
-        FontFace = Font.new(af.Font, Enum.FontWeight.Medium),
-        TextSize = 15,
-        Parent = aq,
-    })
+local aq=ah("ScrollingFrame",{
+Size=UDim2.new(1,0,0,0),
+AutomaticCanvasSize="Y",
+ScrollingDirection="Y",
+ElasticBehavior="Never",
+ScrollBarThickness=0,
+CanvasSize=UDim2.new(0,0,0,0),
+BackgroundTransparency=1,
+Visible=false
+},{
+ah("UIListLayout",{
+Padding=UDim.new(0,0),
+FillDirection="Vertical",
+}),
+ah("UIPadding",{
+PaddingTop=UDim.new(0,an.Padding),
+PaddingLeft=UDim.new(0,an.Padding),
+PaddingRight=UDim.new(0,an.Padding),
+PaddingBottom=UDim.new(0,an.Padding),
+})
+})
 
--- [[ 1. 首先定义用于显示 Tab 名字的标签 (解决重叠的关键) ]]
-        local tabTag = ah("TextLabel", {
-            Text = "",
-            ThemeTag = { TextColor3 = "Text" },
-            BackgroundTransparency = 0.8,
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            Visible = false, -- 初始隐藏
-            FontFace = Font.new(af.Font, Enum.FontWeight.Bold),
-            TextSize = 13,
-            AutomaticSize = "XY",
-            LayoutOrder = 2, -- 排序在图标之后
-        }, {
-            ah("UICorner", { CornerRadius = UDim.new(0, 6) }),
-            ah("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) })
-        })
+local ar=af.NewRoundFrame(an.Radius,"Squircle",{
+Size=UDim2.new(1,0,1,0),
+ThemeTag={
+ImageColor3="WindowSearchBarBackground",
+},
+ImageTransparency=0,
+},{
+af.NewRoundFrame(an.Radius,"Squircle",{
+Size=UDim2.new(1,0,1,0),
+BackgroundTransparency=1,
 
-        -- 配置输入框 (移除固定坐标，开启自动布局支持)
-        ao.LayoutOrder = 3
-        ao.Size = UDim2.new(1, -120, 0, 30) -- 宽度会自动受 ListLayout 限制
+Visible=false,
+ThemeTag={
+ImageColor3="White",
+},
+ImageTransparency=1,
+Name="Frame",
+},{
+ah("Frame",{
+Size=UDim2.new(1,0,0,46),
+BackgroundTransparency=1,
+},{
 
-        -- [[ 2. 整合后的核心背景 ar ]]
-        local ar = af.NewRoundFrame(an.Radius, "Squircle", {
-            Size = UDim2.new(1, 0, 1, 0),
-            ImageColor3 = Color3.fromRGB(25, 25, 25), -- 强制深灰色
-            ImageTransparency = 0.3, -- 0.3 透明度
-        }, {
-            -- 灰色渐变流光
-            ah("UIGradient", {
-                Name = "SearchGradient",
-                Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(75, 75, 75)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 40))
-                }),
-                Offset = Vector2.new(-1, 0)
-            }),
 
-            -- 内部内容容器
-            af.NewRoundFrame(an.Radius, "Squircle", {
-                Size = UDim2.new(1, 0, 1, 0),
-                BackgroundTransparency = 1,
-                ImageTransparency = 1, -- 必须设为1，否则会显示白色块
-                Name = "Frame",
-            }, {
-                -- 顶部输入栏 (修复重叠逻辑)
-                ah("Frame", {
-                    Size = UDim2.new(1, 0, 0, 46),
-                    BackgroundTransparency = 1,
-                }, {
-                    ah("Frame", {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        BackgroundTransparency = 1,
-                    }, {
-                        -- 核心布局控制
-                        ah("UIListLayout", {
-                            Padding = UDim.new(0, 10), -- 元素间的间距
-                            FillDirection = "Horizontal",
-                            VerticalAlignment = "Center",
-                            SortOrder = "LayoutOrder", -- 严格按照序号排列
-                        }),
-                        ah("UIPadding", {
-                            PaddingLeft = UDim.new(0, 14),
-                            PaddingRight = UDim.new(0, 14),
-                        }),
 
-                        ah("ImageLabel", {
-                            Image = af.Icon "search" [1],
-                            ImageRectSize = af.Icon "search" [2].ImageRectSize,
-                            ImageRectOffset = af.Icon "search" [2].ImageRectPosition,
-                            BackgroundTransparency = 1,
-                            ThemeTag = { ImageColor3 = "Icon" },
-                            ImageTransparency = 0.2,
-                            Size = UDim2.new(0, an.IconSize, 0, an.IconSize),
-                            LayoutOrder = 1,
-                        }),
 
-                        tabTag,
-                        ao,
-                        ap,
-                    })
-                }),
 
-                ah("Frame", {
-                    BackgroundTransparency = 1,
-                    AutomaticSize = "Y",
-                    Size = UDim2.new(1, 0, 0, 0),
-                    Name = "Results",
-                }, {
-                    ah("Frame", {
-                        Size = UDim2.new(1, 0, 0, 1),
-                        ThemeTag = { BackgroundColor3 = "Outline" },
-                        BackgroundTransparency = 0.9,
-                        Visible = false,
-                        Name = "Frame"
-                    }),
-                    aq,
-                    ah("UISizeConstraint", { MaxSize = Vector2.new(an.Width, an.MaxHeight) }),
-                }),
-                ah("UIListLayout", { Padding = UDim.new(0, 0), FillDirection = "Vertical" }),
-            })
-        })
 
-        task.spawn(function()
-            local grad = ar:FindFirstChild("SearchGradient", true)
-            if grad then
-                while ar and ar.Parent do
-                    local tween = aj(grad, 3, {Offset = Vector2.new(1, 0)}, Enum.EasingStyle.Linear)
-                    tween:Play()
-                    tween.Completed:Wait()
-                    grad.Offset = Vector2.new(-1, 0)
-                end
-            end
-        end)
+
+
+ah("Frame",{
+Size=UDim2.new(1,0,1,0),
+BackgroundTransparency=1,
+},{
+ah("ImageLabel",{
+Image=af.Icon"search"[1],
+ImageRectSize=af.Icon"search"[2].ImageRectSize,
+ImageRectOffset=af.Icon"search"[2].ImageRectPosition,
+BackgroundTransparency=1,
+ThemeTag={
+ImageColor3="Icon",
+},
+ImageTransparency=.1,
+Size=UDim2.new(0,an.IconSize,0,an.IconSize)
+}),
+ao,
+ap,
+ah("UIListLayout",{
+Padding=UDim.new(0,an.Padding),
+FillDirection="Horizontal",
+VerticalAlignment="Center",
+}),
+ah("UIPadding",{
+PaddingLeft=UDim.new(0,an.Padding),
+PaddingRight=UDim.new(0,an.Padding),
+})
+})
+}),
+ah("Frame",{
+BackgroundTransparency=1,
+AutomaticSize="Y",
+Size=UDim2.new(1,0,0,0),
+Name="Results",
+},{
+ah("Frame",{
+Size=UDim2.new(1,0,0,1),
+ThemeTag={
+BackgroundColor3="Outline",
+},
+BackgroundTransparency=.9,
+Visible=false,
+}),
+aq,
+ah("UISizeConstraint",{
+MaxSize=Vector2.new(an.Width,an.MaxHeight),
+}),
+}),
+ah("UIListLayout",{
+Padding=UDim.new(0,0),
+FillDirection="Vertical",
+}),
+})
+})
 
 local as=ah("Frame",{
 Size=UDim2.new(0,an.Width,0,0),
@@ -10953,145 +10923,105 @@ end
 return au
 end
 
-local isSearching = false
+function an.Search(at,au)
+au=au or""
 
-function an.Search(at, au)
-    au = au or ""
+local av=Search(au)
 
-    if au ~= "" then
-        aq.Visible = true
-        ar.Frame.Results.Frame.Visible = true
-        if loadingLabel then loadingLabel.Visible = true end
-    end
-
-    if isSearching then return end
-    isSearching = true
-    task.wait(0.1)
-
-    for _, child in next, aq:GetChildren() do
-        if child:IsA("TextButton") or child.Name == "NotFound" then
-            child:Destroy()
-        end
-    end
-
-    local searchParts = string.split(au, " ")
-    local targetTab = string.lower(searchParts[1] or "")
-    local targetItem = string.lower(searchParts[2] or "")
-    local isAdvanced = #searchParts >= 2 and targetItem ~= ""
-
-    local resultsFound = false
-    
-    if au ~= "" then
-        for tabIndex, tabData in next, ak.Tabs do
-            local tabTitle = string.lower(tabData.Title or "")
-            local tabMatches = isAdvanced and (tabTitle == targetTab) or (string.find(tabTitle, string.lower(au), 1, true) ~= nil)
-
-            if tabMatches or isAdvanced then
-                local elementsToShow = {}
-                local query = isAdvanced and targetItem or string.lower(au)
-                
-                for elIndex, element in next, tabData.Elements do
-                    if element.__type ~= "Section" then
-                        local elTitle = string.lower(element.Title or "")
-                        if string.find(elTitle, query, 1, true) then
-                            elementsToShow[elIndex] = element
-                        end
-                    end
-                end
-
-                if next(elementsToShow) or (tabMatches and not isAdvanced) then
-                    resultsFound = true
-                    local az = CreateSearchTab(tabData.Title, nil, an.Icons.Tab, aq, true, function()
-                        an:Close()
-                        ak:SelectTab(tabIndex)
-                    end)
-                    
-                    for _, elData in next, elementsToShow do
-                        CreateSearchTab(elData.Title, elData.Desc, an.Icons[elData.__type] or "circle", az.ParentContainer.Frame, false, function()
-                            an:Close()
-                            ak:SelectTab(tabIndex)
-                            if tabData.ScrollToTheElement then
-                                tabData:ScrollToTheElement(elData.Index)
-                            end
-                        end)
-                    end
-                end
-            end
-        end
-    end
-
-    if loadingLabel then loadingLabel.Visible = false end
-    if not resultsFound and au ~= "" then
-        ah("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 70),
-            BackgroundTransparency = 1,
-            Text = "No results found",
-            ThemeTag = { TextColor3 = "Text" },
-            TextTransparency = 0.5,
-            FontFace = Font.new(af.Font, Enum.FontWeight.Medium),
-            Parent = aq,
-            Name = "NotFound",
-        })
-    end
-
-    local contentHeight = aq.UIListLayout.AbsoluteContentSize.Y + (an.Padding * 2)
-    local targetHeight = math.clamp(contentHeight, 0, an.MaxHeight)
-    if au ~= "" then
-        aj(as, 0.5, {Size = UDim2.new(0, an.Width, 0, targetHeight + 46)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-        aj(aq, 0.5, {Size = UDim2.new(1, 0, 0, targetHeight)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-    else
-        aj(as, 0.4, {Size = UDim2.new(0, an.Width, 0, 46)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-        aq.Visible = false
-        ar.Frame.Results.Frame.Visible = false
-    end
-
-    isSearching = false
+aq.Visible=true
+ar.Frame.Results.Frame.Visible=true
+for aw,ax in next,aq:GetChildren()do
+if ax.ClassName~="UIListLayout"and ax.ClassName~="UIPadding"then
+ax:Destroy()
+end
 end
 
-af.AddSignal(ao:GetPropertyChangedSignal"Text", function()
-    an:Search(ao.Text)
+if av and next(av)~=nil then
+for aw,ax in next,av do
+local ay=an.Icons.Tab
+local az=CreateSearchTab(ax.Title,nil,ay,aq,true,function()
+an:Close()
+ak:SelectTab(aw)
+end)
+if ax.Elements and next(ax.Elements)~=nil then
+for aA,aB in next,ax.Elements do
+local b=an.Icons[aB.__type]
+CreateSearchTab(aB.Title,aB.Desc,b,az:FindFirstChild"ParentContainer"and az.ParentContainer.Frame or nil,false,function()
+an:Close()
+ak:SelectTab(aw)
+if ax.Tab.ScrollToTheElement then
+
+ax.Tab:ScrollToTheElement(aB.Index)
+end
+
 end)
 
-af.AddSignal(aq.UIListLayout:GetPropertyChangedSignal"AbsoluteContentSize", function()
+end
+end
+end
+elseif au~=""then
+ah("TextLabel",{
+Size=UDim2.new(1,0,0,70),
+BackgroundTransparency=1,
+Text="No results found",
+TextSize=16,
+ThemeTag={
+TextColor3="Text",
+},
+TextTransparency=.2,
+BackgroundTransparency=1,
+FontFace=Font.new(af.Font,Enum.FontWeight.Medium),
+Parent=aq,
+Name="NotFound",
+})
+else
+aq.Visible=false
+ar.Frame.Results.Frame.Visible=false
+end
+end
+
+af.AddSignal(ao:GetPropertyChangedSignal"Text",function()
+an:Search(ao.Text)
+end)
+
+af.AddSignal(aq.UIListLayout:GetPropertyChangedSignal"AbsoluteContentSize",function()
+
+aj(aq,.06,{Size=UDim2.new(
+1,
+0,
+0,
+math.clamp(aq.UIListLayout.AbsoluteContentSize.Y+(an.Padding*2),0,an.MaxHeight)
+)},Enum.EasingStyle.Quint,Enum.EasingDirection.InOut):Play()
+
+
+
+
+
+
 end)
 
 function an.Open(at)
-    task.spawn(function()
-        as.Visible = true
-        ar.Frame.Visible = true
-        as.UIScale.Scale = 0.9
-        as.Size = UDim2.new(0, an.Width, 0, 46)
-
-        aj(as.UIScale, 0.2, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-        aj(ar, 0.2, {ImageTransparency = 0.3}):Play()
-    end)
-end
-
-function an.Close(at, isDestroy)
-    task.spawn(function()
-        aj(as.UIScale, 0.15, {Scale = 0.9}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
-        aj(ar, 0.15, {ImageTransparency = 1}):Play()
-        task.wait(0.15)
-        as.Visible = false
-        ar.Frame.Visible = false
-        aq.Visible = false
-        ao.Text = "" 
-        if am then 
-            am() 
-        end
-
-        if isDestroy then
-            as:Destroy()
-        end
-    end)
-end
-
-af.AddSignal(ao:GetPropertyChangedSignal"Text", function()
-    an:Search(ao.Text)
+task.spawn(function()
+ar.Frame.Visible=true
+as.Visible=true
+aj(as.UIScale,.12,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 end)
+end
 
-af.AddSignal(ap.TextButton.MouseButton1Click, function()
-    an:Close(false)
+function an.Close(at,au)
+task.spawn(function()
+am()
+ar.Frame.Visible=false
+aj(as.UIScale,.12,{Scale=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+
+task.wait(.12)
+as.Visible=false
+if au then as:Destroy()end
+end)
+end
+
+af.AddSignal(ap.TextButton.MouseButton1Click,function()
+an:Close(true)
 end)
 
 an:Open()
