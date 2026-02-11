@@ -4017,14 +4017,12 @@ end
 
 return aa end function a.x()
     local aa={}
-
-    local ab=a.load'c' -- Creator
-    local ac=ab.New   -- New
-    local ad=ab.Tween -- Tween
+    local ab=a.load'c' 
+    local ac=ab.New   
+    local ad=ab.Tween 
 
     function aa.New(ae,af,ag)
         local ah={
-            __type = "Tag", -- 定义类型
             Title=af.Title or"Tag",
             Icon=af.Icon,
             Color=af.Color or Color3.fromHex"#315dff",
@@ -4035,14 +4033,14 @@ return aa end function a.x()
             Padding=10,
             TextSize=14,
             IconSize=16,
+            -- 新增控制锁
+            _isVisible = false,
+            _manuallySet = false 
         }
 
-        -- [流水入场逻辑]
         local tagCount = 0
         for _, child in pairs(ag:GetChildren()) do
-            if child.Name == "TagFrame" then
-                tagCount = tagCount + 1
-            end
+            if child.Name == "TagFrame" then tagCount = tagCount + 1 end
         end
         local entranceDelay = 2 + (tagCount * 0.15)
 
@@ -4073,7 +4071,6 @@ return aa end function a.x()
         end
 
         local uiScale = ac("UIScale", { Scale = 0 })
-
         local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
             Name = "TagFrame",
             AutomaticSize="X",
@@ -4081,11 +4078,10 @@ return aa end function a.x()
             Parent=ag,
             ImageColor3=typeof(ah.Color)=="Color3" and ah.Color or Color3.new(1,1,1),
             ImageTransparency = 1,
-            Visible = true,
+            Visible = false,
             ClipsDescendants = true,
         },{
-            uiScale,
-            ak,
+            uiScale, ak,
             ab.NewRoundFrame(ah.Radius,"Glass-1",{
                 Size=UDim2.new(1,0,1,0),
                 ThemeTag={ ImageColor3="White" },
@@ -4107,55 +4103,45 @@ return aa end function a.x()
 
         ah.TagFrame = al
 
-        -- [API 接口]
         function ah.SetTransparency(self, val)
-            ad(al, 0.3, {ImageTransparency = val}):Play()
-            ad(aj, 0.3, {TextTransparency = val}):Play()
-            if ai then ad(ai.ImageLabel, 0.3, {ImageTransparency = val}):Play() end
-            local outline = al:FindFirstChild("Outline", true)
-            if outline then ad(outline, 0.3, {ImageTransparency = 0.75 + (val * 0.25)}):Play() end
+            local d = 0.3
+            ad(al, d, {ImageTransparency = val}):Play()
+            ad(aj, d, {TextTransparency = val}):Play()
+            if ai then ad(ai.ImageLabel, d, {ImageTransparency = val}):Play() end
+            local out = al:FindFirstChild("Outline", true)
+            if out then ad(out, d, {ImageTransparency = 0.75 + (val * 0.25)}):Play() end
         end
 
         function ah.SetVisible(self, state)
+            ah._manuallySet = true -- 只要被手动点过，就取消自动动画
+            ah._isVisible = state
+            local d = 0.5
             if state then
                 al.Visible = true
-                self:SetTransparency(0)
-                ad(uiScale, 0.5, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-                ad(al.Content, 0.5, {Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                ah:SetTransparency(0)
+                ad(uiScale, d, {Scale = 1}, Enum.EasingStyle.Quint):Play()
+                ad(al.Content, d, {Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint):Play()
             else
-                self:SetTransparency(1)
-                ad(uiScale, 0.4, {Scale = 0}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
-                task.delay(0.4, function() if not state then al.Visible = false end end)
+                ah:SetTransparency(1)
+                ad(uiScale, d, {Scale = 0}, Enum.EasingStyle.Quint):Play()
+                task.delay(d, function() if not ah._isVisible then al.Visible = false end end)
             end
         end
 
-        task.delay(entranceDelay, function() ah:SetVisible(true) end)
+        -- 自动入场动画：检查是否已经被手动关闭
+        task.delay(entranceDelay, function()
+            if not ah._manuallySet then
+                ah:SetVisible(true)
+                ah._manuallySet = false -- 重置标志位
+            end
+        end)
 
-        -- 基础方法保持
         function ah.SetTitle(am,an) ah.Title=an; aj.Text=an; return ah end
-        function ah.SetColor(am,an)
-            ah.Color=an
-            if typeof(an)=="table" then
-                local ao=ab.GetAverageColor(an)
-                ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(ao)}):Play()
-                local ap=al:FindFirstChildOfClass "UIGradient" or ac("UIGradient",{Parent=al})
-                for aq,ar in next,an do ap[aq]=ar end
-                ad(al,.06,{ImageColor3=Color3.new(1,1,1)}):Play()
-            else
-                if ak then ak:Destroy() end
-                ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(an)}):Play()
-                if ai then ad(ai.ImageLabel,.06,{ImageColor3=ab.GetTextColorForHSB(an)}):Play() end
-                ad(al,.06,{ImageColor3=an}):Play()
-            end
-            return ah
-        end
-
         function ah.Destroy(am) al:Destroy() end
 
-        -- [修正：必须返回两个值]
-        return "__type", ah 
+        -- [注意] 这里必须返回这两个值，否则 Tab:Tag 拿不到对象
+        return "Tag", ah 
     end
-
     return aa end function a.y()
 local aa=(cloneref or clonereference or function(aa)return aa end)
 
