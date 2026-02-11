@@ -11957,87 +11957,96 @@ an(G.ImageLabel,.1,{ImageTransparency=1},Enum.EasingStyle.Quint,Enum.EasingDirec
 an(G,.1,{Size=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 end
 end)
--- [修复版：长按弹出并排序逻辑]
+-- [位置摆放排序逻辑 - 实时互换版]
     local isDragging = false
     local dragConn
     local isHolding = false
-    local container = H.Parent -- 获取按钮所在的顶栏容器
+    local container = H.Parent -- 按钮所在的容器 (Topbar.Right)
+
+    -- 确保容器是按 LayoutOrder 排序的
+    local layout = container:FindFirstChildOfClass("UIListLayout")
+    if layout then layout.SortOrder = Enum.SortOrder.LayoutOrder end
 
     H.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             isHolding = true
             
-            -- 长按检测 (0.2秒后触发弹出和拖拽)
-            task.delay(0.2, function()
+            task.delay(0.15, function()
                 if not isHolding then return end
                 isDragging = true
-                H.ZIndex = 10000 -- 将按钮置于最上层
+                H.ZIndex = 10000 -- 提到最前面显示
                 
-                -- 1. 往前弹出的动画 (变大一点)
+                -- 往前弹出的视觉效果
                 an(H, 0.2, {
-                    Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset + 4, H.Size.Y.Scale, H.Size.Y.Offset + 4)
-                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                    Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset + 5, H.Size.Y.Scale, H.Size.Y.Offset + 5)
+                }, Enum.EasingStyle.Quint):Play()
                 
-                -- 修正点：提取 X 轴偏移量，避免 Vector3 和 Vector2 混合计算
                 local startMouseX = input.Position.X
                 local startOffsetX = startMouseX - H.AbsolutePosition.X
                 
-                -- 2. 拖动逻辑
                 dragConn = game:GetService("UserInputService").InputChanged:Connect(function(moveInput)
                     if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
                         local currentMouseX = moveInput.Position.X
+                        -- 随鼠标移动位置
+                        local newX = currentMouseX - container.AbsolutePosition.X - startOffsetX
+                        H.Position = UDim2.new(0, newX, H.Position.Y.Scale, H.Position.Y.Offset)
                         
-                        -- 更新位置 (修正点：确保使用数值计算)
-                        local newXOffset = currentMouseX - container.AbsolutePosition.X - startOffsetX
-                        H.Position = UDim2.new(0, newXOffset, H.Position.Y.Scale, H.Position.Y.Offset)
-                        
-                        -- 3. 排序逻辑
+                        -- 【核心逻辑：实时计算并摆放位置】
                         local siblings = {}
                         for _, child in pairs(container:GetChildren()) do
                             if child:IsA("GuiObject") and child ~= H then
                                 table.insert(siblings, child)
                             end
                         end
-                        -- 水平排序
-                        table.sort(siblings, function(a, b) return a.AbsolutePosition.X < b.AbsolutePosition.X end)
                         
+                        -- 根据它们在屏幕上的实际 X 坐标进行排序
+                        table.sort(siblings, function(a, b)
+                            return a.AbsolutePosition.X < b.AbsolutePosition.X
+                        end)
+                        
+                        -- 找到当前拖拽按钮应该在的位置
                         local currentX = H.AbsolutePosition.X
-                        local newIndex = 1
-                        local foundPlace = false
+                        local newLayoutOrder = 1
+                        local inserted = false
+                        
                         for i, sib in ipairs(siblings) do
-                            if not foundPlace and currentX < (sib.AbsolutePosition.X + sib.AbsoluteSize.X / 2) then
-                                H.LayoutOrder = i
-                                newIndex = i + 1
-                                foundPlace = true
+                            -- 如果拖拽的按钮超过了某个按钮的中点，就把它插到那个位置
+                            if not inserted and currentX < (sib.AbsolutePosition.X + sib.AbsoluteSize.X / 2) then
+                                H.LayoutOrder = newLayoutOrder
+                                newLayoutOrder = newLayoutOrder + 1
+                                inserted = true
                             end
-                            sib.LayoutOrder = newIndex
-                            newIndex = newIndex + 1
+                            sib.LayoutOrder = newLayoutOrder
+                            newLayoutOrder = newLayoutOrder + 1
                         end
-                        if not foundPlace then H.LayoutOrder = newIndex end
+                        
+                        -- 如果拖到了最后面
+                        if not inserted then
+                            H.LayoutOrder = newLayoutOrder
+                        end
                     end
                 end)
             end)
         end
     end)
 
-    -- 停止拖拽的处理函数
-    local function endDrag()
+    local function endSort()
         isHolding = false
         if dragConn then dragConn:Disconnect() dragConn = nil end
         if isDragging then
             isDragging = false
-            H.ZIndex = 9999 -- 恢复原始层级
-            -- 缩回原位的动画
+            H.ZIndex = 9999
+            -- 归位：Position 设为 0，让 UIListLayout 根据新的 LayoutOrder 自动摆放
             an(H, 0.2, {
-                Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset - 4, H.Size.Y.Scale, H.Size.Y.Offset - 4),
-                Position = UDim2.new(0.5, 0, 0.5, 0) -- 让 UIListLayout 自动接管
+                Position = UDim2.fromScale(0.5, 0.5), -- 回到布局中心
+                Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset - 5, H.Size.Y.Scale, H.Size.Y.Offset - 5)
             }, Enum.EasingStyle.Quint):Play()
         end
     end
 
     H.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            endDrag()
+            endSort()
         end
     end)
 return H
