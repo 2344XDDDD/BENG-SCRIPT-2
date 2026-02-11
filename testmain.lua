@@ -4036,14 +4036,14 @@ return aa end function a.x()
             IconSize=16,
         }
 
-        -- [流水入场：计算延迟和初始位置]
+        -- [流水入场序列计算]
         local tagCount = 0
         for _, child in pairs(ag:GetChildren()) do
             if child.Name == "TagFrame" then
                 tagCount = tagCount + 1
             end
         end
-        local entranceDelay = 2 + (tagCount * 0.15) -- 降低间隔让流水更连贯
+        local entranceDelay = 2 + (tagCount * 0.12) -- 缩短间隔使流水更丝滑
 
         local ai
         if ah.Icon then
@@ -4071,9 +4071,7 @@ return aa end function a.x()
             if ai then ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak)) end
         end
 
-        -- [核心动画组件：UIScale]
-        local uiScale = ac("UIScale", { Scale = 0 })
-
+        -- [主框架：解决缺口的关键是同步控制所有子项]
         local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
             Name = "TagFrame",
             AutomaticSize="X",
@@ -4081,15 +4079,13 @@ return aa end function a.x()
             Parent=ag,
             ImageColor3=typeof(ah.Color)=="Color3" and ah.Color or Color3.new(1,1,1),
             ImageTransparency = 1,
-            Visible = true, -- 必须设为 true 否则动画无法计算
-            ClipsDescendants = true, -- 防止内容溢出
+            Visible = false, -- 初始隐藏，防止占位抖动
         },{
-            uiScale,
             ak,
             ab.NewRoundFrame(ah.Radius,"Glass-1",{
                 Size=UDim2.new(1,0,1,0),
                 ThemeTag={ ImageColor3="White" },
-                ImageTransparency=1,
+                ImageTransparency=1, -- 初始描边全透明
                 Name = "Outline"
             }),
             ac("Frame",{
@@ -4097,9 +4093,10 @@ return aa end function a.x()
                 AutomaticSize="X",
                 Name="Content",
                 BackgroundTransparency=1,
-                Position = UDim2.new(0, 20, 0, 0), -- 初始位移：向右偏 20
-            }, {
-                ai, aj,
+                Position = UDim2.new(0, 15, 0, 0), -- 初始位移（向右偏移）
+            },{
+                ai,
+                aj,
                 ac("UIPadding",{ PaddingLeft=UDim.new(0,ah.Padding), PaddingRight=UDim.new(0,ah.Padding) }),
                 ac("UIListLayout",{ FillDirection="Horizontal", VerticalAlignment="Center", Padding=UDim.new(0,ah.Padding/1.5) })
             }),
@@ -4107,43 +4104,46 @@ return aa end function a.x()
 
         ah.TagFrame = al
 
-        -- [优化后的动画控制接口]
+        -- [核心动画修复：SetVisible]
         function ah.SetVisible(self, state)
             local duration = 0.5
             local easing = Enum.EasingStyle.Quint
-            
+            local outline = al:FindFirstChild("Outline", true)
+
             if state then
-                -- 向左滑入动画
+                al.Visible = true
+                -- 同步向左滑动并淡入
                 ad(al, duration, {ImageTransparency = 0}, easing, Enum.EasingDirection.Out):Play()
-                ad(uiScale, duration, {Scale = 1}, easing, Enum.EasingDirection.Out):Play()
                 ad(al.Content, duration, {Position = UDim2.new(0, 0, 0, 0)}, easing, Enum.EasingDirection.Out):Play()
                 ad(aj, duration, {TextTransparency = 0}, easing, Enum.EasingDirection.Out):Play()
                 if ai then ad(ai.ImageLabel, duration, {ImageTransparency = 0}, easing, Enum.EasingDirection.Out):Play() end
-                
-                local outline = al:FindFirstChild("Outline", true)
                 if outline then ad(outline, duration, {ImageTransparency = 0.75}, easing, Enum.EasingDirection.Out):Play() end
             else
-                -- 向左滑出/消失动画
+                -- 向左淡出
                 ad(al, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play()
-                ad(uiScale, duration * 0.8, {Scale = 0}, easing, Enum.EasingDirection.In):Play()
+                ad(al.Content, duration * 0.8, {Position = UDim2.new(0, -10, 0, 0)}, easing, Enum.EasingDirection.In):Play()
                 ad(aj, duration * 0.8, {TextTransparency = 1}, easing, Enum.EasingDirection.In):Play()
                 if ai then ad(ai.ImageLabel, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play() end
+                if outline then ad(outline, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play() end
+                
+                task.delay(duration * 0.8, function()
+                    if not state then al.Visible = false end
+                end)
             end
         end
 
-        -- [设置透明度接口 - 供 Slider 使用]
         function ah.SetTransparency(self, val)
             ad(al, 0.3, {ImageTransparency = val}):Play()
             ad(aj, 0.3, {TextTransparency = val}):Play()
             if ai then ad(ai.ImageLabel, 0.3, {ImageTransparency = val}):Play() end
         end
 
-        -- [流水动画启动：先等待 2s]
+        -- [延迟启动入场序列]
         task.delay(entranceDelay, function()
             ah:SetVisible(true)
         end)
 
-        -- 原有基础方法
+        -- 原有 SetTitle / SetColor / SetIcon 逻辑保持不变...
         function ah.SetTitle(am,an) ah.Title=an; aj.Text=an; return ah end
         function ah.SetColor(am,an)
             ah.Color=an
@@ -4169,6 +4169,8 @@ return aa end function a.x()
                 ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
                 ai.Parent=al.Content
                 ai.ImageLabel.ImageTransparency = al.ImageTransparency
+            else
+                if ai then ai:Destroy() ai=nil end
             end
             return ah
         end
