@@ -4018,12 +4018,13 @@ end
 return aa end function a.x()
     local aa={}
 
-    local ab=a.load'c' -- Creator 核心引用
-    local ac=ab.New   -- 实例创建
-    local ad=ab.Tween -- 补间动画
+    local ab=a.load'c' -- Creator
+    local ac=ab.New   -- New
+    local ad=ab.Tween -- Tween
 
     function aa.New(ae,af,ag)
         local ah={
+            __type = "Tag", -- 定义类型
             Title=af.Title or"Tag",
             Icon=af.Icon,
             Color=af.Color or Color3.fromHex"#315dff",
@@ -4036,7 +4037,7 @@ return aa end function a.x()
             IconSize=16,
         }
 
-        -- [流水入场逻辑：计算当前延迟]
+        -- [流水入场逻辑]
         local tagCount = 0
         for _, child in pairs(ag:GetChildren()) do
             if child.Name == "TagFrame" then
@@ -4049,8 +4050,8 @@ return aa end function a.x()
         if ah.Icon then
             ai=ab.Image(ah.Icon, ah.Icon, 0, af.Window, "Tag", false)
             ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
+            ai.ImageLabel.ImageTransparency = 1
             ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil
-            ai.ImageLabel.ImageTransparency = 1 -- 初始透明
         end
 
         local aj=ac("TextLabel",{
@@ -4060,7 +4061,7 @@ return aa end function a.x()
             FontFace=Font.new(ab.Font,Enum.FontWeight.SemiBold),
             Text=ah.Title,
             TextColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil,
-            TextTransparency = 1, -- 初始透明
+            TextTransparency = 1,
         })
 
         local ak
@@ -4071,7 +4072,6 @@ return aa end function a.x()
             if ai then ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak)) end
         end
 
-        -- [核心动画组件]
         local uiScale = ac("UIScale", { Scale = 0 })
 
         local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
@@ -4081,7 +4081,7 @@ return aa end function a.x()
             Parent=ag,
             ImageColor3=typeof(ah.Color)=="Color3" and ah.Color or Color3.new(1,1,1),
             ImageTransparency = 1,
-            Visible = true, -- 保持 true 方便动画计算
+            Visible = true,
             ClipsDescendants = true,
         },{
             uiScale,
@@ -4097,7 +4097,7 @@ return aa end function a.x()
                 AutomaticSize="X",
                 Name="Content",
                 BackgroundTransparency=1,
-                Position = UDim2.new(0, 15, 0, 0), -- 初始向右偏移
+                Position = UDim2.new(0, 15, 0, 0),
             }, {
                 ai, aj,
                 ac("UIPadding",{ PaddingLeft=UDim.new(0,ah.Padding), PaddingRight=UDim.new(0,ah.Padding) }),
@@ -4107,45 +4107,31 @@ return aa end function a.x()
 
         ah.TagFrame = al
 
-        -- [API：设置透明度]
+        -- [API 接口]
         function ah.SetTransparency(self, val)
-            local duration = 0.3
-            ad(al, duration, {ImageTransparency = val}):Play()
-            ad(aj, duration, {TextTransparency = val}):Play()
-            if ai then ad(ai.ImageLabel, duration, {ImageTransparency = val}):Play() end
+            ad(al, 0.3, {ImageTransparency = val}):Play()
+            ad(aj, 0.3, {TextTransparency = val}):Play()
+            if ai then ad(ai.ImageLabel, 0.3, {ImageTransparency = val}):Play() end
             local outline = al:FindFirstChild("Outline", true)
-            if outline then ad(outline, duration, {ImageTransparency = 0.75 + (val * 0.25)}):Play() end
+            if outline then ad(outline, 0.3, {ImageTransparency = 0.75 + (val * 0.25)}):Play() end
         end
 
-        -- [API：平滑控制显示隐藏]
         function ah.SetVisible(self, state)
-            local duration = 0.5
-            local easing = Enum.EasingStyle.Quint
-            local outline = al:FindFirstChild("Outline", true)
-
             if state then
                 al.Visible = true
-                ad(al, duration, {ImageTransparency = 0}, easing, Enum.EasingDirection.Out):Play()
-                ad(uiScale, duration, {Scale = 1}, easing, Enum.EasingDirection.Out):Play()
-                ad(al.Content, duration, {Position = UDim2.new(0, 0, 0, 0)}, easing, Enum.EasingDirection.Out):Play()
-                ad(aj, duration, {TextTransparency = 0}, easing, Enum.EasingDirection.Out):Play()
-                if ai then ad(ai.ImageLabel, duration, {ImageTransparency = 0}, easing, Enum.EasingDirection.Out):Play() end
-                if outline then ad(outline, duration, {ImageTransparency = 0.75}, easing, Enum.EasingDirection.Out):Play() end
+                self:SetTransparency(0)
+                ad(uiScale, 0.5, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                ad(al.Content, 0.5, {Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             else
-                ad(al, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play()
-                ad(uiScale, duration * 0.8, {Scale = 0}, easing, Enum.EasingDirection.In):Play()
-                ad(aj, duration * 0.8, {TextTransparency = 1}, easing, Enum.EasingDirection.In):Play()
-                if ai then ad(ai.ImageLabel, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play() end
-                if outline then ad(outline, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play() end
-                task.delay(duration * 0.8, function() if not state then al.Visible = false end end)
+                self:SetTransparency(1)
+                ad(uiScale, 0.4, {Scale = 0}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+                task.delay(0.4, function() if not state then al.Visible = false end end)
             end
         end
 
-        -- [自动执行入场动画]
-        task.delay(entranceDelay, function()
-            ah:SetVisible(true)
-        end)
+        task.delay(entranceDelay, function() ah:SetVisible(true) end)
 
+        -- 基础方法保持
         function ah.SetTitle(am,an) ah.Title=an; aj.Text=an; return ah end
         function ah.SetColor(am,an)
             ah.Color=an
@@ -4164,21 +4150,10 @@ return aa end function a.x()
             return ah
         end
 
-        function ah.SetIcon(am,an)
-            ah.Icon=an
-            if an then
-                if ai then ai:Destroy() end
-                ai=ab.Image(an,an,0,af.Window,"Tag",false)
-                ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-                ai.Parent=al.Content
-                ai.ImageLabel.ImageTransparency = al.ImageTransparency
-            end
-            return ah
-        end
+        function ah.Destroy(am) al:Destroy() end
 
-        function ah.Destroy(am) al:Destroy(); return ah end
-
-        return ah
+        -- [修正：必须返回两个值]
+        return "__type", ah 
     end
 
     return aa end function a.y()
