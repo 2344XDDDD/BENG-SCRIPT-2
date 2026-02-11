@@ -4034,7 +4034,7 @@ function aa.New(ae, af, ag)
         Padding = 10,
         TextSize = 14,
         IconSize = 16,
-    }
+    }   
     local tagCount = 0
     for _, child in pairs(ag:GetChildren()) do
         if child.Name == "TagFrame" then
@@ -13060,7 +13060,7 @@ end
 
 
 return au
-end end end
+end end
 
 local aa=game:GetService"RunService"
 local ae={
