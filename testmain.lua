@@ -4018,10 +4018,9 @@ end
 return aa end function a.x()
     local aa={}
 
-    -- 必须引用核心模块，否则无法调用动画和新建实例
-    local ab=a.load'c' 
-    local ac=ab.New   
-    local ad=ab.Tween 
+    local ab=a.load'c' -- Creator 核心
+    local ac=ab.New   -- 实例函数
+    local ad=ab.Tween -- 动画函数
 
     function aa.New(ae,af,ag)
         local ah={
@@ -4037,21 +4036,21 @@ return aa end function a.x()
             IconSize=16,
         }
 
-        -- [流水入场逻辑：计算延迟]
+        -- [流水入场：计算延迟和初始位置]
         local tagCount = 0
         for _, child in pairs(ag:GetChildren()) do
             if child.Name == "TagFrame" then
                 tagCount = tagCount + 1
             end
         end
-        local entranceDelay = 2 + (tagCount * 0.2)
+        local entranceDelay = 2 + (tagCount * 0.15) -- 降低间隔让流水更连贯
 
         local ai
         if ah.Icon then
             ai=ab.Image(ah.Icon, ah.Icon, 0, af.Window, "Tag", false)
             ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-            ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil
-            ai.ImageLabel.ImageTransparency = 1 -- 初始透明
+            ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil
+            ai.ImageLabel.ImageTransparency = 1
         end
 
         local aj=ac("TextLabel",{
@@ -4060,31 +4059,32 @@ return aa end function a.x()
             TextSize=ah.TextSize,
             FontFace=Font.new(ab.Font,Enum.FontWeight.SemiBold),
             Text=ah.Title,
-            TextColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil,
-            TextTransparency = 1, -- 初始透明
+            TextColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil,
+            TextTransparency = 1,
         })
 
         local ak
-        if typeof(ah.Color)=="table"then
+        if typeof(ah.Color)=="table" then
             ak=ac"UIGradient"
-            for al,am in next,ah.Color do
-                ak[al]=am
-            end
+            for al,am in next,ah.Color do ak[al]=am end
             aj.TextColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-            if ai then
-                ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-            end
+            if ai then ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak)) end
         end
+
+        -- [核心动画组件：UIScale]
+        local uiScale = ac("UIScale", { Scale = 0 })
 
         local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
             Name = "TagFrame",
             AutomaticSize="X",
-            Size=UDim2.new(0,0,0,ah.Height),
+            Size=UDim2.new(0, 0, 0, ah.Height),
             Parent=ag,
-            ImageColor3=typeof(ah.Color)=="Color3"and ah.Color or Color3.new(1,1,1),
-            ImageTransparency = 1, -- 初始隐藏
-            Visible = false,
+            ImageColor3=typeof(ah.Color)=="Color3" and ah.Color or Color3.new(1,1,1),
+            ImageTransparency = 1,
+            Visible = true, -- 必须设为 true 否则动画无法计算
+            ClipsDescendants = true, -- 防止内容溢出
         },{
+            uiScale,
             ak,
             ab.NewRoundFrame(ah.Radius,"Glass-1",{
                 Size=UDim2.new(1,0,1,0),
@@ -4097,64 +4097,60 @@ return aa end function a.x()
                 AutomaticSize="X",
                 Name="Content",
                 BackgroundTransparency=1,
-            },{
-                ai,
-                aj,
-                ac("UIPadding",{
-                    PaddingLeft=UDim.new(0,ah.Padding),
-                    PaddingRight=UDim.new(0,ah.Padding),
-                }),
-                ac("UIListLayout",{
-                    FillDirection="Horizontal",
-                    VerticalAlignment="Center",
-                    Padding=UDim.new(0,ah.Padding/1.5)
-                })
+                Position = UDim2.new(0, 20, 0, 0), -- 初始位移：向右偏 20
+            }, {
+                ai, aj,
+                ac("UIPadding",{ PaddingLeft=UDim.new(0,ah.Padding), PaddingRight=UDim.new(0,ah.Padding) }),
+                ac("UIListLayout",{ FillDirection="Horizontal", VerticalAlignment="Center", Padding=UDim.new(0,ah.Padding/1.5) })
             }),
         })
 
         ah.TagFrame = al
 
-        -- [公开控制接口]
+        -- [优化后的动画控制接口]
+        function ah.SetVisible(self, state)
+            local duration = 0.5
+            local easing = Enum.EasingStyle.Quint
+            
+            if state then
+                -- 向左滑入动画
+                ad(al, duration, {ImageTransparency = 0}, easing, Enum.EasingDirection.Out):Play()
+                ad(uiScale, duration, {Scale = 1}, easing, Enum.EasingDirection.Out):Play()
+                ad(al.Content, duration, {Position = UDim2.new(0, 0, 0, 0)}, easing, Enum.EasingDirection.Out):Play()
+                ad(aj, duration, {TextTransparency = 0}, easing, Enum.EasingDirection.Out):Play()
+                if ai then ad(ai.ImageLabel, duration, {ImageTransparency = 0}, easing, Enum.EasingDirection.Out):Play() end
+                
+                local outline = al:FindFirstChild("Outline", true)
+                if outline then ad(outline, duration, {ImageTransparency = 0.75}, easing, Enum.EasingDirection.Out):Play() end
+            else
+                -- 向左滑出/消失动画
+                ad(al, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play()
+                ad(uiScale, duration * 0.8, {Scale = 0}, easing, Enum.EasingDirection.In):Play()
+                ad(aj, duration * 0.8, {TextTransparency = 1}, easing, Enum.EasingDirection.In):Play()
+                if ai then ad(ai.ImageLabel, duration * 0.8, {ImageTransparency = 1}, easing, Enum.EasingDirection.In):Play() end
+            end
+        end
+
+        -- [设置透明度接口 - 供 Slider 使用]
         function ah.SetTransparency(self, val)
             ad(al, 0.3, {ImageTransparency = val}):Play()
             ad(aj, 0.3, {TextTransparency = val}):Play()
-            if ai then
-                ad(ai.ImageLabel, 0.3, {ImageTransparency = val}):Play()
-            end
-            local outline = al:FindFirstChild("Outline", true)
-            if outline then
-                ad(outline, 0.3, {ImageTransparency = 0.75 + (val * 0.25)}):Play()
-            end
+            if ai then ad(ai.ImageLabel, 0.3, {ImageTransparency = val}):Play() end
         end
 
-        function ah.SetVisible(self, state)
-            if state then
-                al.Visible = true
-                self:SetTransparency(0)
-            else
-                self:SetTransparency(1)
-                task.delay(0.3, function() if not state then al.Visible = false end end)
-            end
-        end
-
-        -- [启动延迟入场动画]
+        -- [流水动画启动：先等待 2s]
         task.delay(entranceDelay, function()
             ah:SetVisible(true)
         end)
 
-        -- 原有方法保持
-        function ah.SetTitle(am,an)
-            ah.Title=an
-            aj.Text=an
-            return ah
-        end
-
+        -- 原有基础方法
+        function ah.SetTitle(am,an) ah.Title=an; aj.Text=an; return ah end
         function ah.SetColor(am,an)
             ah.Color=an
-            if typeof(an)=="table"then
+            if typeof(an)=="table" then
                 local ao=ab.GetAverageColor(an)
                 ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(ao)}):Play()
-                local ap=al:FindFirstChildOfClass"UIGradient"or ac("UIGradient",{Parent=al})
+                local ap=al:FindFirstChildOfClass "UIGradient" or ac("UIGradient",{Parent=al})
                 for aq,ar in next,an do ap[aq]=ar end
                 ad(al,.06,{ImageColor3=Color3.new(1,1,1)}):Play()
             else
@@ -4165,7 +4161,6 @@ return aa end function a.x()
             end
             return ah
         end
-
         function ah.SetIcon(am,an)
             ah.Icon=an
             if an then
@@ -4173,27 +4168,15 @@ return aa end function a.x()
                 ai=ab.Image(an,an,0,af.Window,"Tag",false)
                 ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
                 ai.Parent=al.Content
-                if typeof(ah.Color)=="Color3"then
-                    ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ah.Color)
-                elseif typeof(ah.Color)=="table"then
-                    ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-                end
                 ai.ImageLabel.ImageTransparency = al.ImageTransparency
-            else
-                if ai then ai:Destroy() ai=nil end
             end
             return ah
         end
-
-        function ah.Destroy(am)
-            al:Destroy()
-            return ah
-        end
+        function ah.Destroy(am) al:Destroy(); return ah end
 
         return ah
     end
 
-    -- [关键：必须返回 aa 表给加载器]
     return aa end function a.y()
 local aa=(cloneref or clonereference or function(aa)return aa end)
 
