@@ -4,10 +4,12 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.83 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
+    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
     https://bengscript.lol
-    [Update: Added: all - New:LockedIcon]
-    Lua
+    [Update: Added: all - Button(Not: lol)]
+    Lua — Luau
+
+    Info: 
     This UI is for personal use only. You may not use it without the permission of the creator (UI). To use it, please contact BENG SCRIPT. Creator (UI) must agree! Please do not add our UI to your GitHub repository!
 
 ]]
@@ -5145,7 +5147,7 @@ Scalable=af.Scalable,
 Parent=af.Parent,
 Justify=af.Justify or"Between",
 UIPadding=af.Window.ElementConfig.UIPadding,
-UICorner=af.Radius or af.Window.ElementConfig.UICorner,
+UICorner=af.Window.ElementConfig.UICorner,
 Size=af.Size or"Default",
 UIElements={},
 LockedIcon = af.LockedIcon or "lock",
@@ -5801,7 +5803,6 @@ local ag=true
 af.ButtonFrame=a.load'B'{
 Title=af.Title,
 Desc=af.Desc,
-Radius=ae.Radius,
 Parent=ae.Parent,
 LockedIcon = ae.LockedIcon,
 
@@ -6276,7 +6277,6 @@ UIElements={}
 ai.ToggleFrame=a.load'B'{
 Title=ai.Title,
 Desc=ai.Desc,
-Radius=ah.Radius,
 LockedIcon = ah.LockedIcon,
 
 
@@ -6466,7 +6466,6 @@ end
 al.SliderFrame=a.load'B'{
 Title=al.Title,
 Desc=al.Desc,
-Radius=ak.Radius,
 Parent=ak.Parent,
 TextOffset=al.Width,
 Hover=false,
@@ -6915,7 +6914,6 @@ local ak=true
 aj.InputFrame=a.load'B'{
 Title=aj.Title,
 Desc=aj.Desc,
-Radius=ai.Radius,
 Parent=ai.Parent,
 TextOffset=aj.Width,
 Hover=false,
