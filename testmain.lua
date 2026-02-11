@@ -8,8 +8,6 @@
     https://bengscript.lol
     [Update: Added: all - Button(Not: lol)]
     Lua — Luau
-
-    Info: 
     This UI is for personal use only. You may not use it without the permission of the creator (UI). To use it, please contact BENG SCRIPT. Creator (UI) must agree! Please do not add our UI to your GitHub repository!
 
 ]]
@@ -4016,133 +4014,174 @@ end
 
 
 return aa end function a.x()
-    local aa={}
-    local ab=a.load'c' 
-    local ac=ab.New   
-    local ad=ab.Tween 
+local aa={}
 
-    function aa.New(ae,af,ag)
-        local ah={
-            Title=af.Title or"Tag",
-            Icon=af.Icon,
-            Color=af.Color or Color3.fromHex"#315dff",
-            Radius=af.Radius or 999,
-            Border=af.Border or false,
-            TagFrame=nil,
-            Height=26,
-            Padding=10,
-            TextSize=14,
-            IconSize=16,
-            -- 新增控制锁
-            _isVisible = false,
-            _manuallySet = false 
-        }
 
-        local tagCount = 0
-        for _, child in pairs(ag:GetChildren()) do
-            if child.Name == "TagFrame" then tagCount = tagCount + 1 end
-        end
-        local entranceDelay = 2 + (tagCount * 0.15)
+local ab=a.load'c'
+local ac=ab.New
+local ad=ab.Tween
 
-        local ai
-        if ah.Icon then
-            ai=ab.Image(ah.Icon, ah.Icon, 0, af.Window, "Tag", false)
-            ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-            ai.ImageLabel.ImageTransparency = 1
-            ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil
-        end
 
-        local aj=ac("TextLabel",{
-            BackgroundTransparency=1,
-            AutomaticSize="XY",
-            TextSize=ah.TextSize,
-            FontFace=Font.new(ab.Font,Enum.FontWeight.SemiBold),
-            Text=ah.Title,
-            TextColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil,
-            TextTransparency = 1,
-        })
+function aa.New(ae,af,ag)
+local ah={
+Title=af.Title or"Tag",
+Icon=af.Icon,
+Color=af.Color or Color3.fromHex"#315dff",
+Radius=af.Radius or 999,
+Border=af.Border or false,
 
-        local ak
-        if typeof(ah.Color)=="table" then
-            ak=ac"UIGradient"
-            for al,am in next,ah.Color do ak[al]=am end
-            aj.TextColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-            if ai then ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak)) end
-        end
+TagFrame=nil,
+Height=26,
+Padding=10,
+TextSize=14,
+IconSize=16,
+}
 
-        local uiScale = ac("UIScale", { Scale = 0 })
-        local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
-            Name = "TagFrame",
-            AutomaticSize="X",
-            Size=UDim2.new(0, 0, 0, ah.Height),
-            Parent=ag,
-            ImageColor3=typeof(ah.Color)=="Color3" and ah.Color or Color3.new(1,1,1),
-            ImageTransparency = 1,
-            Visible = false,
-            ClipsDescendants = true,
-        },{
-            uiScale, ak,
-            ab.NewRoundFrame(ah.Radius,"Glass-1",{
-                Size=UDim2.new(1,0,1,0),
-                ThemeTag={ ImageColor3="White" },
-                ImageTransparency=1,
-                Name = "Outline"
-            }),
-            ac("Frame",{
-                Size=UDim2.new(0,0,1,0),
-                AutomaticSize="X",
-                Name="Content",
-                BackgroundTransparency=1,
-                Position = UDim2.new(0, 15, 0, 0),
-            }, {
-                ai, aj,
-                ac("UIPadding",{ PaddingLeft=UDim.new(0,ah.Padding), PaddingRight=UDim.new(0,ah.Padding) }),
-                ac("UIListLayout",{ FillDirection="Horizontal", VerticalAlignment="Center", Padding=UDim.new(0,ah.Padding/1.5) })
-            }),
-        })
+local ai
+if ah.Icon then
+ai=ab.Image(
+ah.Icon,
+ah.Icon,
+0,
+af.Window,
+"Tag",
+false
+)
 
-        ah.TagFrame = al
+ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
+ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil
+end
 
-        function ah.SetTransparency(self, val)
-            local d = 0.3
-            ad(al, d, {ImageTransparency = val}):Play()
-            ad(aj, d, {TextTransparency = val}):Play()
-            if ai then ad(ai.ImageLabel, d, {ImageTransparency = val}):Play() end
-            local out = al:FindFirstChild("Outline", true)
-            if out then ad(out, d, {ImageTransparency = 0.75 + (val * 0.25)}):Play() end
-        end
+local aj=ac("TextLabel",{
+BackgroundTransparency=1,
+AutomaticSize="XY",
+TextSize=ah.TextSize,
+FontFace=Font.new(ab.Font,Enum.FontWeight.SemiBold),
+Text=ah.Title,
+TextColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil,
+})
 
-        function ah.SetVisible(self, state)
-            ah._manuallySet = true -- 只要被手动点过，就取消自动动画
-            ah._isVisible = state
-            local d = 0.5
-            if state then
-                al.Visible = true
-                ah:SetTransparency(0)
-                ad(uiScale, d, {Scale = 1}, Enum.EasingStyle.Quint):Play()
-                ad(al.Content, d, {Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint):Play()
-            else
-                ah:SetTransparency(1)
-                ad(uiScale, d, {Scale = 0}, Enum.EasingStyle.Quint):Play()
-                task.delay(d, function() if not ah._isVisible then al.Visible = false end end)
-            end
-        end
+local ak
 
-        -- 自动入场动画：检查是否已经被手动关闭
-        task.delay(entranceDelay, function()
-            if not ah._manuallySet then
-                ah:SetVisible(true)
-                ah._manuallySet = false -- 重置标志位
-            end
-        end)
+if typeof(ah.Color)=="table"then
 
-        function ah.SetTitle(am,an) ah.Title=an; aj.Text=an; return ah end
-        function ah.Destroy(am) al:Destroy() end
+ak=ac"UIGradient"
+for al,am in next,ah.Color do
+ak[al]=am
+end
 
-        -- [注意] 这里必须返回这两个值，否则 Tab:Tag 拿不到对象
-        return "Tag", ah 
-    end
-    return aa end function a.y()
+aj.TextColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+if ai then
+ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+end
+end
+
+
+
+local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
+AutomaticSize="X",
+Size=UDim2.new(0,0,0,ah.Height),
+Parent=ag,
+ImageColor3=typeof(ah.Color)=="Color3"and ah.Color or Color3.new(1,1,1),
+},{
+ak,
+ab.NewRoundFrame(ah.Radius,"Glass-1",{
+Size=UDim2.new(1,0,1,0),
+ThemeTag={
+ImageColor3="White",
+},
+ImageTransparency=.75
+}),
+ac("Frame",{
+Size=UDim2.new(0,0,1,0),
+AutomaticSize="X",
+Name="Content",
+BackgroundTransparency=1,
+},{
+ai,
+aj,
+ac("UIPadding",{
+PaddingLeft=UDim.new(0,ah.Padding),
+PaddingRight=UDim.new(0,ah.Padding),
+}),
+ac("UIListLayout",{
+FillDirection="Horizontal",
+VerticalAlignment="Center",
+Padding=UDim.new(0,ah.Padding/1.5)
+})
+}),
+})
+
+
+function ah.SetTitle(am,an)
+ah.Title=an
+aj.Text=an
+
+return ah
+end
+
+function ah.SetColor(am,an)
+ah.Color=an
+if typeof(an)=="table"then
+local ao=ab.GetAverageColor(an)
+ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(ao)}):Play()
+local ap=al:FindFirstChildOfClass"UIGradient"or ac("UIGradient",{Parent=al})
+for aq,ar in next,an do ap[aq]=ar end
+ad(al,.06,{ImageColor3=Color3.new(1,1,1)}):Play()
+else
+if ak then
+ak:Destroy()
+end
+ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(an)}):Play()
+if ai then
+ad(ai.ImageLabel,.06,{ImageColor3=ab.GetTextColorForHSB(an)}):Play()
+end
+ad(al,.06,{ImageColor3=an}):Play()
+end
+
+return ah
+end
+
+function ah.SetIcon(am,an)
+ah.Icon=an
+
+if an then
+ai=ab.Image(
+an,
+an,
+0,
+af.Window,
+"Tag",
+false
+)
+
+ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
+ai.Parent=al
+
+if typeof(ah.Color)=="Color3"then
+ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ah.Color)
+elseif typeof(ah.Color)=="table"then
+ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+end
+else
+if ai then
+ai:Destroy()
+ai=nil
+end
+end
+return ah
+end
+
+function ah.Destroy(am)
+al:Destroy()
+return ah
+end
+
+return ah
+end
+
+
+return aa end function a.y()
 local aa=(cloneref or clonereference or function(aa)return aa end)
 
 
@@ -11918,7 +11957,85 @@ an(G.ImageLabel,.1,{ImageTransparency=1},Enum.EasingStyle.Quint,Enum.EasingDirec
 an(G,.1,{Size=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 end
 end)
+-- [新增：长按弹出并排序逻辑]
+    local isDragging = false
+    local dragConn
+    local isHolding = false
+    local container = H.Parent -- 获取按钮所在的顶栏容器
 
+    H.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isHolding = true
+            
+            -- 长按检测 (0.2秒后触发弹出和拖拽)
+            task.delay(0.2, function()
+                if not isHolding then return end
+                isDragging = true
+                H.ZIndex = 10000 -- 将按钮置于最上层
+                
+                -- 1. 往前弹出的动画 (变大一点)
+                an(H, 0.2, {
+                    Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset + 4, H.Size.Y.Scale, H.Size.Y.Offset + 4)
+                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                
+                local startOffset = input.Position - H.AbsolutePosition
+                
+                -- 2. 拖动逻辑
+                dragConn = game:GetService("UserInputService").InputChanged:Connect(function(moveInput)
+                    if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
+                        local mousePos = moveInput.Position
+                        -- 更新位置 (锁定在顶栏中心 Y 轴)
+                        H.Position = UDim2.fromOffset(mousePos.X - container.AbsolutePosition.X - startOffset.X, H.Position.Y.Offset)
+                        
+                        -- 3. 排序逻辑：根据当前位置实时交换相邻按钮
+                        local siblings = {}
+                        for _, child in pairs(container:GetChildren()) do
+                            if child:IsA("GuiObject") and child ~= H then
+                                table.insert(siblings, child)
+                            end
+                        end
+                        -- 按水平位置排序
+                        table.sort(siblings, function(a, b) return a.AbsolutePosition.X < b.AbsolutePosition.X end)
+                        
+                        local currentX = H.AbsolutePosition.X
+                        local newIndex = 1
+                        local foundPlace = false
+                        for i, sib in ipairs(siblings) do
+                            if not foundPlace and currentX < (sib.AbsolutePosition.X + sib.AbsoluteSize.X / 2) then
+                                H.LayoutOrder = i
+                                newIndex = i + 1
+                                foundPlace = true
+                            end
+                            sib.LayoutOrder = newIndex
+                            newIndex = newIndex + 1
+                        end
+                        if not foundPlace then H.LayoutOrder = newIndex end
+                    end
+                end)
+            end)
+        end
+    end)
+
+    -- 停止拖拽的处理函数
+    local function endDrag()
+        isHolding = false
+        if dragConn then dragConn:Disconnect() dragConn = nil end
+        if isDragging then
+            isDragging = false
+            H.ZIndex = 9999 -- 恢复原始层级
+            -- 缩回原位的动画
+            an(H, 0.2, {
+                Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset - 4, H.Size.Y.Scale, H.Size.Y.Offset - 4),
+                Position = UDim2.new(0.5, 0, 0.5, 0) -- 让 UIListLayout 重新控制位置
+            }, Enum.EasingStyle.Quint):Play()
+        end
+    end
+
+    H.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            endDrag()
+        end
+    end)
 return H
 end
 
