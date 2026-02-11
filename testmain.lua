@@ -11858,198 +11858,169 @@ au.UIElements.Main.Main.Topbar.Left.Position=UDim2.new(0,(au.UIElements.Main.Mai
 end)
 end
 
-function au.CreateTopbarButton(u,v,x,z,A,B,C,F)
-local G=al.Image(
-x,
-x,
-0,
-au.Folder,
-"WindowTopbarIcon",
-au.Topbar.ButtonsType=="Default"and true or false,
-B,
-"WindowTopbarButtonIcon"
-)
-G.Size=au.Topbar.ButtonsType=="Default"and UDim2.new(0,F or au.TopBarButtonIconSize,0,F or au.TopBarButtonIconSize)or UDim2.new(0,0,0,0)
-G.AnchorPoint=Vector2.new(0.5,0.5)
-G.Position=UDim2.new(0.5,0,0.5,0)
-G.ImageLabel.ImageTransparency=au.Topbar.ButtonsType=="Default"and 0 or 1
-if au.Topbar.ButtonsType~="Default"then
-G.ImageLabel.ImageColor3=al.GetTextColorForHSB(C)
-end
+function au.CreateTopbarButton(u, v, x, z, A, B, C, F)
+    local G = al.Image(
+        x,
+        x,
+        0,
+        au.Folder,
+        "WindowTopbarIcon",
+        au.Topbar.ButtonsType == "Default" and true or false,
+        B,
+        "WindowTopbarButtonIcon"
+    )
+    G.Size = au.Topbar.ButtonsType == "Default" and UDim2.new(0, F or au.TopBarButtonIconSize, 0, F or au.TopBarButtonIconSize) or UDim2.new(0, 0, 0, 0)
+    G.AnchorPoint = Vector2.new(0.5, 0.5)
+    G.Position = UDim2.new(0.5, 0, 0.5, 0)
+    G.ImageLabel.ImageTransparency = au.Topbar.ButtonsType == "Default" and 0 or 1
+    if au.Topbar.ButtonsType ~= "Default" then
+        G.ImageLabel.ImageColor3 = al.GetTextColorForHSB(C)
+    end
 
-local H=al.NewRoundFrame(au.Topbar.ButtonsType=="Default"and au.UICorner-(au.UIPadding/2)or 999,"Squircle",{
-Size=au.Topbar.ButtonsType=="Default"and UDim2.new(0,au.Topbar.Height-16,0,au.Topbar.Height-16)or UDim2.new(0,14,0,14),
-LayoutOrder=A or 999,
-Parent=au.Topbar.ButtonsType=="Default"and au.UIElements.Main.Main.Topbar.Right or nil,
+    local H = al.NewRoundFrame(au.Topbar.ButtonsType == "Default" and au.UICorner - (au.UIPadding / 2) or 999, "Squircle", {
+        Size = au.Topbar.ButtonsType == "Default" and UDim2.new(0, au.Topbar.Height - 16, 0, au.Topbar.Height - 16) or UDim2.new(0, 14, 0, 14),
+        LayoutOrder = A or 999,
+        Parent = au.Topbar.ButtonsType == "Default" and au.UIElements.Main.Main.Topbar.Right or nil,
+        ZIndex = 9999,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        ImageColor3 = au.Topbar.ButtonsType ~= "Default" and (C or Color3.fromHex "#ff3030") or nil,
+        ThemeTag = au.Topbar.ButtonsType == "Default" and { ImageColor3 = "Text" } or nil,
+        ImageTransparency = au.Topbar.ButtonsType == "Default" and 1 or 0
+    }, {
+        al.NewRoundFrame(au.Topbar.ButtonsType == "Default" and au.UICorner - (au.UIPadding / 2) or 999, "SquircleOutline", {
+            Size = UDim2.new(1, 0, 1, 0),
+            ThemeTag = { ImageColor3 = "Black" },
+            ImageTransparency = au.Topbar.ButtonsType == "Default" and 1 or .8,
+            Name = "Outline"
+        }, {
+            au.Topbar.ButtonsType == "Default" and am("UIGradient", {
+                Rotation = 45,
+                Color = ColorSequence.new {
+                    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 255, 255)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+                    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(255, 255, 255)),
+                },
+                Transparency = NumberSequence.new {
+                    NumberSequenceKeypoint.new(0.0, 0.1),
+                    NumberSequenceKeypoint.new(0.5, 1),
+                    NumberSequenceKeypoint.new(1.0, 0.1),
+                }
+            }) or nil,
+        }),
+        G
+    }, true)
 
-ZIndex=9999,
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-ImageColor3=au.Topbar.ButtonsType~="Default"and(C or Color3.fromHex"#ff3030")or nil,
-ThemeTag=au.Topbar.ButtonsType=="Default"and{
-ImageColor3="Text"
-}or nil,
-ImageTransparency=au.Topbar.ButtonsType=="Default"and 1 or 0
-},{
-al.NewRoundFrame(au.Topbar.ButtonsType=="Default"and au.UICorner-(au.UIPadding/2)or 999,"SquircleOutline",{
-Size=UDim2.new(1,0,1,0),
-ThemeTag={
-ImageColor3="Black",
-},
-ImageTransparency=au.Topbar.ButtonsType=="Default"and 1 or.8,
-Name="Outline"
-},{
-au.Topbar.ButtonsType=="Default"and am("UIGradient",{
-Rotation=45,
-Color=ColorSequence.new{
-ColorSequenceKeypoint.new(0.0,Color3.fromRGB(255,255,255)),
-ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
-ColorSequenceKeypoint.new(1.0,Color3.fromRGB(255,255,255)),
-},
-Transparency=NumberSequence.new{
-NumberSequenceKeypoint.new(0.0,0.1),
-NumberSequenceKeypoint.new(0.5,1),
-NumberSequenceKeypoint.new(1.0,0.1),
-}
-})or nil,
-}),
-G
-},true)
-
-am("Frame",{
-Size=UDim2.new(0,24,0,24),
-BackgroundTransparency=1,
-Parent=au.Topbar.ButtonsType~="Default"and au.UIElements.Main.Main.Topbar.Right or nil,
-LayoutOrder=A or 999
-},{
-au.Topbar.ButtonsType~="Default"and H or nil,
-})
-
-
-
-au.TopBarButtons[100-A]={
-Name=v,
-Object=H
-}
-
-al.AddSignal(H.MouseButton1Click,function()
-z()
-end)
-al.AddSignal(H.MouseEnter,function()
-if au.Topbar.ButtonsType=="Default"then
-an(H,.15,{ImageTransparency=.93}):Play()
-an(H.Outline,.15,{ImageTransparency=.75}):Play()
-
-else
-
-an(G.ImageLabel,.1,{ImageTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-an(G,.1,{Size=UDim2.new(0,F or au.TopBarButtonIconSize,0,F or au.TopBarButtonIconSize)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-end
-end)
-al.AddSignal(H.InputEnded,function()
-if au.Topbar.ButtonsType=="Default"then
-an(H,.1,{ImageTransparency=1}):Play()
-an(H.Outline,.1,{ImageTransparency=1}):Play()
-
-else
-
-an(G.ImageLabel,.1,{ImageTransparency=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-an(G,.1,{Size=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-end
-end)
--- [位置摆放排序逻辑 - 实时互换版]
+    -- [以下是为你新增的 摆放/排序 核心代码]
     local isDragging = false
-    local dragConn
     local isHolding = false
-    local container = H.Parent -- 按钮所在的容器 (Topbar.Right)
-
-    -- 确保容器是按 LayoutOrder 排序的
-    local layout = container:FindFirstChildOfClass("UIListLayout")
-    if layout then layout.SortOrder = Enum.SortOrder.LayoutOrder end
+    local dragConnection
+    local container = au.UIElements.Main.Main.Topbar.Right -- 按钮容器
+    local UIListLayout = container:FindFirstChildOfClass("UIListLayout")
+    if UIListLayout then UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder end
 
     H.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             isHolding = true
-            
-            task.delay(0.15, function()
+            task.delay(0.15, function() -- 按住0.15秒判定为拖拽
                 if not isHolding then return end
                 isDragging = true
-                H.ZIndex = 10000 -- 提到最前面显示
+                H.ZIndex = 10000 -- 置顶弹出
                 
-                -- 往前弹出的视觉效果
-                an(H, 0.2, {
-                    Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset + 5, H.Size.Y.Scale, H.Size.Y.Offset + 5)
-                }, Enum.EasingStyle.Quint):Play()
+                -- 动画：按钮向前弹出
+                an(H, 0.2, { Size = UDim2.new(0, H.AbsoluteSize.X + 6, 0, H.AbsoluteSize.Y + 6) }, Enum.EasingStyle.Quint):Play()
                 
-                local startMouseX = input.Position.X
-                local startOffsetX = startMouseX - H.AbsolutePosition.X
-                
-                dragConn = game:GetService("UserInputService").InputChanged:Connect(function(moveInput)
-                    if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
-                        local currentMouseX = moveInput.Position.X
-                        -- 随鼠标移动位置
-                        local newX = currentMouseX - container.AbsolutePosition.X - startOffsetX
-                        H.Position = UDim2.new(0, newX, H.Position.Y.Scale, H.Position.Y.Offset)
+                local startX = input.Position.X
+                local startOffset = startX - H.AbsolutePosition.X
+
+                dragConnection = game:GetService("UserInputService").InputChanged:Connect(function(move)
+                    if move.UserInputType == Enum.UserInputType.MouseMovement or move.UserInputType == Enum.UserInputType.Touch then
+                        -- 更新视觉位置
+                        H.Position = UDim2.new(0, move.Position.X - container.AbsolutePosition.X - startOffset, 0.5, 0)
                         
-                        -- 【核心逻辑：实时计算并摆放位置】
-                        local siblings = {}
+                        -- 【实时摆放逻辑】
+                        local others = {}
                         for _, child in pairs(container:GetChildren()) do
                             if child:IsA("GuiObject") and child ~= H then
-                                table.insert(siblings, child)
+                                table.insert(others, child)
                             end
                         end
-                        
-                        -- 根据它们在屏幕上的实际 X 坐标进行排序
-                        table.sort(siblings, function(a, b)
-                            return a.AbsolutePosition.X < b.AbsolutePosition.X
-                        end)
-                        
-                        -- 找到当前拖拽按钮应该在的位置
+                        -- 按照屏幕上的实际位置(AbsolutePosition)给所有按钮重新排队
+                        table.sort(others, function(a, b) return a.AbsolutePosition.X < b.AbsolutePosition.X end)
+
                         local currentX = H.AbsolutePosition.X
-                        local newLayoutOrder = 1
-                        local inserted = false
-                        
-                        for i, sib in ipairs(siblings) do
-                            -- 如果拖拽的按钮超过了某个按钮的中点，就把它插到那个位置
-                            if not inserted and currentX < (sib.AbsolutePosition.X + sib.AbsoluteSize.X / 2) then
-                                H.LayoutOrder = newLayoutOrder
-                                newLayoutOrder = newLayoutOrder + 1
-                                inserted = true
+                        local newOrder = 1
+                        local placed = false
+
+                        for _, sib in ipairs(others) do
+                            if not placed and currentX < (sib.AbsolutePosition.X + sib.AbsoluteSize.X / 2) then
+                                H.LayoutOrder = newOrder
+                                newOrder = newOrder + 1
+                                placed = true
                             end
-                            sib.LayoutOrder = newLayoutOrder
-                            newLayoutOrder = newLayoutOrder + 1
+                            sib.LayoutOrder = newOrder
+                            newOrder = newOrder + 1
                         end
-                        
-                        -- 如果拖到了最后面
-                        if not inserted then
-                            H.LayoutOrder = newLayoutOrder
-                        end
+                        if not placed then H.LayoutOrder = newOrder end
                     end
                 end)
             end)
         end
     end)
 
-    local function endSort()
+    local function stopDragging()
         isHolding = false
-        if dragConn then dragConn:Disconnect() dragConn = nil end
+        if dragConnection then dragConnection:Disconnect() dragConnection = nil end
         if isDragging then
             isDragging = false
-            H.ZIndex = 9999
-            -- 归位：Position 设为 0，让 UIListLayout 根据新的 LayoutOrder 自动摆放
-            an(H, 0.2, {
-                Position = UDim2.fromScale(0.5, 0.5), -- 回到布局中心
-                Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset - 5, H.Size.Y.Scale, H.Size.Y.Offset - 5)
+            H.ZIndex = 999 -- 恢复层级
+            -- 动画：缩回并摆放到位
+            an(H, 0.2, { 
+                Size = UDim2.new(0, H.AbsoluteSize.X - 6, 0, H.AbsoluteSize.Y - 6),
+                Position = UDim2.new(0.5, 0, 0.5, 0) -- 交给布局重新摆放
             }, Enum.EasingStyle.Quint):Play()
         end
     end
 
     H.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            endSort()
+            stopDragging()
         end
     end)
-return H
+    -- [新增代码结束]
+
+    if au.Topbar.ButtonsType ~= "Default" then
+        am("Frame", {
+            Size = UDim2.new(0, 24, 0, 24),
+            BackgroundTransparency = 1,
+            Parent = au.UIElements.Main.Main.Topbar.Right,
+            LayoutOrder = A or 999
+        }, { H })
+    end
+
+    au.TopBarButtons[100 - A] = { Name = v, Object = H }
+
+    al.AddSignal(H.MouseButton1Click, function() z() end)
+    al.AddSignal(H.MouseEnter, function()
+        if au.Topbar.ButtonsType == "Default" then
+            an(H, .15, { ImageTransparency = .93 }):Play()
+            an(H.Outline, .15, { ImageTransparency = .75 }):Play()
+        else
+            an(G.ImageLabel, .1, { ImageTransparency = 0 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            an(G, .1, { Size = UDim2.new(0, F or au.TopBarButtonIconSize, 0, F or au.TopBarButtonIconSize) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        end
+    end)
+    al.AddSignal(H.InputEnded, function()
+        if au.Topbar.ButtonsType == "Default" then
+            an(H, .1, { ImageTransparency = 1 }):Play()
+            an(H.Outline, .1, { ImageTransparency = 1 }):Play()
+        else
+            an(G.ImageLabel, .1, { ImageTransparency = 1 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            an(G, .1, { Size = UDim2.new(0, 0, 0, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        end
+    end)
+
+    return H
 end
 
 
