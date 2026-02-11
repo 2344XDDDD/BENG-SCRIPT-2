@@ -4016,10 +4016,9 @@ end
 return aa end function a.x()
     local aa={}
 
-    local ab=a.load'c' -- 核心库引用
-    local ac=ab.New   -- 实例创建函数
-    local ad=ab.Tween -- 补间动画函数
-
+    local ab=a.load'c' -- Creator 核心
+    local ac=ab.New   -- New 实例函数
+    local ad=ab.Tween -- Tween 动画函数
 
     function aa.New(ae,af,ag)
         local ah={
@@ -4036,14 +4035,14 @@ return aa end function a.x()
             IconSize=16,
         }
 
-        -- [流水入场逻辑]
+        -- [流水入场：计算当前已有的 Tag 数量来决定延迟]
         local tagCount = 0
         for _, child in pairs(ag:GetChildren()) do
             if child.Name == "TagFrame" then
                 tagCount = tagCount + 1
             end
         end
-        local entranceDelay = 2 + (tagCount * 0.2)
+        local entranceDelay = 2 + (tagCount * 0.25) -- 2秒基础延迟 + 每个增加0.25秒间隔
 
         local ai
         if ah.Icon then
@@ -4085,7 +4084,7 @@ return aa end function a.x()
         end
 
         local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
-            Name = "TagFrame",
+            Name = "TagFrame", -- 必须命名，用于上面的 tagCount 逻辑
             AutomaticSize="X",
             Size=UDim2.new(0,0,0,ah.Height),
             Parent=ag,
@@ -4099,7 +4098,7 @@ return aa end function a.x()
                 ThemeTag={
                     ImageColor3="White",
                 },
-                ImageTransparency=1, -- 初始透明
+                ImageTransparency=1,
                 Name = "Outline"
             }),
             ac("Frame",{
@@ -4124,31 +4123,36 @@ return aa end function a.x()
 
         ah.TagFrame = al
 
-        -- [新增功能函数]
+        -- [新增接口：设置透明度 (0-1)]
         function ah.SetTransparency(self, val)
-            ad(al, 0.3, {ImageTransparency = val}):Play()
-            ad(aj, 0.3, {TextTransparency = val}):Play()
+            local duration = 0.4
+            ad(al, duration, {ImageTransparency = val}, Enum.EasingStyle.Quint):Play()
+            ad(aj, duration, {TextTransparency = val}, Enum.EasingStyle.Quint):Play()
             if ai then
-                ad(ai.ImageLabel, 0.3, {ImageTransparency = val}):Play()
+                ad(ai.ImageLabel, duration, {ImageTransparency = val}, Enum.EasingStyle.Quint):Play()
             end
             local outline = al:FindFirstChild("Outline", true)
             if outline then
+                -- 描边基础是 0.75 透明，按比例跟随
                 local o_val = 0.75 + (val * 0.25)
-                ad(outline, 0.3, {ImageTransparency = o_val}):Play()
+                ad(outline, duration, {ImageTransparency = o_val}, Enum.EasingStyle.Quint):Play()
             end
         end
 
+        -- [新增接口：显示/隐藏逻辑]
         function ah.SetVisible(self, state)
             if state then
                 al.Visible = true
                 self:SetTransparency(0)
             else
                 self:SetTransparency(1)
-                task.delay(0.3, function() if not state then al.Visible = false end end)
+                task.delay(0.4, function() 
+                    if not state then al.Visible = false end 
+                end)
             end
         end
 
-        -- [启动入场动画]
+        -- [流水入场动画启动]
         task.delay(entranceDelay, function()
             ah:SetVisible(true)
         end)
@@ -4168,9 +4172,7 @@ return aa end function a.x()
                 for aq,ar in next,an do ap[aq]=ar end
                 ad(al,.06,{ImageColor3=Color3.new(1,1,1)}):Play()
             else
-                if ak then
-                    ak:Destroy()
-                end
+                if ak then ak:Destroy() end
                 ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(an)}):Play()
                 if ai then
                     ad(ai.ImageLabel,.06,{ImageColor3=ab.GetTextColorForHSB(an)}):Play()
@@ -4183,17 +4185,10 @@ return aa end function a.x()
         function ah.SetIcon(am,an)
             ah.Icon=an
             if an then
-                ai=ab.Image(
-                    an,
-                    an,
-                    0,
-                    af.Window,
-                    "Tag",
-                    false
-                )
-
+                if ai then ai:Destroy() end
+                ai=ab.Image(an,an,0,af.Window,"Tag",false)
                 ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-                ai.Parent=al
+                ai.Parent=al.Content
                 if typeof(ah.Color)=="Color3"then
                     ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ah.Color)
                 elseif typeof(ah.Color)=="table"then
@@ -4201,10 +4196,7 @@ return aa end function a.x()
                 end
                 ai.ImageLabel.ImageTransparency = al.ImageTransparency
             else
-                if ai then
-                    ai:Destroy()
-                    ai=nil
-                end
+                if ai then ai:Destroy() ai=nil end
             end
             return ah
         end
@@ -4218,70 +4210,7 @@ return aa end function a.x()
     end
 
     return aa 
-end
-
-function ah.SetColor(am,an)
-ah.Color=an
-if typeof(an)=="table"then
-local ao=ab.GetAverageColor(an)
-ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(ao)}):Play()
-local ap=al:FindFirstChildOfClass"UIGradient"or ac("UIGradient",{Parent=al})
-for aq,ar in next,an do ap[aq]=ar end
-ad(al,.06,{ImageColor3=Color3.new(1,1,1)}):Play()
-else
-if ak then
-ak:Destroy()
-end
-ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(an)}):Play()
-if ai then
-ad(ai.ImageLabel,.06,{ImageColor3=ab.GetTextColorForHSB(an)}):Play()
-end
-ad(al,.06,{ImageColor3=an}):Play()
-end
-
-return ah
-end
-
-function ah.SetIcon(am,an)
-ah.Icon=an
-
-if an then
-ai=ab.Image(
-an,
-an,
-0,
-af.Window,
-"Tag",
-false
-)
-
-ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-ai.Parent=al
-
-if typeof(ah.Color)=="Color3"then
-ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ah.Color)
-elseif typeof(ah.Color)=="table"then
-ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-end
-else
-if ai then
-ai:Destroy()
-ai=nil
-end
-end
-return ah
-end
-
-function ah.Destroy(am)
-al:Destroy()
-return ah
-end
-
-return ah
-end
-
-
-return aa end function a.y()
+end -- 这里结束 a.xfunction a.y()
 local aa=(cloneref or clonereference or function(aa)return aa end)
 
 
