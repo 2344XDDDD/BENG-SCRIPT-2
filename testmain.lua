@@ -4022,102 +4022,164 @@ local ac=ab.New
 local ad=ab.Tween
 
 
-function aa.New(ae,af,ag)
-local ah={
-Title=af.Title or"Tag",
-Icon=af.Icon,
-Color=af.Color or Color3.fromHex"#315dff",
-Radius=af.Radius or 999,
-Border=af.Border or false,
+function aa.New(ae, af, ag)
+    local ah = {
+        Title = af.Title or "Tag",
+        Icon = af.Icon,
+        Color = af.Color or Color3.fromHex "#315dff",
+        Radius = af.Radius or 999,
+        Border = af.Border or false,
+        TagFrame = nil,
+        Height = 26,
+        Padding = 10,
+        TextSize = 14,
+        IconSize = 16,
+    }
+    local tagCount = 0
+    for _, child in pairs(ag:GetChildren()) do
+        if child.Name == "TagFrame" then
+            tagCount = tagCount + 1
+        end
+    end
+    local entranceDelay = 2 + (tagCount * 0.2)
+    local ai
+    if ah.Icon then
+        ai = ab.Image(ah.Icon, ah.Icon, 0, af.Window, "Tag", false)
+        ai.Size = UDim2.new(0, ah.IconSize, 0, ah.IconSize)
+        ai.ImageLabel.ImageColor3 = typeof(ah.Color) == "Color3" and ab.GetTextColorForHSB(ah.Color) or nil
+        ai.ImageLabel.ImageTransparency = 1
+    end
 
-TagFrame=nil,
-Height=26,
-Padding=10,
-TextSize=14,
-IconSize=16,
-}
+    local aj = ac("TextLabel", {
+        BackgroundTransparency = 1,
+        AutomaticSize = "XY",
+        TextSize = ah.TextSize,
+        FontFace = Font.new(ab.Font, Enum.FontWeight.SemiBold),
+        Text = ah.Title,
+        TextColor3 = typeof(ah.Color) == "Color3" and ab.GetTextColorForHSB(ah.Color) or nil,
+        TextTransparency = 1,
+    })
 
-local ai
-if ah.Icon then
-ai=ab.Image(
-ah.Icon,
-ah.Icon,
-0,
-af.Window,
-"Tag",
-false
-)
-
-ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil
-end
-
-local aj=ac("TextLabel",{
-BackgroundTransparency=1,
-AutomaticSize="XY",
-TextSize=ah.TextSize,
-FontFace=Font.new(ab.Font,Enum.FontWeight.SemiBold),
-Text=ah.Title,
-TextColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil,
-})
-
-local ak
-
-if typeof(ah.Color)=="table"then
-
-ak=ac"UIGradient"
-for al,am in next,ah.Color do
-ak[al]=am
-end
-
-aj.TextColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-if ai then
-ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-end
-end
-
-
-
-local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
-AutomaticSize="X",
-Size=UDim2.new(0,0,0,ah.Height),
-Parent=ag,
-ImageColor3=typeof(ah.Color)=="Color3"and ah.Color or Color3.new(1,1,1),
-},{
-ak,
-ab.NewRoundFrame(ah.Radius,"Glass-1",{
-Size=UDim2.new(1,0,1,0),
-ThemeTag={
-ImageColor3="White",
-},
-ImageTransparency=.75
-}),
-ac("Frame",{
-Size=UDim2.new(0,0,1,0),
-AutomaticSize="X",
-Name="Content",
-BackgroundTransparency=1,
-},{
-ai,
-aj,
-ac("UIPadding",{
-PaddingLeft=UDim.new(0,ah.Padding),
-PaddingRight=UDim.new(0,ah.Padding),
-}),
-ac("UIListLayout",{
-FillDirection="Horizontal",
-VerticalAlignment="Center",
-Padding=UDim.new(0,ah.Padding/1.5)
-})
-}),
-})
-
-
-function ah.SetTitle(am,an)
-ah.Title=an
-aj.Text=an
-
-return ah
+    local ak
+    if typeof(ah.Color) == "table" then
+        ak = ac "UIGradient"
+        for al, am in next, ah.Color do
+            ak[al] = am
+        end
+        aj.TextColor3 = ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+        if ai then
+            ai.ImageLabel.ImageColor3 = ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+        end
+    end
+    local al = ab.NewRoundFrame(ah.Radius, "Squircle", {
+        Name = "TagFrame",
+        AutomaticSize = "X",
+        Size = UDim2.new(0, 0, 0, ah.Height),
+        Parent = ag,
+        ImageColor3 = typeof(ah.Color) == "Color3" and ah.Color or Color3.new(1, 1, 1),
+        ImageTransparency = 1,
+        Visible = false,
+    }, {
+        ak,
+        ab.NewRoundFrame(ah.Radius, "Glass-1", {
+            Name = "Outline",
+            Size = UDim2.new(1, 0, 1, 0),
+            ThemeTag = { ImageColor3 = "White" },
+            ImageTransparency = 1,
+        }),
+        ac("Frame", {
+            Size = UDim2.new(0, 0, 1, 0),
+            AutomaticSize = "X",
+            Name = "Content",
+            BackgroundTransparency = 1,
+        }, {
+            ai,
+            aj,
+            ac("UIPadding", {
+                PaddingLeft = UDim.new(0, ah.Padding),
+                PaddingRight = UDim.new(0, ah.Padding),
+            }),
+            ac("UIListLayout", {
+                FillDirection = "Horizontal",
+                VerticalAlignment = "Center",
+                Padding = UDim.new(0, ah.Padding / 1.5),
+            }),
+        }),
+    })
+    ah.TagFrame = al
+    function ah.SetTransparency(self, val)
+        local duration = 0.3
+        ab.Tween(al, duration, { ImageTransparency = val }):Play()
+        ab.Tween(aj, duration, { TextTransparency = val }):Play()
+        if ai then
+            ab.Tween(ai.ImageLabel, duration, { ImageTransparency = val }):Play()
+        end
+        local outline = al:FindFirstChild("Outline", true)
+        if outline then
+            local outlineTarget = 0.75 + (val * 0.25)
+            ab.Tween(outline, duration, { ImageTransparency = outlineTarget }):Play()
+        end
+    end
+    function ah.SetVisible(self, state)
+        if state then
+            al.Visible = true
+            self:SetTransparency(0)
+        else
+            self:SetTransparency(1)
+            task.delay(0.3, function()
+                if not state then al.Visible = false end
+            end)
+        end
+    end
+    task.delay(entranceDelay, function()
+        ah:SetVisible(true)
+    end)
+    function ah.SetTitle(am, an)
+        ah.Title = an
+        aj.Text = an
+        return ah
+    end
+    function ah.SetColor(am, an)
+        ah.Color = an
+        if typeof(an) == "table" then
+            local ao = ab.GetAverageColor(an)
+            ab.Tween(aj, .06, { TextColor3 = ab.GetTextColorForHSB(ao) }):Play()
+            local ap = al:FindFirstChildOfClass "UIGradient" or ac("UIGradient", { Parent = al })
+            for aq, ar in next, an do ap[aq] = ar end
+            ab.Tween(al, .06, { ImageColor3 = Color3.new(1, 1, 1) }):Play()
+        else
+            if ak then ak:Destroy() end
+            ab.Tween(aj, .06, { TextColor3 = ab.GetTextColorForHSB(an) }):Play()
+            if ai then
+                ab.Tween(ai.ImageLabel, .06, { ImageColor3 = ab.GetTextColorForHSB(an) }):Play()
+            end
+            ab.Tween(al, .06, { ImageColor3 = an }):Play()
+        end
+        return ah
+    end
+    function ah.SetIcon(am, an)
+        ah.Icon = an
+        if an then
+            if ai then ai:Destroy() end
+            ai = ab.Image(an, an, 0, af.Window, "Tag", false)
+            ai.Size = UDim2.new(0, ah.IconSize, 0, ah.IconSize)
+            ai.Parent = al.Content
+            if typeof(ah.Color) == "Color3" then
+                ai.ImageLabel.ImageColor3 = ab.GetTextColorForHSB(ah.Color)
+            elseif typeof(ah.Color) == "table" then
+                ai.ImageLabel.ImageColor3 = ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+            end
+            ai.ImageLabel.ImageTransparency = al.ImageTransparency
+        else
+            if ai then ai:Destroy() ai = nil end
+        end
+        return ah
+    end
+    function ah.Destroy(am)
+        al:Destroy()
+        return ah
+    end
+    return ah
 end
 
 function ah.SetColor(am,an)
