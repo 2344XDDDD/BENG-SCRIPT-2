@@ -11957,7 +11957,7 @@ an(G.ImageLabel,.1,{ImageTransparency=1},Enum.EasingStyle.Quint,Enum.EasingDirec
 an(G,.1,{Size=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 end
 end)
--- [新增：长按弹出并排序逻辑]
+-- [修复版：长按弹出并排序逻辑]
     local isDragging = false
     local dragConn
     local isHolding = false
@@ -11978,23 +11978,27 @@ end)
                     Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset + 4, H.Size.Y.Scale, H.Size.Y.Offset + 4)
                 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                 
-                local startOffset = input.Position - H.AbsolutePosition
+                -- 修正点：提取 X 轴偏移量，避免 Vector3 和 Vector2 混合计算
+                local startMouseX = input.Position.X
+                local startOffsetX = startMouseX - H.AbsolutePosition.X
                 
                 -- 2. 拖动逻辑
                 dragConn = game:GetService("UserInputService").InputChanged:Connect(function(moveInput)
                     if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
-                        local mousePos = moveInput.Position
-                        -- 更新位置 (锁定在顶栏中心 Y 轴)
-                        H.Position = UDim2.fromOffset(mousePos.X - container.AbsolutePosition.X - startOffset.X, H.Position.Y.Offset)
+                        local currentMouseX = moveInput.Position.X
                         
-                        -- 3. 排序逻辑：根据当前位置实时交换相邻按钮
+                        -- 更新位置 (修正点：确保使用数值计算)
+                        local newXOffset = currentMouseX - container.AbsolutePosition.X - startOffsetX
+                        H.Position = UDim2.new(0, newXOffset, H.Position.Y.Scale, H.Position.Y.Offset)
+                        
+                        -- 3. 排序逻辑
                         local siblings = {}
                         for _, child in pairs(container:GetChildren()) do
                             if child:IsA("GuiObject") and child ~= H then
                                 table.insert(siblings, child)
                             end
                         end
-                        -- 按水平位置排序
+                        -- 水平排序
                         table.sort(siblings, function(a, b) return a.AbsolutePosition.X < b.AbsolutePosition.X end)
                         
                         local currentX = H.AbsolutePosition.X
@@ -12026,7 +12030,7 @@ end)
             -- 缩回原位的动画
             an(H, 0.2, {
                 Size = UDim2.new(H.Size.X.Scale, H.Size.X.Offset - 4, H.Size.Y.Scale, H.Size.Y.Offset - 4),
-                Position = UDim2.new(0.5, 0, 0.5, 0) -- 让 UIListLayout 重新控制位置
+                Position = UDim2.new(0.5, 0, 0.5, 0) -- 让 UIListLayout 自动接管
             }, Enum.EasingStyle.Quint):Play()
         end
     end
