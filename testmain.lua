@@ -1308,7 +1308,6 @@ function a.e()
     function f.New(g)
         local h = {
             Title = g.Title or "Notification",
-            Radius=g.Radius,
             Content = g.Content or nil,
             Icon = g.Icon or nil,
             IconThemed = g.IconThemed,
