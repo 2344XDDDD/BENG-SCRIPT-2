@@ -5145,7 +5145,7 @@ Scalable=af.Scalable,
 Parent=af.Parent,
 Justify=af.Justify or"Between",
 UIPadding=af.Window.ElementConfig.UIPadding,
-UICorner=af.Window.ElementConfig.UICorner,
+UICorner=af.Radius or af.Window.ElementConfig.UICorner,
 Size=af.Size or"Default",
 UIElements={},
 LockedIcon = af.LockedIcon or "lock",
@@ -5802,6 +5802,7 @@ af.ButtonFrame=a.load'B'{
 Title=af.Title,
 Desc=af.Desc,
 Parent=ae.Parent,
+Radius=ae.Radius,
 LockedIcon = ae.LockedIcon,
 
 
@@ -6275,6 +6276,7 @@ UIElements={}
 ai.ToggleFrame=a.load'B'{
 Title=ai.Title,
 Desc=ai.Desc,
+Radius=ah.Radius,
 LockedIcon = ah.LockedIcon,
 
 
@@ -6465,6 +6467,7 @@ al.SliderFrame=a.load'B'{
 Title=al.Title,
 Desc=al.Desc,
 Parent=ak.Parent,
+Radius=ak.Radius,
 TextOffset=al.Width,
 Hover=false,
 Tab=ak.Tab,
@@ -6913,6 +6916,7 @@ aj.InputFrame=a.load'B'{
 Title=aj.Title,
 Desc=aj.Desc,
 Parent=ai.Parent,
+Radius=ai.Radius,
 TextOffset=aj.Width,
 Hover=false,
 Tab=ai.Tab,
@@ -11858,169 +11862,107 @@ au.UIElements.Main.Main.Topbar.Left.Position=UDim2.new(0,(au.UIElements.Main.Mai
 end)
 end
 
-function au.CreateTopbarButton(u, v, x, z, A, B, C, F)
-    local G = al.Image(
-        x,
-        x,
-        0,
-        au.Folder,
-        "WindowTopbarIcon",
-        au.Topbar.ButtonsType == "Default" and true or false,
-        B,
-        "WindowTopbarButtonIcon"
-    )
-    G.Size = au.Topbar.ButtonsType == "Default" and UDim2.new(0, F or au.TopBarButtonIconSize, 0, F or au.TopBarButtonIconSize) or UDim2.new(0, 0, 0, 0)
-    G.AnchorPoint = Vector2.new(0.5, 0.5)
-    G.Position = UDim2.new(0.5, 0, 0.5, 0)
-    G.ImageLabel.ImageTransparency = au.Topbar.ButtonsType == "Default" and 0 or 1
-    if au.Topbar.ButtonsType ~= "Default" then
-        G.ImageLabel.ImageColor3 = al.GetTextColorForHSB(C)
-    end
+function au.CreateTopbarButton(u,v,x,z,A,B,C,F)
+local G=al.Image(
+x,
+x,
+0,
+au.Folder,
+"WindowTopbarIcon",
+au.Topbar.ButtonsType=="Default"and true or false,
+B,
+"WindowTopbarButtonIcon"
+)
+G.Size=au.Topbar.ButtonsType=="Default"and UDim2.new(0,F or au.TopBarButtonIconSize,0,F or au.TopBarButtonIconSize)or UDim2.new(0,0,0,0)
+G.AnchorPoint=Vector2.new(0.5,0.5)
+G.Position=UDim2.new(0.5,0,0.5,0)
+G.ImageLabel.ImageTransparency=au.Topbar.ButtonsType=="Default"and 0 or 1
+if au.Topbar.ButtonsType~="Default"then
+G.ImageLabel.ImageColor3=al.GetTextColorForHSB(C)
+end
 
-    local H = al.NewRoundFrame(au.Topbar.ButtonsType == "Default" and au.UICorner - (au.UIPadding / 2) or 999, "Squircle", {
-        Size = au.Topbar.ButtonsType == "Default" and UDim2.new(0, au.Topbar.Height - 16, 0, au.Topbar.Height - 16) or UDim2.new(0, 14, 0, 14),
-        LayoutOrder = A or 999,
-        Parent = au.Topbar.ButtonsType == "Default" and au.UIElements.Main.Main.Topbar.Right or nil,
-        ZIndex = 9999,
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        ImageColor3 = au.Topbar.ButtonsType ~= "Default" and (C or Color3.fromHex "#ff3030") or nil,
-        ThemeTag = au.Topbar.ButtonsType == "Default" and { ImageColor3 = "Text" } or nil,
-        ImageTransparency = au.Topbar.ButtonsType == "Default" and 1 or 0
-    }, {
-        al.NewRoundFrame(au.Topbar.ButtonsType == "Default" and au.UICorner - (au.UIPadding / 2) or 999, "SquircleOutline", {
-            Size = UDim2.new(1, 0, 1, 0),
-            ThemeTag = { ImageColor3 = "Black" },
-            ImageTransparency = au.Topbar.ButtonsType == "Default" and 1 or .8,
-            Name = "Outline"
-        }, {
-            au.Topbar.ButtonsType == "Default" and am("UIGradient", {
-                Rotation = 45,
-                Color = ColorSequence.new {
-                    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 255, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-                    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(255, 255, 255)),
-                },
-                Transparency = NumberSequence.new {
-                    NumberSequenceKeypoint.new(0.0, 0.1),
-                    NumberSequenceKeypoint.new(0.5, 1),
-                    NumberSequenceKeypoint.new(1.0, 0.1),
-                }
-            }) or nil,
-        }),
-        G
-    }, true)
+local H=al.NewRoundFrame(au.Topbar.ButtonsType=="Default"and au.UICorner-(au.UIPadding/2)or 999,"Squircle",{
+Size=au.Topbar.ButtonsType=="Default"and UDim2.new(0,au.Topbar.Height-16,0,au.Topbar.Height-16)or UDim2.new(0,14,0,14),
+LayoutOrder=A or 999,
+Parent=au.Topbar.ButtonsType=="Default"and au.UIElements.Main.Main.Topbar.Right or nil,
 
-    -- [以下是为你新增的 摆放/排序 核心代码]
-    local isDragging = false
-    local isHolding = false
-    local dragConnection
-    local container = au.UIElements.Main.Main.Topbar.Right -- 按钮容器
-    local UIListLayout = container:FindFirstChildOfClass("UIListLayout")
-    if UIListLayout then UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder end
+ZIndex=9999,
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+ImageColor3=au.Topbar.ButtonsType~="Default"and(C or Color3.fromHex"#ff3030")or nil,
+ThemeTag=au.Topbar.ButtonsType=="Default"and{
+ImageColor3="Text"
+}or nil,
+ImageTransparency=au.Topbar.ButtonsType=="Default"and 1 or 0
+},{
+al.NewRoundFrame(au.Topbar.ButtonsType=="Default"and au.UICorner-(au.UIPadding/2)or 999,"SquircleOutline",{
+Size=UDim2.new(1,0,1,0),
+ThemeTag={
+ImageColor3="Black",
+},
+ImageTransparency=au.Topbar.ButtonsType=="Default"and 1 or.8,
+Name="Outline"
+},{
+au.Topbar.ButtonsType=="Default"and am("UIGradient",{
+Rotation=45,
+Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0.0,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(1.0,Color3.fromRGB(255,255,255)),
+},
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0.0,0.1),
+NumberSequenceKeypoint.new(0.5,1),
+NumberSequenceKeypoint.new(1.0,0.1),
+}
+})or nil,
+}),
+G
+},true)
 
-    H.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            isHolding = true
-            task.delay(0.15, function() -- 按住0.15秒判定为拖拽
-                if not isHolding then return end
-                isDragging = true
-                H.ZIndex = 10000 -- 置顶弹出
-                
-                -- 动画：按钮向前弹出
-                an(H, 0.2, { Size = UDim2.new(0, H.AbsoluteSize.X + 6, 0, H.AbsoluteSize.Y + 6) }, Enum.EasingStyle.Quint):Play()
-                
-                local startX = input.Position.X
-                local startOffset = startX - H.AbsolutePosition.X
+am("Frame",{
+Size=UDim2.new(0,24,0,24),
+BackgroundTransparency=1,
+Parent=au.Topbar.ButtonsType~="Default"and au.UIElements.Main.Main.Topbar.Right or nil,
+LayoutOrder=A or 999
+},{
+au.Topbar.ButtonsType~="Default"and H or nil,
+})
 
-                dragConnection = game:GetService("UserInputService").InputChanged:Connect(function(move)
-                    if move.UserInputType == Enum.UserInputType.MouseMovement or move.UserInputType == Enum.UserInputType.Touch then
-                        -- 更新视觉位置
-                        H.Position = UDim2.new(0, move.Position.X - container.AbsolutePosition.X - startOffset, 0.5, 0)
-                        
-                        -- 【实时摆放逻辑】
-                        local others = {}
-                        for _, child in pairs(container:GetChildren()) do
-                            if child:IsA("GuiObject") and child ~= H then
-                                table.insert(others, child)
-                            end
-                        end
-                        -- 按照屏幕上的实际位置(AbsolutePosition)给所有按钮重新排队
-                        table.sort(others, function(a, b) return a.AbsolutePosition.X < b.AbsolutePosition.X end)
 
-                        local currentX = H.AbsolutePosition.X
-                        local newOrder = 1
-                        local placed = false
 
-                        for _, sib in ipairs(others) do
-                            if not placed and currentX < (sib.AbsolutePosition.X + sib.AbsoluteSize.X / 2) then
-                                H.LayoutOrder = newOrder
-                                newOrder = newOrder + 1
-                                placed = true
-                            end
-                            sib.LayoutOrder = newOrder
-                            newOrder = newOrder + 1
-                        end
-                        if not placed then H.LayoutOrder = newOrder end
-                    end
-                end)
-            end)
-        end
-    end)
+au.TopBarButtons[100-A]={
+Name=v,
+Object=H
+}
 
-    local function stopDragging()
-        isHolding = false
-        if dragConnection then dragConnection:Disconnect() dragConnection = nil end
-        if isDragging then
-            isDragging = false
-            H.ZIndex = 999 -- 恢复层级
-            -- 动画：缩回并摆放到位
-            an(H, 0.2, { 
-                Size = UDim2.new(0, H.AbsoluteSize.X - 6, 0, H.AbsoluteSize.Y - 6),
-                Position = UDim2.new(0.5, 0, 0.5, 0) -- 交给布局重新摆放
-            }, Enum.EasingStyle.Quint):Play()
-        end
-    end
+al.AddSignal(H.MouseButton1Click,function()
+z()
+end)
+al.AddSignal(H.MouseEnter,function()
+if au.Topbar.ButtonsType=="Default"then
+an(H,.15,{ImageTransparency=.93}):Play()
+an(H.Outline,.15,{ImageTransparency=.75}):Play()
 
-    H.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            stopDragging()
-        end
-    end)
-    -- [新增代码结束]
+else
 
-    if au.Topbar.ButtonsType ~= "Default" then
-        am("Frame", {
-            Size = UDim2.new(0, 24, 0, 24),
-            BackgroundTransparency = 1,
-            Parent = au.UIElements.Main.Main.Topbar.Right,
-            LayoutOrder = A or 999
-        }, { H })
-    end
+an(G.ImageLabel,.1,{ImageTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+an(G,.1,{Size=UDim2.new(0,F or au.TopBarButtonIconSize,0,F or au.TopBarButtonIconSize)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+end
+end)
+al.AddSignal(H.InputEnded,function()
+if au.Topbar.ButtonsType=="Default"then
+an(H,.1,{ImageTransparency=1}):Play()
+an(H.Outline,.1,{ImageTransparency=1}):Play()
 
-    au.TopBarButtons[100 - A] = { Name = v, Object = H }
+else
 
-    al.AddSignal(H.MouseButton1Click, function() z() end)
-    al.AddSignal(H.MouseEnter, function()
-        if au.Topbar.ButtonsType == "Default" then
-            an(H, .15, { ImageTransparency = .93 }):Play()
-            an(H.Outline, .15, { ImageTransparency = .75 }):Play()
-        else
-            an(G.ImageLabel, .1, { ImageTransparency = 0 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-            an(G, .1, { Size = UDim2.new(0, F or au.TopBarButtonIconSize, 0, F or au.TopBarButtonIconSize) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-        end
-    end)
-    al.AddSignal(H.InputEnded, function()
-        if au.Topbar.ButtonsType == "Default" then
-            an(H, .1, { ImageTransparency = 1 }):Play()
-            an(H.Outline, .1, { ImageTransparency = 1 }):Play()
-        else
-            an(G.ImageLabel, .1, { ImageTransparency = 1 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-            an(G, .1, { Size = UDim2.new(0, 0, 0, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-        end
-    end)
+an(G.ImageLabel,.1,{ImageTransparency=1},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+an(G,.1,{Size=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+end
+end)
 
-    return H
+return H
 end
 
 
