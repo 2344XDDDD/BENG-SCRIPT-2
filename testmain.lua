@@ -1255,9 +1255,9 @@ return b end function a.e()
     end
 
 function a.e()
-    local b = a.load('c')
-    local d = b.New
-    local e = b.Tween
+    local b = a.load'c' -- Creator 模块
+    local d = b.New -- 快捷新建
+    local e = b.Tween -- 快捷动画
 
     local f = {
         Size = UDim2.new(0, 300, 1, -156),
@@ -1306,19 +1306,11 @@ function a.e()
     end
 
     function f.New(g)
-        local h = {
-            Title = g.Title or "Notification",
-            Content = g.Content or nil,
-            Icon = g.Icon or nil,
-            IconThemed = g.IconThemed,
-            Background = g.Background,
-            BackgroundImageTransparency = g.BackgroundImageTransparency,
-            Duration = g.Duration,
-            Buttons = g.Buttons or {},
-            CanClose = g.CanClose ~= false,
-            UIElements = {},
-            Closed = false,
-        }
+        local h = {} -- 通知对象
+        h.Title = g.Title or "Notification"
+        h.Content = g.Content or nil
+        h.Duration = g.Duration
+        h.Closed = false
 
         f.NotificationIndex = f.NotificationIndex + 1
         f.Notifications[f.NotificationIndex] = h
@@ -1326,15 +1318,17 @@ function a.e()
         local currentSide = f.Holder.Side
         if g.Position then currentSide = g.Position:lower() end
 
+        -- 1. 创建图标
         local iconImg
-        if h.Icon then
-            iconImg = b.Image(h.Icon, h.Title .. ":" .. h.Icon, 0, g.Window, "Notification", h.IconThemed)
+        if g.Icon then
+            iconImg = b.Image(g.Icon, h.Title .. ":" .. tostring(g.Icon), 0, g.Window, "Notification", g.IconThemed)
             iconImg.Size = UDim2.new(0, 26, 0, 26)
             iconImg.Position = UDim2.new(0, f.UIPadding, 0, f.UIPadding)
         end
 
+        -- 2. 关闭按钮
         local closeBtn
-        if h.CanClose then
+        if g.CanClose ~= false then
             closeBtn = d("ImageButton", {
                 Image = b.Icon "x" [1],
                 ImageRectSize = b.Icon "x" [2].ImageRectSize,
@@ -1356,11 +1350,13 @@ function a.e()
             })
         end
 
+        -- 3. 进度条组件
         local progressBar = b.NewRoundFrame(f.UICorner, "Squircle", {
             Size = UDim2.new(g.Progress and (math.clamp(g.Progress, 0, 100) / 100) or 0, 0, 1, 0),
             ThemeTag = { ImageTransparency = "NotificationDurationTransparency", ImageColor3 = "NotificationDuration" },
         })
 
+        -- 4. 文本容器 (自动计算高度)
         local contentLabel = d("TextLabel", {
             AutomaticSize = "Y",
             Size = UDim2.new(1, 0, 0, 0),
@@ -1375,7 +1371,7 @@ function a.e()
         })
 
         local textContainer = d("Frame", {
-            Size = UDim2.new(1, h.Icon and -28 - f.UIPadding or 0, 1, 0),
+            Size = UDim2.new(1, g.Icon and -28 - f.UIPadding or 0, 1, 0),
             Position = UDim2.new(1, 0, 0, 0),
             AnchorPoint = Vector2.new(1, 0),
             BackgroundTransparency = 1,
@@ -1386,6 +1382,8 @@ function a.e()
             d("UIListLayout", { Padding = UDim.new(0, f.UIPadding / 3) }),
             contentLabel
         })
+
+        -- 5. 主框架
         local startX = (currentSide == "left") and -2 or 2
         local mainFrame = b.NewRoundFrame(f.UICorner, "Squircle", {
             Size = UDim2.new(1, 0, 0, 0),
@@ -1397,29 +1395,36 @@ function a.e()
         }, {
             b.NewRoundFrame(f.UICorner, "Glass-1", { Size = UDim2.new(1, 0, 1, 0), ThemeTag = { ImageColor3 = "NotificationBorder", ImageTransparency = "NotificationBorderTransparency" } }),
             d("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Name = "DurationFrame" }, { d("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ClipsDescendants = true }, { progressBar }) }),
-            d("ImageLabel", { Name = "Background", Image = h.Background, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), ScaleType = "Crop", ImageTransparency = h.BackgroundImageTransparency }, { d("UICorner", { CornerRadius = UDim.new(0, f.UICorner) }) }),
+            d("ImageLabel", { Name = "Background", Image = g.Background, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), ScaleType = "Crop", ImageTransparency = g.BackgroundImageTransparency or 0 }, { d("UICorner", { CornerRadius = UDim.new(0, f.UICorner) }) }),
             textContainer, iconImg, closeBtn
         })
-        local holderFrame = d("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0), Parent = f.Holder.Frame }, { mainFrame })
+
+        local holderFrame = d("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0), Parent = f.Holder.Frame, ClipsDescendants = false }, { mainFrame })
+
+        -- [API] 更新高度动画
         function h:UpdateSize()
-            task.wait()
-            local targetHeight = mainFrame.AbsoluteSize.Y
-            e(holderFrame, 0.4, { Size = UDim2.new(1, 0, 0, targetHeight) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            task.spawn(function()
+                task.wait() -- 等待布局引擎重算
+                local targetH = mainFrame.AbsoluteSize.Y
+                e(holderFrame, 0.4, { Size = UDim2.new(1, 0, 0, targetH) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            end)
         end
 
-        function h:SetProgress(value, animTime)
-            local percent = math.clamp(value, 0, 100) / 100
-            e(progressBar, animTime or 0.3, { Size = UDim2.new(percent, 0, 1, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        -- [API] 设置进度 (0-100)
+        function h:SetProgress(val, speed)
+            local p = math.clamp(val, 0, 100) / 100
+            e(progressBar, speed or 0.3, { Size = UDim2.new(p, 0, 1, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
         end
 
-        function h:SetContent(text)
-            contentLabel.Text = text
+        -- [API] 修改内容并触发拉伸动画
+        function h:SetContent(txt)
+            contentLabel.Text = txt
             self:UpdateSize()
         end
 
-        function h.Close(v)
-            if not h.Closed then
-                h.Closed = true
+        function h:Close()
+            if not self.Closed then
+                self.Closed = true
                 local exitX = (currentSide == "left") and -2 or 2
                 e(holderFrame, 0.45, { Size = UDim2.new(1, 0, 0, -8) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                 e(mainFrame, 0.55, { Position = UDim2.new(exitX, 0, 1, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
@@ -1428,10 +1433,12 @@ function a.e()
             end
         end
 
+        -- 初始化入场
         task.spawn(function()
             task.wait()
             h:UpdateSize()
             e(mainFrame, 0.45, { Position = UDim2.new(0, 0, 1, 0) }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            
             if h.Duration and not g.Progress then
                 progressBar.Size = UDim2.new(1, 0, 1, 0)
                 e(progressBar, h.Duration, { Size = UDim2.new(0, 0, 1, 0) }, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut):Play()
@@ -1442,7 +1449,11 @@ function a.e()
 
         if closeBtn then 
             b.AddSignal(closeBtn.TextButton.MouseButton1Click, function() h:Close() end) 
-        end return h end return f end function a.f()
+        end
+        
+        return h
+    end
+    return f end function a.f()
 
 
 
