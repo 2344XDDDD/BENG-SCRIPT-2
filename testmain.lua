@@ -12736,24 +12736,21 @@ if not au.IgnoreAlerts then
 F=true
 au:SetToTheCenter()
 au:Dialog{
-
 Title="Close Window",
 Content="Do you want to close this window? You will not be able to open it again.",
 Buttons={
 {
 Title="Cancel",
-
-Callback=function()F=false end,
+callback=function()F=false end,
 Variant="Secondary",
 },
 {
 Title="Close Window",
-
 Callback=function()
 F=false
 au:Destroy()
 end,
-Variant="Primary",
+Variant="Secondary",
 }
 }
 }
