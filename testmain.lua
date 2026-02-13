@@ -12728,37 +12728,39 @@ J:Open()
 return J
 end
 
-local F=false
+local F = false
 
-au:CreateTopbarButton("Close","x",function()
-if not F then
-if not au.IgnoreAlerts then
-F=true
-au:SetToTheCenter()
-au:Dialog{
-Title="Close Window",
-Content="Do you want to close this window? You will not be able to open it again.",
-Buttons={
-{
-Title="Cancel",
-callback=function()F=false end,
-Variant="Secondary",
-},
-{
-Title="Close Window",
-Callback=function()
-F=false
-au:Destroy()
-end,
-Variant="Secondary",
-}
-}
-}
-else
-au:Destroy()
-end
-end
-end,(au.Topbar.ButtonsType=="Default"and 999 or 997),nil,Color3.fromHex"#F4695F")
+au:CreateTopbarButton("Close", "x", function()
+    if not F then
+        if not au.IgnoreAlerts then
+            F = true
+            au:SetToTheCenter()
+            au:Dialog{
+                Title = "Close Window",
+                Content = "Do you want to close this window? You will not be able to open it again.",
+                Buttons = {
+                    {
+                        Title = "Cancel",
+                        Variant = "Secondary",
+                        Callback = function()
+                            F = false
+                        end,
+                    },
+                    {
+                        Title = "Close Window",
+                        Variant = "Secondary",
+                        Callback = function()
+                            F = false
+                            au:Destroy()
+                        end,
+                    }
+                }
+            }
+        else
+            au:Destroy()
+        end
+    end
+end, (au.Topbar.ButtonsType == "Default" and 999 or 997), nil, Color3.fromHex("#F4695F"))
 
 function au.Tag(G,H)
 if au.UIElements.Main.Main.Topbar.Center.Visible==false then au.UIElements.Main.Main.Topbar.Center.Visible=true end
