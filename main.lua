@@ -5497,18 +5497,35 @@ end)
 end
 
 function ag.SetTitle(h,j)
-ag.Title=j
-ap.Text=j
+    ag.Title = j
+    ap.TextTransparency = 1
+    local originalPos = UDim2.new(0,0,0,0)
+    ap.Position = UDim2.new(0, 0, 0, -5)
+    ap.Text = j
+    ad(ap, 0.45, {
+        TextTransparency = 0,
+        Position = originalPos
+    }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 end
 
 function ag.SetDesc(h,j)
-ag.Desc=j
-aq.Text=j or""
-if not j then
-aq.Visible=false
-elseif not aq.Visible then
-aq.Visible=true
-end
+    ag.Desc = j
+    if not j or j == "" then
+        aq.Visible = false
+        return
+    end
+    
+    aq.Visible = true
+    aq.TextTransparency = 1
+    local originalPos = UDim2.new(0,0,0,0)
+    aq.Position = UDim2.new(0, 0, 0, -5)
+    aq.Text = j
+    task.delay(0.1, function()
+        ad(aq, 0.45, {
+            TextTransparency = 0.3,
+            Position = originalPos
+        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+    end)
 end
 
 
