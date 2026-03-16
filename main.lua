@@ -5763,13 +5763,12 @@ end end function a.C()
 		af.IsButtons = af.Buttons and #af.Buttons > 0 and true or false
 
 		local ah = a.load'B'(af)
-		ah.__type = "Paragraph"
-
+		
 		if af.ProgressBar then
 			local container = ah.UIElements.Container
 			
 			if ah.UIElements.Title then ah.UIElements.Title.LayoutOrder = 1 end
-			if ah.UIElements.Desc then ah.UIElements.Desc.LayoutOrder = 4 end
+			if ah.UIElements.Desc then ah.UIElements.Desc.LayoutOrder = 10 end
 
 			local statusLabel = ab("TextLabel", {
 				Size = UDim2.new(1, 0, 0, 18),
@@ -5834,18 +5833,16 @@ end end function a.C()
 				if af.DoneTitle then ah:SetTitle(af.DoneTitle) end
 				if af.DoneDesc then ah:SetDesc(af.DoneDesc) end
 				
-				local fade = aa.Tween(barBg, 0.4, { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0) })
-				local fadeFill = aa.Tween(barFill, 0.4, { BackgroundTransparency = 1 })
-				local fadeLabel = aa.Tween(statusLabel, 0.4, { TextTransparency = 1 })
+				local fadeTime = 0.4
+				aa.Tween(barBg, fadeTime, { BackgroundTransparency = 1 }):Play()
+				aa.Tween(barFill, fadeTime, { BackgroundTransparency = 1 }):Play()
+				local lastFade = aa.Tween(statusLabel, fadeTime, { TextTransparency = 1 })
 				
-				fade:Play()
-				fadeFill:Play()
-				fadeLabel:Play()
+				lastFade:Play()
+				lastFade.Completed:Wait()
 				
-				fade.Completed:Wait()
-				
-				if barBg then barBg:Destroy() end
-				if statusLabel then statusLabel:Destroy() end
+				barBg:Destroy()
+				statusLabel:Destroy()
 			end)
 		end
 
@@ -5855,7 +5852,7 @@ end end function a.C()
 				BackgroundTransparency = 1,
 				AutomaticSize = "Y",
 				Parent = ah.UIElements.Container,
-				LayoutOrder = 5
+				LayoutOrder = 20
 			}, {
 				ab("UIListLayout", {
 					Padding = UDim.new(0, 10),
