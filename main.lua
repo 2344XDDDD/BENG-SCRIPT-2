@@ -5772,51 +5772,7 @@ end endfunction a.C()
         local ah = a.load'B'(af)
         ag.ParagraphFrame = ah
 
-        if af.ProgressBar then
-            local container = ah.UIElements.Container
-            
-            local barBg = ab("Frame", {
-                Size = UDim2.new(1, 0, 0, 6),
-                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                BackgroundTransparency = 0.9,
-                Parent = container,
-            }, {
-                ab("UICorner", { CornerRadius = UDim.new(1, 0) })
-            })
-
-            local barFill = ab("Frame", {
-                Size = UDim2.new(0, 0, 1, 0),
-                BackgroundColor3 = af.BarColor or Color3.fromRGB(0, 145, 255),
-                BorderSizePixel = 0,
-                Parent = barBg,
-            }, {
-                ab("UICorner", { CornerRadius = UDim.new(1, 0) })
-            })
-
-            if af.BarGradient then
-                ab("UIGradient", {
-                    Color = af.BarGradient,
-                    Parent = barFill
-                })
-            end
-
-            task.spawn(function()
-                task.wait(af.TimeDelay or 0.5)
-                
-                local tween = aa.Tween(barFill, af.Duration or 5, {
-                    Size = UDim2.new(1, 0, 1, 0)
-                }, Enum.EasingStyle.Linear)
-                
-                tween:Play()
-                tween.Completed:Wait()
-
-                if af.DoneTitle then ah:SetTitle(af.DoneTitle) end
-                if af.DoneDesc then ah:SetDesc(af.DoneDesc) end
-                
-                aa.Tween(barFill, 0.5, { BackgroundTransparency = 0.5 }):Play()
-            end)
-        end
-
+        -- 整合 Paragraph 和 Button 的部分
         if af.Buttons and #af.Buttons > 0 then
             local ai = ab("Frame", {
                 Size = UDim2.new(1, 0, 0, 0),
@@ -5837,7 +5793,116 @@ end endfunction a.C()
         end
         return ag.__type, ag
     end
-    return ac end function a.E()
+    return ac 
+end
+
+function a.D()
+    local aa = a.load'c'
+    local ab = aa.New
+    local ac = {}
+
+    function ac.New(ad, ae)
+        local af = {
+            __type = "Button",
+            Title = ae.Title or "Button",
+            Desc = ae.Desc or nil,
+            Icon = ae.Icon or "mouse-pointer-click",
+            IconThemed = ae.IconThemed or false,
+            Color = ae.Color,
+            Justify = ae.Justify or "Between",
+            IconAlign = ae.IconAlign or "Right",
+            Locked = ae.Locked or false,
+            LockedTitle = ae.LockedTitle,
+            Callback = ae.Callback or function() end,
+            UIElements = {}
+        }
+
+        local ag = true
+
+        af.ButtonFrame = a.load'B'{
+            Title = af.Title,
+            Desc = af.Desc,
+            Parent = ae.Parent,
+            LockedIcon = ae.LockedIcon,
+            Window = ae.Window,
+            Color = af.Color,
+            Justify = af.Justify,
+            TextOffset = 20,
+            Hover = true,
+            Scalable = true,
+            Tab = ae.Tab,
+            Index = ae.Index,
+            ElementTable = af,
+            ParentConfig = ae,
+            Size = ae.Size,
+        }
+
+        af.UIElements.ButtonIcon = aa.Image(
+            af.Icon,
+            af.Icon,
+            0,
+            ae.Window.Folder,
+            "Button",
+            not af.Color and true or nil,
+            af.IconThemed
+        )
+
+        af.UIElements.ButtonIcon.Size = UDim2.new(0, 20, 0, 20)
+        af.UIElements.ButtonIcon.Parent = af.Justify == "Between" and af.ButtonFrame.UIElements.Main or af.ButtonFrame.UIElements.Container.TitleFrame
+        af.UIElements.ButtonIcon.LayoutOrder = af.IconAlign == "Left" and -99999 or 99999
+        af.UIElements.ButtonIcon.AnchorPoint = Vector2.new(1, 0.5)
+        af.UIElements.ButtonIcon.Position = UDim2.new(1, 0, 0.5, 0)
+
+        af.ButtonFrame:Colorize(af.UIElements.ButtonIcon.ImageLabel, "ImageColor3")
+
+        function af.Lock(ah)
+            af.Locked = true
+            ag = false
+            return af.ButtonFrame:Lock(af.LockedTitle)
+        end
+        function af.Unlock(ah)
+            af.Locked = false
+            ag = true
+            return af.ButtonFrame:Unlock()
+        end
+
+        if af.Locked then
+            af:Lock()
+        end
+
+        do 
+            local _a = aa
+            local _b = af
+            local _c = task
+            local _d = Enum
+            _a.AddSignal(_b.ButtonFrame.UIElements.Main.MouseButton1Click, function()
+                if not ag then return end
+                if _b.Icon == "refresh-cw" then 
+                    _c.spawn(function()
+                        local _i = _b.UIElements.ButtonIcon
+                        local _l = _i:FindFirstChildOfClass("ImageLabel") or (_i:IsA("ImageLabel") and _i)
+                        if not _l then return end 
+                        if _l:GetAttribute("Rotating") then return end 
+                        _l:SetAttribute("Rotating", true)
+                        local _t = _a.Tween(_l, 1.5, { Rotation = 360 }, _d.EasingStyle.Sine, _d.EasingDirection.InOut)
+                        _t:Play()
+                        _t.Completed:Wait()
+                        _l.Rotation = 0
+                        _l:SetAttribute("Rotating", false)
+                    end)
+                end 
+                _c.spawn(function()
+                    _a.SafeCallback(_b.Callback)
+                end)
+            end)
+            return _b.__type, _b 
+        end
+
+        return af.__type, af
+    end
+
+    return ac 
+end function a.E()
 local aa={}
 
 local ab=a.load'c'
