@@ -5763,7 +5763,8 @@ end end function a.C()
 		af.IsButtons = af.Buttons and #af.Buttons > 0 and true or false
 
 		local ah = a.load'B'(af)
-		
+		ah.__type = "Paragraph"
+
 		if af.ProgressBar then
 			local container = ah.UIElements.Container
 			
@@ -5834,15 +5835,15 @@ end end function a.C()
 				if af.DoneDesc then ah:SetDesc(af.DoneDesc) end
 				
 				local fadeTime = 0.4
-				aa.Tween(barBg, fadeTime, { BackgroundTransparency = 1 }):Play()
+				local fade = aa.Tween(barBg, fadeTime, { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0) })
 				aa.Tween(barFill, fadeTime, { BackgroundTransparency = 1 }):Play()
-				local lastFade = aa.Tween(statusLabel, fadeTime, { TextTransparency = 1 })
+				aa.Tween(statusLabel, fadeTime, { TextTransparency = 1 }):Play()
 				
-				lastFade:Play()
-				lastFade.Completed:Wait()
+				fade:Play()
+				fade.Completed:Wait()
 				
-				barBg:Destroy()
-				statusLabel:Destroy()
+				if barBg then barBg:Destroy() end
+				if statusLabel then statusLabel:Destroy() end
 			end)
 		end
 
