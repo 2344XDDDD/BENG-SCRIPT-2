@@ -4,10 +4,10 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/28/1]
+    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
     https://bengscript.lol
-    [Update: Added: all - New:LockedIcon]
-    Lua
+    [Update: Added: all - Button(Not: lol)]
+    Lua — Luau
     This UI is for personal use only. You may not use it without the permission of the creator (UI). To use it, please contact BENG SCRIPT. Creator (UI) must agree! Please do not add our UI to your GitHub repository!
 
 ]]
@@ -4014,174 +4014,145 @@ end
 
 
 return aa end function a.x()
-local aa={}
+    local aa={}
+    local ab=a.load'c'
+    local ac=ab.New
+    local ad=ab.Tween
 
+    function aa.New(ae,af,ag)
+        local ah={
+            Title=af.Title or "Tag",
+            Icon=af.Icon,
+            Color=af.Color or Color3.fromHex"#315dff",
+            Radius=af.Radius or 999,
+            Font=af.Font or ab.Font,
+            Border=af.Border or false,
+            TagFrame=nil,
+            Height=26,
+            Padding=10,
+            TextSize=14,
+            IconSize=16,
+        }
 
-local ab=a.load'c'
-local ac=ab.New
-local ad=ab.Tween
+        local ai
+        if ah.Icon then
+            ai=ab.Image(ah.Icon, ah.Icon, 0, af.Window, "Tag", false)
+            ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
+            ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil
+        end
 
+        local aj=ac("TextLabel",{
+            BackgroundTransparency=1,
+            AutomaticSize="XY",
+            TextSize=ah.TextSize,
+            FontFace=Font.new(ah.Font, Enum.FontWeight.SemiBold),
+            Text=ah.Title,
+            TextColor3=typeof(ah.Color)=="Color3" and ab.GetTextColorForHSB(ah.Color) or nil,
+        })
 
-function aa.New(ae,af,ag)
-local ah={
-Title=af.Title or"Tag",
-Icon=af.Icon,
-Color=af.Color or Color3.fromHex"#315dff",
-Radius=af.Radius or 999,
-Border=af.Border or false,
+        local ak
+        if typeof(ah.Color)=="table" then
+            ak=ac"UIGradient"
+            for al,am in next,ah.Color do ak[al]=am end
+            aj.TextColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+            if ai then ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak)) end
+        end
 
-TagFrame=nil,
-Height=26,
-Padding=10,
-TextSize=14,
-IconSize=16,
-}
+        local al, alController = ab.NewRoundFrame(ah.Radius,"Squircle",{
+            AutomaticSize="X",
+            Size=UDim2.new(0,0,0,ah.Height),
+            Parent=ag,
+            ImageColor3=typeof(ah.Color)=="Color3" and ah.Color or Color3.new(1,1,1),
+        },{
+            ak,
+            ab.NewRoundFrame(ah.Radius,"Glass-1",{
+                Size=UDim2.new(1,0,1,0),
+                ThemeTag={ ImageColor3="White" },
+                ImageTransparency=.75
+            }),
+            ac("Frame",{
+                Size=UDim2.new(0,0,1,0),
+                AutomaticSize="X",
+                Name="Content",
+                BackgroundTransparency=1,
+            },{
+                ai,
+                aj,
+                ac("UIPadding",{
+                    PaddingLeft=UDim.new(0,ah.Padding),
+                    PaddingRight=UDim.new(0,ah.Padding),
+                }),
+                ac("UIListLayout",{
+                    FillDirection="Horizontal",
+                    VerticalAlignment="Center",
+                    Padding=UDim.new(0,ah.Padding/1.5)
+                })
+            }),
+        }, true)
 
-local ai
-if ah.Icon then
-ai=ab.Image(
-ah.Icon,
-ah.Icon,
-0,
-af.Window,
-"Tag",
-false
-)
+        function ah.SetFont(am, an)
+            ah.Font = an
+            aj.FontFace = Font.new(an, Enum.FontWeight.SemiBold)
+            return ah
+        end
 
-ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-ai.ImageLabel.ImageColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil
-end
+        function ah.SetRadius(am, an)
+            ah.Radius = an
+            if alController then
+                alController:SetRadius(an)
+            end
+            return ah
+        end
 
-local aj=ac("TextLabel",{
-BackgroundTransparency=1,
-AutomaticSize="XY",
-TextSize=ah.TextSize,
-FontFace=Font.new(ab.Font,Enum.FontWeight.SemiBold),
-Text=ah.Title,
-TextColor3=typeof(ah.Color)=="Color3"and ab.GetTextColorForHSB(ah.Color)or nil,
-})
+        function ah.SetTitle(am,an)
+            ah.Title=an
+            aj.Text=an
+            return ah
+        end
 
-local ak
+        function ah.SetColor(am,an)
+            ah.Color=an
+            if typeof(an)=="table" then
+                local ao=ab.GetAverageColor(an)
+                ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(ao)}):Play()
+                local ap=al:FindFirstChildOfClass"UIGradient" or ac("UIGradient",{Parent=al})
+                for aq,ar in next,an do ap[aq]=ar end
+                ad(al,.06,{ImageColor3=Color3.new(1,1,1)}):Play()
+            else
+                if ak then ak:Destroy() end
+                ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(an)}):Play()
+                if ai then ad(ai.ImageLabel,.06,{ImageColor3=ab.GetTextColorForHSB(an)}):Play() end
+                ad(al,.06,{ImageColor3=an}):Play()
+            end
+            return ah
+        end
 
-if typeof(ah.Color)=="table"then
+        function ah.SetIcon(am,an)
+            ah.Icon=an
+            if an then
+                ai=ab.Image(an, an, 0, af.Window, "Tag", false)
+                ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
+                ai.Parent=al:FindFirstChild("Content") or al
+                if typeof(ah.Color)=="Color3" then
+                    ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ah.Color)
+                elseif typeof(ah.Color)=="table" then
+                    ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
+                end
+            else
+                if ai then ai:Destroy() ai=nil end
+            end
+            return ah
+        end
 
-ak=ac"UIGradient"
-for al,am in next,ah.Color do
-ak[al]=am
-end
+        function ah.Destroy(am)
+            al:Destroy()
+            return ah
+        end
 
-aj.TextColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-if ai then
-ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-end
-end
-
-
-
-local al=ab.NewRoundFrame(ah.Radius,"Squircle",{
-AutomaticSize="X",
-Size=UDim2.new(0,0,0,ah.Height),
-Parent=ag,
-ImageColor3=typeof(ah.Color)=="Color3"and ah.Color or Color3.new(1,1,1),
-},{
-ak,
-ab.NewRoundFrame(ah.Radius,"Glass-1",{
-Size=UDim2.new(1,0,1,0),
-ThemeTag={
-ImageColor3="White",
-},
-ImageTransparency=.75
-}),
-ac("Frame",{
-Size=UDim2.new(0,0,1,0),
-AutomaticSize="X",
-Name="Content",
-BackgroundTransparency=1,
-},{
-ai,
-aj,
-ac("UIPadding",{
-PaddingLeft=UDim.new(0,ah.Padding),
-PaddingRight=UDim.new(0,ah.Padding),
-}),
-ac("UIListLayout",{
-FillDirection="Horizontal",
-VerticalAlignment="Center",
-Padding=UDim.new(0,ah.Padding/1.5)
-})
-}),
-})
-
-
-function ah.SetTitle(am,an)
-ah.Title=an
-aj.Text=an
-
-return ah
-end
-
-function ah.SetColor(am,an)
-ah.Color=an
-if typeof(an)=="table"then
-local ao=ab.GetAverageColor(an)
-ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(ao)}):Play()
-local ap=al:FindFirstChildOfClass"UIGradient"or ac("UIGradient",{Parent=al})
-for aq,ar in next,an do ap[aq]=ar end
-ad(al,.06,{ImageColor3=Color3.new(1,1,1)}):Play()
-else
-if ak then
-ak:Destroy()
-end
-ad(aj,.06,{TextColor3=ab.GetTextColorForHSB(an)}):Play()
-if ai then
-ad(ai.ImageLabel,.06,{ImageColor3=ab.GetTextColorForHSB(an)}):Play()
-end
-ad(al,.06,{ImageColor3=an}):Play()
-end
-
-return ah
-end
-
-function ah.SetIcon(am,an)
-ah.Icon=an
-
-if an then
-ai=ab.Image(
-an,
-an,
-0,
-af.Window,
-"Tag",
-false
-)
-
-ai.Size=UDim2.new(0,ah.IconSize,0,ah.IconSize)
-ai.Parent=al
-
-if typeof(ah.Color)=="Color3"then
-ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ah.Color)
-elseif typeof(ah.Color)=="table"then
-ai.ImageLabel.ImageColor3=ab.GetTextColorForHSB(ab.GetAverageColor(ak))
-end
-else
-if ai then
-ai:Destroy()
-ai=nil
-end
-end
-return ah
-end
-
-function ah.Destroy(am)
-al:Destroy()
-return ah
-end
-
-return ah
-end
-
-
-return aa end function a.y()
+        return ah
+    end
+    return aa
+end function a.y()
 local aa=(cloneref or clonereference or function(aa)return aa end)
 
 
@@ -5145,7 +5116,7 @@ Scalable=af.Scalable,
 Parent=af.Parent,
 Justify=af.Justify or"Between",
 UIPadding=af.Window.ElementConfig.UIPadding,
-UICorner=af.Window.ElementConfig.UICorner,
+UICorner=af.Radius or af.Window.ElementConfig.UICorner,
 Size=af.Size or"Default",
 UIElements={},
 LockedIcon = af.LockedIcon or "lock",
@@ -5497,35 +5468,18 @@ end)
 end
 
 function ag.SetTitle(h,j)
-    ag.Title = j
-    ap.TextTransparency = 1
-    local originalPos = UDim2.new(0,0,0,0)
-    ap.Position = UDim2.new(0, 0, 0, -5)
-    ap.Text = j
-    ad(ap, 0.45, {
-        TextTransparency = 0,
-        Position = originalPos
-    }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+ag.Title=j
+ap.Text=j
 end
 
 function ag.SetDesc(h,j)
-    ag.Desc = j
-    if not j or j == "" then
-        aq.Visible = false
-        return
-    end
-    
-    aq.Visible = true
-    aq.TextTransparency = 1
-    local originalPos = UDim2.new(0,0,0,0)
-    aq.Position = UDim2.new(0, 0, 0, -5)
-    aq.Text = j
-    task.delay(0.1, function()
-        ad(aq, 0.45, {
-            TextTransparency = 0.3,
-            Position = originalPos
-        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-    end)
+ag.Desc=j
+aq.Text=j or""
+if not j then
+aq.Visible=false
+elseif not aq.Visible then
+aq.Visible=true
+end
 end
 
 
@@ -5819,6 +5773,7 @@ af.ButtonFrame=a.load'B'{
 Title=af.Title,
 Desc=af.Desc,
 Parent=ae.Parent,
+Radius=ae.Radius,
 LockedIcon = ae.LockedIcon,
 
 
@@ -6292,6 +6247,7 @@ UIElements={}
 ai.ToggleFrame=a.load'B'{
 Title=ai.Title,
 Desc=ai.Desc,
+Radius=ah.Radius,
 LockedIcon = ah.LockedIcon,
 
 
@@ -6482,6 +6438,7 @@ al.SliderFrame=a.load'B'{
 Title=al.Title,
 Desc=al.Desc,
 Parent=ak.Parent,
+Radius=ak.Radius,
 TextOffset=al.Width,
 Hover=false,
 Tab=ak.Tab,
@@ -6930,6 +6887,7 @@ aj.InputFrame=a.load'B'{
 Title=aj.Title,
 Desc=aj.Desc,
 Parent=ai.Parent,
+Radius=ai.Radius,
 TextOffset=aj.Width,
 Hover=false,
 Tab=ai.Tab,
@@ -11149,8 +11107,18 @@ au.ElementConfig={
 UIPadding=(au.NewElements and 10 or 13),
 UICorner=au.ElementsRadius or(au.NewElements and 23 or 12),
 }
-
-local av=au.Size or UDim2.new(0,580,0,460)
+    if at.NewElementsRadius then
+        if not at.NewElements then
+            at.WindUI:Notify({
+                Title = "Notification",
+                Content = "NewElementsRadius will not work if NewElements is not enabled.",
+                Duration = 5,
+            })
+        else
+            au.ElementConfig.UICorner = at.NewElementsRadius
+        end
+    end
+    local av=au.Size or UDim2.new(0,580,0,460)
 au.Size=UDim2.new(
 av.X.Scale,
 math.clamp(av.X.Offset,au.MinSize.X,au.MaxSize.X),
@@ -12741,40 +12709,39 @@ J:Open()
 return J
 end
 
-local F=false
+local F = false
 
-au:CreateTopbarButton("Close","x",function()
-if not F then
-if not au.IgnoreAlerts then
-F=true
-au:SetToTheCenter()
-au:Dialog{
-
-Title="Close Window",
-Content="Do you want to close this window? You will not be able to open it again.",
-Buttons={
-{
-Title="Cancel",
-
-Callback=function()F=false end,
-Variant="Secondary",
-},
-{
-Title="Close Window",
-
-Callback=function()
-F=false
-au:Destroy()
-end,
-Variant="Primary",
-}
-}
-}
-else
-au:Destroy()
-end
-end
-end,(au.Topbar.ButtonsType=="Default"and 999 or 997),nil,Color3.fromHex"#F4695F")
+au:CreateTopbarButton("Close", "x", function()
+    if not F then
+        if not au.IgnoreAlerts then
+            F = true
+            au:SetToTheCenter()
+            au:Dialog{
+                Title = "Close Window",
+                Content = "Do you want to close this window? You will not be able to open it again.",
+                Buttons = {
+                    {
+                        Title = "Cancel",
+                        Variant = "Secondary",
+                        Callback = function()
+                            F = false
+                        end,
+                    },
+                    {
+                        Title = "Close Window",
+                        Variant = "Secondary",
+                        Callback = function()
+                            F = false
+                            au:Destroy()
+                        end,
+                    }
+                }
+            }
+        else
+            au:Destroy()
+        end
+    end
+end, (au.Topbar.ButtonsType == "Default" and 999 or 997), nil, Color3.fromHex("#F4695F"))
 
 function au.Tag(G,H)
 if au.UIElements.Main.Main.Topbar.Center.Visible==false then au.UIElements.Main.Main.Topbar.Center.Visible=true end
