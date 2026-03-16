@@ -5768,6 +5768,7 @@ end end function a.C()
 			Desc = af.Desc or nil,
 			Locked = af.Locked or false,
 		}
+		
 		local ah = a.load'B'(af)
 		ag.ParagraphFrame = ah
 
@@ -5820,18 +5821,23 @@ end end function a.C()
 				local startTick = tick()
 				while tick() - startTick < duration do
 					local progress = (tick() - startTick) / duration
-					statusLabel.Text = math.floor(progress * total) .. " / " .. total .. unit
+					if statusLabel and statusLabel.Parent then
+						statusLabel.Text = math.floor(progress * total) .. " / " .. total .. unit
+					end
 					task.wait()
 				end
 				
-				statusLabel.Text = total .. " / " .. total .. unit
+				if statusLabel and statusLabel.Parent then
+					statusLabel.Text = total .. " / " .. total .. unit
+				end
+				
 				tween.Completed:Wait()
 
-				if af.DoneTitle then ah:SetTitle(af.DoneTitle) end
-				if af.DoneDesc then ah:SetDesc(af.DoneDesc) end
+				if af.DoneTitle and ah.SetTitle then ah:SetTitle(af.DoneTitle) end
+				if af.DoneDesc and ah.SetDesc then ah:SetDesc(af.DoneDesc) end
 				
 				local fade = aa.Tween(barBg, 0.4, { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0) })
-				local fadeFill = aa.Tween(barFill, 0.4, { ImageTransparency = 1 })
+				local fadeFill = aa.Tween(barFill, 0.4, { BackgroundTransparency = 1 })
 				local fadeLabel = aa.Tween(statusLabel, 0.4, { TextTransparency = 1 })
 				
 				fade:Play()
@@ -5840,8 +5846,8 @@ end end function a.C()
 				
 				fade.Completed:Wait()
 				
-				barBg:Destroy()
-				statusLabel:Destroy()
+				if barBg then barBg:Destroy() end
+				if statusLabel then statusLabel:Destroy() end
 			end)
 		end
 
@@ -5863,7 +5869,8 @@ end end function a.C()
 				al.Size = UDim2.new(1, 0, 0, 38)
 			end
 		end
-		return ag.__type, ag
+		
+		return ag.__type, ah
 	end
 	return ac 
 end function a.E()
