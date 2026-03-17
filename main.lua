@@ -4,7 +4,7 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
+    V1.7.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
     https://bengscript.lol
     [Update: Added: all - Button(Not: lol)]
     Lua — Luau
