@@ -5705,47 +5705,76 @@ end
 
 return ag
 end end function a.C()
-local aa=a.load'c'
-local ab=aa.New
-local ac={}
-local ad=a.load'l'.New 
+    local aa=a.load'c'
+    local ab=aa.New
+    local ac={}
+    local ad=a.load'l'.New 
 
-function ac.New(ae,af)
-af.Hover=false
-af.TextOffset=0
-af.ParentConfig=af
-af.IsButtons=af.Buttons and#af.Buttons>0 and true or false
+    function ac.New(ae,af)
+        af.Hover=false
+        af.TextOffset=0
+        af.ParentConfig=af
+        af.IsButtons=af.Buttons and#af.Buttons>0 and true or false
 
-local ag={
-__type="Paragraph",
-Title=af.Title or"Paragraph",
-Desc=af.Desc or nil,
-Locked=af.Locked or false,
-}
-local ah=a.load'B'(af)
-ag.ParagraphFrame=ah
+        local ag={
+            __type="Paragraph",
+            Title=af.Title or"Paragraph",
+            Desc=af.Desc or nil,
+            Locked=af.Locked or false,
+        }
+        
+        local ah=a.load'B'(af)
+        ag.ParagraphFrame=ah
 
-if af.Buttons and#af.Buttons>0 then
-local ai=ab("Frame",{
-Size=UDim2.new(1,0,0,0),
-BackgroundTransparency=1,
-AutomaticSize="Y",
-Parent=ah.UIElements.Container
-},{
-ab("UIListLayout",{
-Padding=UDim.new(0,10),
-FillDirection="Vertical",
-})
-})
+        function ag.SetTitle(self, text)
+            local titleObj = ah.UIElements.Title
+            titleObj.Text = text
+            titleObj.TextTransparency = 1 
+            aa.Tween(titleObj, 0.6, {TextTransparency = 0}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        end
 
-for aj,ak in next,af.Buttons do
-local al=ad(ak.Title,ak.Icon,ak.Callback,ak.Variant or "Secondary",ai,nil,nil,af.Window.NewElements and 999 or 10)
-al.Size=UDim2.new(1,0,0,38)
-end
-end
-return ag.__type,ag
-end
-return ac end function a.D()
+        function ag.SetDesc(self, text)
+            local descObj = ah.UIElements.Desc
+            if not text or text == "" then
+                descObj.Visible = false
+                return
+            end
+            descObj.Text = text
+            descObj.Visible = true
+            descObj.TextTransparency = 1 
+       
+            task.delay(0.15, function()
+                aa.Tween(descObj, 0.6, {TextTransparency = 0.3}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            end)
+        end
+
+        if af.Buttons and#af.Buttons>0 then
+            local ai=ab("Frame",{
+                Size=UDim2.new(1,0,0,0),
+                BackgroundTransparency=1,
+                AutomaticSize="Y",
+                Parent=ah.UIElements.Container
+            },{
+                ab("UIListLayout",{
+                    Padding=UDim.new(0,10),
+                    FillDirection="Vertical",
+                })
+            })
+
+            for aj,ak in next,af.Buttons do
+                local al=ad(ak.Title,ak.Icon,ak.Callback,ak.Variant or "Secondary",ai,nil,nil,af.Window.NewElements and 999 or 10)
+                al.Size=UDim2.new(1,0,0,38)
+            end
+        end
+
+        ag:SetTitle(ag.Title)
+        if ag.Desc then
+            ag:SetDesc(ag.Desc)
+        end
+        
+        return ag.__type, ag
+    end
+    return ac end function a.D()
 local aa=a.load'c'local ab=
 aa.New
 
