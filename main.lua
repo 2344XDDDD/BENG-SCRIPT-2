@@ -5722,15 +5722,20 @@ end end function a.C()
             Desc=af.Desc or nil,
             Locked=af.Locked or false,
         }
-        
         local ah=a.load'B'(af)
         ag.ParagraphFrame=ah
 
         function ag.SetTitle(self, text)
             local titleObj = ah.UIElements.Title
             titleObj.Text = text
-            titleObj.TextTransparency = 1 
-            aa.Tween(titleObj, 0.6, {TextTransparency = 0}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            titleObj.TextTransparency = 1
+            task.defer(function()
+                titleObj.Position = UDim2.new(0, 0, 0, -3)
+                aa.Tween(titleObj, 0.6, {
+                    TextTransparency = 0,
+                    Position = UDim2.new(0, 0, 0, 0)
+                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            end)
         end
 
         function ag.SetDesc(self, text)
@@ -5741,10 +5746,13 @@ end end function a.C()
             end
             descObj.Text = text
             descObj.Visible = true
-            descObj.TextTransparency = 1 
-       
+            descObj.TextTransparency = 1
             task.delay(0.15, function()
-                aa.Tween(descObj, 0.6, {TextTransparency = 0.3}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                descObj.Position = UDim2.new(0, 0, 0, -3)
+                aa.Tween(descObj, 0.7, {
+                    TextTransparency = 0.3,
+                    Position = UDim2.new(0, 0, 0, 0)
+                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             end)
         end
 
@@ -5767,12 +5775,15 @@ end end function a.C()
             end
         end
 
-        ag:SetTitle(ag.Title)
-        if ag.Desc then
-            ag:SetDesc(ag.Desc)
-        end
-        
-        return ag.__type, ag
+        task.spawn(function()
+            task.wait(0.1)
+            ag:SetTitle(ag.Title)
+            if ag.Desc then
+                ag:SetDesc(ag.Desc)
+            end
+        end)
+
+        return ag.__type,ag
     end
     return ac end function a.D()
 local aa=a.load'c'local ab=
