@@ -1266,7 +1266,7 @@ return b end function a.e()
             Buttons=g.Buttons or{},
             CanClose=g.CanClose~=false,
             ProgressColor=g.ProgressColor,
-            ProgressTransparency=g.ProgressTransparency or 0.95,
+            ProgressTransparency=g.ProgressTransparency or 0.9,
             UIElements={},
             Closed=false,
         }
@@ -1308,7 +1308,9 @@ return b end function a.e()
         end
 
         local progressBar=b.NewRoundFrame(f.UICorner,"Squircle",{
-            Size=UDim2.new(0,300,1,0),
+            Size=UDim2.new(1,0,1,0),
+            AnchorPoint=Vector2.new(0,0.5),
+            Position=UDim2.new(0,0,0.5,0),
             ImageColor3=h.ProgressColor or b.GetThemeProperty("NotificationDuration", b.Theme),
             ImageTransparency=h.ProgressTransparency,
         })
@@ -1372,31 +1374,32 @@ return b end function a.e()
 
         local holderItem=d("Frame",{BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),Parent=f.Holder.Frame},{mainCard})
 
-        function h.SetTitle(self, newTitle)
-            h.Title = newTitle
-            e(titleLabel, 0.25, {TextTransparency = 1, Position = UDim2.new(0,0,-0.3,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
-            task.delay(0.25, function()
-                titleLabel.Text = newTitle
-                titleLabel.Position = UDim2.new(0,0,0.3,0)
-                e(titleLabel, 0.4, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        function h.SetTitle(self, text)
+            h.Title = text
+            e(titleLabel, 0.2, {TextTransparency = 1, Position = UDim2.new(0,0,-0.4,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+            task.delay(0.2, function()
+                titleLabel.Text = text
+                titleLabel.Position = UDim2.new(0,0,0.4,0)
+                e(titleLabel, 0.35, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             end)
         end
 
-        function h.SetContent(self, newContent)
-            h.Content = newContent
+        function h.SetContent(self, text)
+            h.Content = text
             contentLabel.Visible = true
-            task.delay(0.15, function()
-                e(contentLabel, 0.25, {TextTransparency = 1, Position = UDim2.new(0,0,-0.3,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
-                task.delay(0.25, function()
-                    contentLabel.Text = newContent
-                    contentLabel.Position = UDim2.new(0,0,0.3,0)
-                    e(contentLabel, 0.4, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            task.delay(0.12, function()
+                e(contentLabel, 0.2, {TextTransparency = 1, Position = UDim2.new(0,0,-0.4,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+                task.delay(0.2, function()
+                    contentLabel.Text = text
+                    contentLabel.Position = UDim2.new(0,0,0.4,0)
+                    e(contentLabel, 0.35, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                 end)
             end)
         end
 
         function h.SetProgress(self, val)
-            e(progressBar, 0.3, {Size = UDim2.new(math.clamp(val, 0, 1), 0, 1, 0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            local targetSize = UDim2.new(math.clamp(val, 0, 1), 0, 1, 0)
+            e(progressBar, 0.5, {Size = targetSize}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
         end
 
         function h.Close(self)
@@ -1415,7 +1418,7 @@ return b end function a.e()
             e(holderItem,0.45,{Size=UDim2.new(1,0,0,mainCard.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             e(mainCard,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             if h.Duration then
-                progressBar.Size=UDim2.new(0,mainCard.AbsoluteSize.X,1,0)
+                progressBar.Size=UDim2.new(1,0,1,0)
                 e(progressBar,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
                 task.wait(h.Duration)
                 h:Close()
