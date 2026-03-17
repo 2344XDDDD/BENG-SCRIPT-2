@@ -1265,6 +1265,8 @@ return b end function a.e()
             Duration=g.Duration or 5,
             Buttons=g.Buttons or{},
             CanClose=g.CanClose~=false,
+            ProgressColor=g.ProgressColor,
+            ProgressTransparency=g.ProgressTransparency or 0.95,
             UIElements={},
             Closed=false,
         }
@@ -1275,16 +1277,16 @@ return b end function a.e()
         local currentSide = f.Holder.Side
         if g.Position then currentSide = g.Position:lower() end
 
-        local j
+        local iconImg
         if h.Icon then
-            j=b.Image(h.Icon, h.Title..":"..h.Icon, 0, g.Window, "Notification", h.IconThemed)
-            j.Size=UDim2.new(0,26,0,26)
-            j.Position=UDim2.new(0,f.UIPadding,0,f.UIPadding)
+            iconImg=b.Image(h.Icon, h.Title..":"..h.Icon, 0, g.Window, "Notification", h.IconThemed)
+            iconImg.Size=UDim2.new(0,26,0,26)
+            iconImg.Position=UDim2.new(0,f.UIPadding,0,f.UIPadding)
         end
 
-        local l
+        local closeBtn
         if h.CanClose then
-            l=d("ImageButton",{
+            closeBtn=d("ImageButton",{
                 Image=b.Icon"x"[1],
                 ImageRectSize=b.Icon"x"[2].ImageRectSize,
                 ImageRectOffset=b.Icon"x"[2].ImageRectPosition,
@@ -1305,30 +1307,56 @@ return b end function a.e()
             })
         end
 
-        local m=b.NewRoundFrame(f.UICorner,"Squircle",{
+        local progressBar=b.NewRoundFrame(f.UICorner,"Squircle",{
             Size=UDim2.new(0,300,1,0),
-            ThemeTag={ImageTransparency="NotificationDurationTransparency",ImageColor3="NotificationDuration"},
+            ImageColor3=h.ProgressColor or b.GetThemeProperty("NotificationDuration", b.Theme),
+            ImageTransparency=h.ProgressTransparency,
         })
 
-        local p=d("Frame",{
+        local titleLabel = d("TextLabel",{
+            AutomaticSize="Y",
+            Size=UDim2.new(1,-30-f.UIPadding,0,0),
+            TextWrapped=true,
+            TextXAlignment="Left",
+            RichText=true,
+            BackgroundTransparency=1,
+            TextSize=18,
+            ThemeTag={TextColor3="NotificationTitle",TextTransparency="NotificationTitleTransparency"},
+            Text=h.Title,
+            FontFace=Font.new(b.Font,Enum.FontWeight.SemiBold)
+        })
+
+        local contentLabel = d("TextLabel",{
+            AutomaticSize="Y",
+            Size=UDim2.new(1,0,0,0),
+            TextWrapped=true,
+            TextXAlignment="Left",
+            RichText=true,
+            BackgroundTransparency=1,
+            TextSize=15,
+            ThemeTag={TextColor3="NotificationContent",TextTransparency="NotificationContentTransparency"},
+            Text=h.Content or "",
+            FontFace=Font.new(b.Font,Enum.FontWeight.Medium),
+            Visible = h.Content ~= nil
+        })
+
+        local textContainer=d("Frame",{
             Size=UDim2.new(1,h.Icon and-28-f.UIPadding or 0,1,0),
             Position=UDim2.new(1,0,0,0),
             AnchorPoint=Vector2.new(1,0),
             BackgroundTransparency=1,
             AutomaticSize="Y",
+            ClipsDescendants = true,
         },{
             d("UIPadding",{PaddingTop=UDim.new(0,f.UIPadding),PaddingLeft=UDim.new(0,f.UIPadding),PaddingRight=UDim.new(0,f.UIPadding),PaddingBottom=UDim.new(0,f.UIPadding)}),
-            d("TextLabel",{AutomaticSize="Y",Size=UDim2.new(1,-30-f.UIPadding,0,0),TextWrapped=true,TextXAlignment="Left",RichText=true,BackgroundTransparency=1,TextSize=18,ThemeTag={TextColor3="NotificationTitle",TextTransparency="NotificationTitleTransparency"},Text=h.Title,FontFace=Font.new(b.Font,Enum.FontWeight.SemiBold)}),
-            d("UIListLayout",{Padding=UDim.new(0,f.UIPadding/3)})
+            d("UIListLayout",{Padding=UDim.new(0,f.UIPadding/3)}),
+            titleLabel,
+            contentLabel
         })
-
-        if h.Content then
-            d("TextLabel",{AutomaticSize="Y",Size=UDim2.new(1,0,0,0),TextWrapped=true,TextXAlignment="Left",RichText=true,BackgroundTransparency=1,TextSize=15,ThemeTag={TextColor3="NotificationContent",TextTransparency="NotificationContentTransparency"},Text=h.Content,FontFace=Font.new(b.Font,Enum.FontWeight.Medium),Parent=p})
-        end
 
         local startX = (currentSide == "left") and -2 or 2
 
-        local r=b.NewRoundFrame(f.UICorner,"Squircle",{
+        local mainCard=b.NewRoundFrame(f.UICorner,"Squircle",{
             Size=UDim2.new(1,0,0,0),
             Position=UDim2.new(startX,0,1,0),
             AnchorPoint=Vector2.new(0,1),
@@ -1337,37 +1365,64 @@ return b end function a.e()
             ThemeTag={ImageColor3="Notification"},
         },{
             b.NewRoundFrame(f.UICorner,"Glass-1",{Size=UDim2.new(1,0,1,0),ThemeTag={ImageColor3="NotificationBorder",ImageTransparency="NotificationBorderTransparency"}}),
-            d("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Name="DurationFrame"},{d("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,ClipsDescendants=true},{m})}),
+            d("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Name="DurationFrame"},{d("Frame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,ClipsDescendants=true},{progressBar})}),
             d("ImageLabel",{Name="Background",Image=h.Background,BackgroundTransparency=1,Size=UDim2.new(1,0,1,0),ScaleType="Crop",ImageTransparency=h.BackgroundImageTransparency},{d("UICorner",{CornerRadius=UDim.new(0,f.UICorner)})}),
-            p, j, l
+            textContainer, iconImg, closeBtn
         })
 
-        local u=d("Frame",{BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),Parent=f.Holder.Frame},{r})
+        local holderItem=d("Frame",{BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),Parent=f.Holder.Frame},{mainCard})
 
-        function h.Close(v)
+        function h.SetTitle(self, newTitle)
+            h.Title = newTitle
+            e(titleLabel, 0.25, {TextTransparency = 1, Position = UDim2.new(0,0,-0.3,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+            task.delay(0.25, function()
+                titleLabel.Text = newTitle
+                titleLabel.Position = UDim2.new(0,0,0.3,0)
+                e(titleLabel, 0.4, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+            end)
+        end
+
+        function h.SetContent(self, newContent)
+            h.Content = newContent
+            contentLabel.Visible = true
+            task.delay(0.15, function()
+                e(contentLabel, 0.25, {TextTransparency = 1, Position = UDim2.new(0,0,-0.3,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+                task.delay(0.25, function()
+                    contentLabel.Text = newContent
+                    contentLabel.Position = UDim2.new(0,0,0.3,0)
+                    e(contentLabel, 0.4, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                end)
+            end)
+        end
+
+        function h.SetProgress(self, val)
+            e(progressBar, 0.3, {Size = UDim2.new(math.clamp(val, 0, 1), 0, 1, 0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        end
+
+        function h.Close(self)
             if not h.Closed then
                 h.Closed=true
                 local exitX = (currentSide == "left") and -2 or 2
-                e(u,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-                e(r,0.55,{Position=UDim2.new(exitX,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+                e(holderItem, 0.45, {Size = UDim2.new(1,0,0,-8)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+                e(mainCard, 0.55, {Position = UDim2.new(exitX,0,1,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                 task.wait(.45)
-                u:Destroy()
+                holderItem:Destroy()
             end
         end
 
         task.spawn(function()
             task.wait()
-            e(u,0.45,{Size=UDim2.new(1,0,0,r.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-            e(r,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+            e(holderItem,0.45,{Size=UDim2.new(1,0,0,mainCard.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+            e(mainCard,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             if h.Duration then
-                m.Size=UDim2.new(0,r.AbsoluteSize.X,1,0)
-                e(m,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
+                progressBar.Size=UDim2.new(0,mainCard.AbsoluteSize.X,1,0)
+                e(progressBar,h.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
                 task.wait(h.Duration)
                 h:Close()
             end
         end)
 
-        if l then b.AddSignal(l.TextButton.MouseButton1Click,function() h:Close() end) end
+        if closeBtn then b.AddSignal(closeBtn.TextButton.MouseButton1Click,function() h:Close() end) end
         return h
     end
     return f end function a.f()
