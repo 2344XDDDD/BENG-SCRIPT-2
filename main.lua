@@ -4,7 +4,7 @@
     |__) |__  |\ | / _`    |  | | 
     |__) |___ | \| \__>    \__/ | 
 
-    V1.7.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
+    V1.6.75 | Ui by:Footagesus | Script by:BENG | UI 1.6.7 | UPD: [2026/11/2]
     https://bengscript.lol
     [Update: Added: all - Button(Not: lol)]
     Lua — Luau
@@ -5705,6 +5705,8 @@ end
 
 return ag
 end end function a.C()
+    local TweenService = game:GetService("TweenService")
+
     local aa=a.load'c'
     local ab=aa.New
     local ac={}
@@ -5714,49 +5716,61 @@ end end function a.C()
         af.Hover=false
         af.TextOffset=0
         af.ParentConfig=af
-        af.IsButtons=af.Buttons and#af.Buttons>0 and true or false
+        af.IsButtons=af.Buttons and #af.Buttons>0 and true or false
 
         local ag={
             __type="Paragraph",
-            Title=af.Title or"Paragraph",
+            Title=af.Title or "Paragraph",
             Desc=af.Desc or nil,
             Locked=af.Locked or false,
         }
+
         local ah=a.load'B'(af)
         ag.ParagraphFrame=ah
 
-        function ag.SetTitle(self, text)
-            local titleObj = ah.UIElements.Title
-            titleObj.Text = text
-            titleObj.TextTransparency = 1
-            task.defer(function()
-                titleObj.Position = UDim2.new(0, 0, 0, -3)
-                aa.Tween(titleObj, 0.6, {
-                    TextTransparency = 0,
-                    Position = UDim2.new(0, 0, 0, 0)
-                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
+        local title = ah.UIElements and ah.UIElements.Title
+        local desc = ah.UIElements and ah.UIElements.Desc
+
+        if title then
+            title.TextTransparency = 1
+        end
+
+        if desc then
+            desc.TextTransparency = 1
+            desc.Position = desc.Position + UDim2.new(0,0,0,20)
+        end
+
+        local tweenInfo = TweenInfo.new(
+            0.4,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out
+        )
+
+        if title then
+            local titleTween = TweenService:Create(title, tweenInfo, {
+                TextTransparency = 0
+            })
+
+            titleTween:Play()
+
+            titleTween.Completed:Connect(function()
+                if desc then
+                    local descTween = TweenService:Create(desc, TweenInfo.new(
+                        0.5,
+                        Enum.EasingStyle.Quint,
+                        Enum.EasingDirection.Out
+                    ), {
+                        TextTransparency = 0,
+                        Position = desc.Position - UDim2.new(0,0,0,20)
+                    })
+
+                    task.wait(0.05)
+                    descTween:Play()
+                end
             end)
         end
 
-        function ag.SetDesc(self, text)
-            local descObj = ah.UIElements.Desc
-            if not text or text == "" then
-                descObj.Visible = false
-                return
-            end
-            descObj.Text = text
-            descObj.Visible = true
-            descObj.TextTransparency = 1
-            task.delay(0.15, function()
-                descObj.Position = UDim2.new(0, 0, 0, -3)
-                aa.Tween(descObj, 0.7, {
-                    TextTransparency = 0.3,
-                    Position = UDim2.new(0, 0, 0, 0)
-                }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
-            end)
-        end
-
-        if af.Buttons and#af.Buttons>0 then
+        if af.Buttons and #af.Buttons>0 then
             local ai=ab("Frame",{
                 Size=UDim2.new(1,0,0,0),
                 BackgroundTransparency=1,
@@ -5770,21 +5784,23 @@ end end function a.C()
             })
 
             for aj,ak in next,af.Buttons do
-                local al=ad(ak.Title,ak.Icon,ak.Callback,ak.Variant or "Secondary",ai,nil,nil,af.Window.NewElements and 999 or 10)
+                local al=ad(
+                    ak.Title,
+                    ak.Icon,
+                    ak.Callback,
+                    ak.Variant or "Secondary",
+                    ai,
+                    nil,
+                    nil,
+                    af.Window.NewElements and 999 or 10
+                )
                 al.Size=UDim2.new(1,0,0,38)
             end
         end
 
-        task.spawn(function()
-            task.wait(0.1)
-            ag:SetTitle(ag.Title)
-            if ag.Desc then
-                ag:SetDesc(ag.Desc)
-            end
-        end)
-
         return ag.__type,ag
     end
+
     return ac end function a.D()
 local aa=a.load'c'local ab=
 aa.New
