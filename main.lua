@@ -1378,10 +1378,10 @@ return b end function a.e()
 
         function h.SetTitle(self, text)
             h.Title = text
-            e(titleLabel, 0.2, {TextTransparency = 1, Position = UDim2.new(0,0,-0.5,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+            e(titleLabel, 0.2, {TextTransparency = 1, Position = UDim2.new(0,0,-0.4,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
             task.delay(0.2, function()
                 titleLabel.Text = text
-                titleLabel.Position = UDim2.new(0,0,0.5,0)
+                titleLabel.Position = UDim2.new(0,0,0.4,0)
                 e(titleLabel, 0.35, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             end)
         end
@@ -1390,10 +1390,10 @@ return b end function a.e()
             h.Content = text
             contentLabel.Visible = true
             task.delay(0.12, function()
-                e(contentLabel, 0.2, {TextTransparency = 1, Position = UDim2.new(0,0,-0.5,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
+                e(contentLabel, 0.2, {TextTransparency = 1, Position = UDim2.new(0,0,-0.4,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.In):Play()
                 task.delay(0.2, function()
                     contentLabel.Text = text
-                    contentLabel.Position = UDim2.new(0,0,0.5,0)
+                    contentLabel.Position = UDim2.new(0,0,0.4,0)
                     e(contentLabel, 0.35, {TextTransparency = 0, Position = UDim2.new(0,0,0,0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
                 end)
             end)
@@ -1419,14 +1419,13 @@ return b end function a.e()
         end
 
         task.spawn(function()
-            task.wait()
+            task.wait(0.1)
             e(holderItem,0.45,{Size=UDim2.new(1,0,0,mainCard.AbsoluteSize.Y)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             e(mainCard,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
             if h.Duration then
                 progressBar.Size = UDim2.new(1,0,1,0)
                 h.AutoTween = e(progressBar, h.Duration, {Size = UDim2.new(0,0,1,0)}, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
                 h.AutoTween:Play()
-                
                 task.spawn(function()
                     h.AutoTween.Completed:Wait()
                     if not h.IsManual and not h.Closed then
