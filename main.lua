@@ -5705,103 +5705,47 @@ end
 
 return ag
 end end function a.C()
-    local TweenService = game:GetService("TweenService")
+local aa=a.load'c'
+local ab=aa.New
+local ac={}
+local ad=a.load'l'.New 
 
-    local aa=a.load'c'
-    local ab=aa.New
-    local ac={}
-    local ad=a.load'l'.New 
+function ac.New(ae,af)
+af.Hover=false
+af.TextOffset=0
+af.ParentConfig=af
+af.IsButtons=af.Buttons and#af.Buttons>0 and true or false
 
-    function ac.New(ae,af)
-        af.Hover=false
-        af.TextOffset=0
-        af.ParentConfig=af
-        af.IsButtons=af.Buttons and #af.Buttons>0 and true or false
+local ag={
+__type="Paragraph",
+Title=af.Title or"Paragraph",
+Desc=af.Desc or nil,
+Locked=af.Locked or false,
+}
+local ah=a.load'B'(af)
+ag.ParagraphFrame=ah
 
-        local ag={
-            __type="Paragraph",
-            Title=af.Title or "Paragraph",
-            Desc=af.Desc or nil,
-            Locked=af.Locked or false,
-        }
+if af.Buttons and#af.Buttons>0 then
+local ai=ab("Frame",{
+Size=UDim2.new(1,0,0,0),
+BackgroundTransparency=1,
+AutomaticSize="Y",
+Parent=ah.UIElements.Container
+},{
+ab("UIListLayout",{
+Padding=UDim.new(0,10),
+FillDirection="Vertical",
+})
+})
 
-        local ah=a.load'B'(af)
-        ag.ParagraphFrame=ah
-
-        local title = ah.UIElements and ah.UIElements.Title
-        local desc = ah.UIElements and ah.UIElements.Desc
-
-        if title then
-            title.TextTransparency = 1
-        end
-
-        if desc then
-            desc.TextTransparency = 1
-            desc.Position = desc.Position + UDim2.new(0,0,0,20)
-        end
-
-        local tweenInfo = TweenInfo.new(
-            0.4,
-            Enum.EasingStyle.Quad,
-            Enum.EasingDirection.Out
-        )
-
-        if title then
-            local titleTween = TweenService:Create(title, tweenInfo, {
-                TextTransparency = 0
-            })
-
-            titleTween:Play()
-
-            titleTween.Completed:Connect(function()
-                if desc then
-                    local descTween = TweenService:Create(desc, TweenInfo.new(
-                        0.5,
-                        Enum.EasingStyle.Quint,
-                        Enum.EasingDirection.Out
-                    ), {
-                        TextTransparency = 0,
-                        Position = desc.Position - UDim2.new(0,0,0,20)
-                    })
-
-                    task.wait(0.05)
-                    descTween:Play()
-                end
-            end)
-        end
-
-        if af.Buttons and #af.Buttons>0 then
-            local ai=ab("Frame",{
-                Size=UDim2.new(1,0,0,0),
-                BackgroundTransparency=1,
-                AutomaticSize="Y",
-                Parent=ah.UIElements.Container
-            },{
-                ab("UIListLayout",{
-                    Padding=UDim.new(0,10),
-                    FillDirection="Vertical",
-                })
-            })
-
-            for aj,ak in next,af.Buttons do
-                local al=ad(
-                    ak.Title,
-                    ak.Icon,
-                    ak.Callback,
-                    ak.Variant or "Secondary",
-                    ai,
-                    nil,
-                    nil,
-                    af.Window.NewElements and 999 or 10
-                )
-                al.Size=UDim2.new(1,0,0,38)
-            end
-        end
-
-        return ag.__type,ag
-    end
-
-    return ac end function a.D()
+for aj,ak in next,af.Buttons do
+local al=ad(ak.Title,ak.Icon,ak.Callback,ak.Variant or "Secondary",ai,nil,nil,af.Window.NewElements and 999 or 10)
+al.Size=UDim2.new(1,0,0,38)
+end
+end
+return ag.__type,ag
+end
+return ac end function a.D()
 local aa=a.load'c'local ab=
 aa.New
 
@@ -11770,7 +11714,7 @@ CornerRadius=UDim.new(0,au.UICorner)
 au.UIElements.SideBarContainer,
 au.UIElements.MainBar,
 
-am("TextLabel",{Name="Footer",Text="Script by:BENG _ 1.6.7 UI",TextSize=13,TextTransparency=0.7,TextXAlignment="Right",BackgroundTransparency=1,Position=UDim2.new(1,-14,1,-14),AnchorPoint=Vector2.new(1,1),Size=UDim2.new(0,0,0,0),AutomaticSize="XY",ThemeTag={TextColor3="Text",},FontFace=Font.new(al.Font,Enum.FontWeight.Medium)}),
+am("TextLabel",{Name="Footer",Text="Script by:BENG _ 1.7.4 BENG UI",TextSize=13,TextTransparency=0.7,TextXAlignment="Right",BackgroundTransparency=1,Position=UDim2.new(1,-14,1,-14),AnchorPoint=Vector2.new(1,1),Size=UDim2.new(0,0,0,0),AutomaticSize="XY",ThemeTag={TextColor3="Text",},FontFace=Font.new(al.Font,Enum.FontWeight.Medium)}),
 
 aB,
 
