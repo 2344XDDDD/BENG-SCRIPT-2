@@ -6258,8 +6258,11 @@ function NeverLose:CreateNotification()
 
 	NeverLose.__Notification_Cache = Notifier;
 
+	function NeverLose:CreateNotification()
+	local Notifier = {};
 	function Notifier.new(Config)
-	return
+	end;
+	return Notifier;
 end;
 
 function NeverLose:CreateLogger()
@@ -6286,8 +6289,11 @@ function NeverLose:CreateLogger()
 
 	NeverLose.__LogSystem = Logging;
 
+	function NeverLose:CreateLogger()
+	local Logging = {};
 	function Logging.new(IconStr, Message, Duration)
-	return
+	end;
+	return Logging;
 end;
 
 function NeverLose:CreateIndicator()
