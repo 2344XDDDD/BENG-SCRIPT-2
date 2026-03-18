@@ -4278,7 +4278,7 @@ end);
 	HeadFrame.ZIndex = 7
 
 	LogoImage.Name = NeverLose.RandomString();
-	LogoImage.Parent = nil;
+	--LogoImage.Parent = HeadFrame
 	LogoImage.AnchorPoint = Vector2.new(0, 0.5)
 	LogoImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	LogoImage.BackgroundTransparency = 1.000
@@ -4299,7 +4299,7 @@ end);
 	WindowName.BackgroundTransparency = 1.000
 	WindowName.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	WindowName.BorderSizePixel = 0
-	WindowName.Position = UDim2.new(0, 55, 0, 4)
+	WindowName.Position = UDim2.new(0, 10, 0, 4)
 	WindowName.Size = UDim2.new(0, 200, 0, 25)
 	WindowName.ZIndex = 7
 	WindowName.Font = Enum.Font.GothamBold
@@ -4314,7 +4314,7 @@ end);
 	WindowContent.BackgroundTransparency = 1.000
 	WindowContent.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	WindowContent.BorderSizePixel = 0
-	WindowContent.Position = UDim2.new(0, 55, 0, 25)
+	WindowContent.Position = UDim2.new(0, 10, 0, 25)
 	WindowContent.Size = UDim2.new(0, 200, 0, 15)
 	WindowContent.ZIndex = 7
 	WindowContent.Font = Enum.Font.GothamBold
