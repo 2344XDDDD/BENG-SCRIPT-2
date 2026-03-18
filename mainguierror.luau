@@ -6331,8 +6331,8 @@ NotifyName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 NotifyName.BackgroundTransparency = 1.000
 NotifyName.BorderColor3 = Color3.fromRGB(0, 0, 0)
 NotifyName.BorderSizePixel = 0
-NotifyName.Position = UDim2.new(0, 50, 0, 7)
-NotifyName.Size = UDim2.new(0, 200, 0, 20)
+NotifyName.Position = UDim2.new(0, 55, 0, 8)
+NotifyName.Size = UDim2.new(1, -65, 0, 20)
 NotifyName.ZIndex = 132
 NotifyName.Font = Enum.Font.GothamBold
 NotifyName.Text = Config.Title
@@ -6346,8 +6346,8 @@ NotifyContent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 NotifyContent.BackgroundTransparency = 1.000
 NotifyContent.BorderColor3 = Color3.fromRGB(0, 0, 0)
 NotifyContent.BorderSizePixel = 0
-NotifyContent.Position = UDim2.new(0, 50, 0, 28)
-NotifyContent.Size = UDim2.new(0, 200, 0, 15)
+NotifyContent.Position = UDim2.new(0, 55, 0, 28)
+NotifyContent.Size = UDim2.new(1, -65, 0, 15)
 NotifyContent.ZIndex = 132
 NotifyContent.Font = Enum.Font.GothamBold
 NotifyContent.Text = Config.Content
@@ -6361,7 +6361,7 @@ local Size2 = TextService:GetTextSize(NotifyContent.Text,NotifyContent.TextSize,
 
 local MainSize = math.max(Size1.X , Size2.X)
 
-NotifyFrame.Size = UDim2.new(0, MainSize + 65, 0, 55)
+NotifyFrame.Size = UDim2.new(0, MainSize + 70, 0, 55)
 
 shadow:Render(true)
 NeverLose.PlayAnimate(NotifyFrame , VSlowTween , {
@@ -6371,7 +6371,6 @@ NeverLose.PlayAnimate(NotifyFrame , VSlowTween , {
 ContainerFrame.Size = UDim2.new(0, 0, 0, 65)
 
 task.delay(Config.Duration or 5 , LPH_NO_VIRTUALIZE(function()
-
     if NeverLose.__WatermarkCache then
         NeverLose.PlayAnimate(Notification,SlowyTween , {
             Position = UDim2.new(1, -25, 0, 55)
