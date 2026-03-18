@@ -6057,7 +6057,7 @@ end);
 			end
 		end;
 
-		function Watermark_lb:AddBlock(IconStr , Name)
+function Watermark_lb:AddBlock(IconStr , Name)
 			local InnerBlock = {};
 
 			local Frame = Instance.new("Frame")
@@ -6163,8 +6163,25 @@ end);
 			end;
 
 			function InnerBlock:Input(func)
-				local c,s = NeverLose:CreateInput(Frame,func);
-
+				local clickCount = 0
+				local _, s = NeverLose:CreateInput(Frame, LPH_NO_VIRTUALIZE(function()
+					clickCount = clickCount + 1
+					if clickCount == 1 then
+						task.delay(0.25, function()
+							if clickCount == 1 then
+								if Window and Window.ToggleInterface then
+									Window:ToggleInterface()
+								end
+							elseif clickCount >= 2 then
+								if Window and Window.ToggleSideBar then
+									Window:ToggleSideBar()
+								end
+							end
+							clickCount = 0
+						end)
+					end
+					if func then func() end
+				end));
 				return s;
 			end;
 
