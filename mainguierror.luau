@@ -195,7 +195,7 @@ NeverLose.MainColor = Color3.fromRGB(8, 8, 13);
 NeverLose.RegisiteryColor = {};
 NeverLose.NameRegisitry = {};
 NeverLose.IsMosueOverOtherFrame = false;
-NeverLose.GlobalLogo = "";
+NeverLose.GlobalLogo = "rbxassetid://120358385035996";
 NeverLose.ImageColorMapping = "rbxassetid://4155801252";
 
 if getcustomasset then
@@ -215,7 +215,7 @@ if getcustomasset then
 		end;
 
 		if isfile(dir..'/'..'logo.png') then
-			--NeverLose.GlobalLogo = getcustomasset(dir..'/'..'logo.png')
+			NeverLose.GlobalLogo = getcustomasset(dir..'/'..'logo.png')
 		end;
 	end);
 
@@ -6272,144 +6272,144 @@ function NeverLose:CreateNotification()
 			});
 		end;
 
-		local ContainerFrame = Instance.new("Frame")
-		local NotifyFrame = Instance.new("Frame")
-		local UICorner = Instance.new("UICorner")
-		local UIStroke = Instance.new("UIStroke")
-		local LogoImage = Instance.new("ImageLabel")
-		local UICorner_2 = Instance.new("UICorner")
-		local NotifyName = Instance.new("TextLabel")
-		local NotifyContent = Instance.new("TextLabel");
-		local shadow = NeverLose:CreateShadow(NotifyFrame , true);
+local ContainerFrame = Instance.new("Frame")
+local NotifyFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+local LogoImage = Instance.new("ImageLabel")
+local UICorner_2 = Instance.new("UICorner")
+local NotifyName = Instance.new("TextLabel")
+local NotifyContent = Instance.new("TextLabel")
+local shadow = NeverLose:CreateShadow(NotifyFrame , true)
 
-		ContainerFrame.Name = NeverLose.RandomString();
-		ContainerFrame.Parent = Notification
-		ContainerFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		ContainerFrame.BackgroundTransparency = 1.000
-		ContainerFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		ContainerFrame.BorderSizePixel = 0
-		ContainerFrame.Size = UDim2.new(0, 0, 0, 100)
+ContainerFrame.Name = NeverLose.RandomString()
+ContainerFrame.Parent = Notification
+ContainerFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ContainerFrame.BackgroundTransparency = 1.000
+ContainerFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+ContainerFrame.BorderSizePixel = 0
+ContainerFrame.Size = UDim2.new(0, 0, 0, 100)
 
-		NotifyFrame.Name = NeverLose.RandomString();
-		NotifyFrame.Parent = ContainerFrame
-		NotifyFrame.AnchorPoint = Vector2.new(1, 0)
-		NotifyFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
-		NotifyFrame.BackgroundTransparency = 0.075
-		NotifyFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		NotifyFrame.BorderSizePixel = 0
-		NotifyFrame.ClipsDescendants = true
-		NotifyFrame.Position = UDim2.new(0, 750, 0, 0)
-		NotifyFrame.Size = UDim2.new(0, 220, 0, 55)
-		NotifyFrame.ZIndex = 130
+NotifyFrame.Name = NeverLose.RandomString()
+NotifyFrame.Parent = ContainerFrame
+NotifyFrame.AnchorPoint = Vector2.new(0, 0)
+NotifyFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+NotifyFrame.BackgroundTransparency = 0.075
+NotifyFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+NotifyFrame.BorderSizePixel = 0
+NotifyFrame.ClipsDescendants = true
+NotifyFrame.Position = UDim2.new(0, -500, 0, 0)
+NotifyFrame.Size = UDim2.new(0, 220, 0, 55)
+NotifyFrame.ZIndex = 130
 
-		UICorner.CornerRadius = UDim.new(0, 10)
-		UICorner.Parent = NotifyFrame
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = NotifyFrame
 
-		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
-		UIStroke.Parent = NotifyFrame
+UIStroke.Transparency = 0.650
+UIStroke.Color = Color3.fromRGB(45, 48, 58)
+UIStroke.Parent = NotifyFrame
 
-		LogoImage.Name = NeverLose.RandomString();
-		LogoImage.Parent = NotifyFrame
-		LogoImage.AnchorPoint = Vector2.new(0, 0.5)
-		LogoImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		LogoImage.BackgroundTransparency = 1.000
-		LogoImage.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		LogoImage.BorderSizePixel = 0
-		LogoImage.Position = UDim2.new(0, 10, 0.5, 0)
-		LogoImage.Size = UDim2.new(0, 35, 0, 35)
-		LogoImage.ZIndex = 131
-		LogoImage.Image = Config.Logo
-		LogoImage.ImageColor3 = NeverLose.IconColor;
+LogoImage.Name = NeverLose.RandomString()
+LogoImage.Parent = NotifyFrame
+LogoImage.AnchorPoint = Vector2.new(0, 0.5)
+LogoImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+LogoImage.BackgroundTransparency = 1.000
+LogoImage.BorderColor3 = Color3.fromRGB(0, 0, 0)
+LogoImage.BorderSizePixel = 0
+LogoImage.Position = UDim2.new(0, 10, 0.5, 0)
+LogoImage.Size = UDim2.new(0, 35, 0, 35)
+LogoImage.ZIndex = 131
+LogoImage.Image = Config.Logo
+LogoImage.ImageColor3 = NeverLose.IconColor
 
-		UICorner_2.CornerRadius = UDim.new(0, 7)
-		UICorner_2.Parent = LogoImage
+UICorner_2.CornerRadius = UDim.new(0, 7)
+UICorner_2.Parent = LogoImage
 
-		NotifyName.Name = NeverLose.RandomString();
-		NotifyName.Parent = NotifyFrame
-		NotifyName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		NotifyName.BackgroundTransparency = 1.000
-		NotifyName.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		NotifyName.BorderSizePixel = 0
-		NotifyName.Position = UDim2.new(0, 50, 0, 7)
-		NotifyName.Size = UDim2.new(0, 200, 0, 20)
-		NotifyName.ZIndex = 132
-		NotifyName.Font = Enum.Font.GothamBold
-		NotifyName.Text = Config.Title
-		NotifyName.TextColor3 = Color3.fromRGB(255, 255, 255)
-		NotifyName.TextSize = 17.000
-		NotifyName.TextXAlignment = Enum.TextXAlignment.Left
+NotifyName.Name = NeverLose.RandomString()
+NotifyName.Parent = NotifyFrame
+NotifyName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+NotifyName.BackgroundTransparency = 1.000
+NotifyName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+NotifyName.BorderSizePixel = 0
+NotifyName.Position = UDim2.new(0, 50, 0, 7)
+NotifyName.Size = UDim2.new(0, 200, 0, 20)
+NotifyName.ZIndex = 132
+NotifyName.Font = Enum.Font.GothamBold
+NotifyName.Text = Config.Title
+NotifyName.TextColor3 = Color3.fromRGB(255, 255, 255)
+NotifyName.TextSize = 17.000
+NotifyName.TextXAlignment = Enum.TextXAlignment.Left
 
-		NotifyContent.Name = NeverLose.RandomString();
-		NotifyContent.Parent = NotifyFrame
-		NotifyContent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		NotifyContent.BackgroundTransparency = 1.000
-		NotifyContent.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		NotifyContent.BorderSizePixel = 0
-		NotifyContent.Position = UDim2.new(0, 50, 0, 28)
-		NotifyContent.Size = UDim2.new(0, 200, 0, 15)
-		NotifyContent.ZIndex = 132
-		NotifyContent.Font = Enum.Font.GothamBold
-		NotifyContent.Text = Config.Content
-		NotifyContent.TextColor3 = Color3.fromRGB(255, 255, 255)
-		NotifyContent.TextSize = 12.000
-		NotifyContent.TextTransparency = 0.650
-		NotifyContent.TextXAlignment = Enum.TextXAlignment.Left
+NotifyContent.Name = NeverLose.RandomString()
+NotifyContent.Parent = NotifyFrame
+NotifyContent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+NotifyContent.BackgroundTransparency = 1.000
+NotifyContent.BorderColor3 = Color3.fromRGB(0, 0, 0)
+NotifyContent.BorderSizePixel = 0
+NotifyContent.Position = UDim2.new(0, 50, 0, 28)
+NotifyContent.Size = UDim2.new(0, 200, 0, 15)
+NotifyContent.ZIndex = 132
+NotifyContent.Font = Enum.Font.GothamBold
+NotifyContent.Text = Config.Content
+NotifyContent.TextColor3 = Color3.fromRGB(255, 255, 255)
+NotifyContent.TextSize = 12.000
+NotifyContent.TextTransparency = 0.650
+NotifyContent.TextXAlignment = Enum.TextXAlignment.Left
 
-		local Size1 = TextService:GetTextSize(NotifyName.Text,NotifyName.TextSize,NotifyName.Font,Vector2.new(math.huge,math.huge));
-		local Size2 = TextService:GetTextSize(NotifyContent.Text,NotifyContent.TextSize,NotifyContent.Font,Vector2.new(math.huge,math.huge));
+local Size1 = TextService:GetTextSize(NotifyName.Text,NotifyName.TextSize,NotifyName.Font,Vector2.new(math.huge,math.huge))
+local Size2 = TextService:GetTextSize(NotifyContent.Text,NotifyContent.TextSize,NotifyContent.Font,Vector2.new(math.huge,math.huge))
 
-		local MainSize = math.max(Size1.X , Size2.X);
+local MainSize = math.max(Size1.X , Size2.X)
 
-		NotifyFrame.Size = UDim2.new(0, MainSize + 65, 0, 55);
+NotifyFrame.Size = UDim2.new(0, MainSize + 65, 0, 55)
 
-		shadow:Render(true)
-		NeverLose.PlayAnimate(NotifyFrame , VSlowTween , {
-			Position = UDim2.new(1, 0, 0, 0)
-		})
+shadow:Render(true)
+NeverLose.PlayAnimate(NotifyFrame , VSlowTween , {
+    Position = UDim2.new(0, 20, 0, 0)
+})
 
-		ContainerFrame.Size = UDim2.new(0, 0, 0, 65)
+ContainerFrame.Size = UDim2.new(0, 0, 0, 65)
 
-		task.delay(Config.Duration or 5 , LPH_NO_VIRTUALIZE(function()
+task.delay(Config.Duration or 5 , LPH_NO_VIRTUALIZE(function()
 
-			if NeverLose.__WatermarkCache then
-				NeverLose.PlayAnimate(Notification,SlowyTween , {
-					Position = UDim2.new(1, -25, 0, 55)
-				});
-			end;
+    if NeverLose.__WatermarkCache then
+        NeverLose.PlayAnimate(Notification,SlowyTween , {
+            Position = UDim2.new(0, 25, 0, 55)
+        })
+    end
 
-			shadow:Render(false)
+    shadow:Render(false)
 
-			NeverLose.PlayAnimate(NotifyFrame , SlowyTween , {
-				BackgroundTransparency = 1
-			})
+    NeverLose.PlayAnimate(NotifyFrame , SlowyTween , {
+        BackgroundTransparency = 1
+    })
 
-			NeverLose.PlayAnimate(UIStroke , SlowyTween , {
-				Transparency = 1
-			})
+    NeverLose.PlayAnimate(UIStroke , SlowyTween , {
+        Transparency = 1
+    })
 
-			NeverLose.PlayAnimate(LogoImage , SlowyTween , {
-				ImageTransparency = 1
-			})
+    NeverLose.PlayAnimate(LogoImage , SlowyTween , {
+        ImageTransparency = 1
+    })
 
-			NeverLose.PlayAnimate(NotifyName , SlowyTween , {
-				TextTransparency = 1
-			})
+    NeverLose.PlayAnimate(NotifyName , SlowyTween , {
+        TextTransparency = 1
+    })
 
-			NeverLose.PlayAnimate(NotifyContent , SlowyTween , {
-				TextTransparency = 1
-			})
+    NeverLose.PlayAnimate(NotifyContent , SlowyTween , {
+        TextTransparency = 1
+    })
 
-			task.wait(0.125);
+    task.wait(0.125)
 
-			NeverLose.PlayAnimate(ContainerFrame , SlowyTween , {
-				Size = UDim2.new(0, 0, 0, 0)
-			})
+    NeverLose.PlayAnimate(ContainerFrame , SlowyTween , {
+        Size = UDim2.new(0, 0, 0, 0)
+    })
 
-			task.wait(0.125);
+    task.wait(0.125)
 
-			ContainerFrame:Destroy();
-		end))
+    ContainerFrame:Destroy()
+end))
 	end;
 
 	return Notifier;
