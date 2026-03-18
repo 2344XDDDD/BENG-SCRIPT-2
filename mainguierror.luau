@@ -1566,8 +1566,8 @@ function NeverLose:CreateColorPicker(HandleFrame: Frame)
 
 	ColorPickerLib.SetRender = LPH_NO_VIRTUALIZE(function(value)
 		if value then
-			ColorPickerHandler.Position = UDim2.new(0,HandleFrame.AbsolutePosition.X + 20 , 0 ,HandleFrame.AbsolutePosition.Y + 75);
-
+			ColorPickerHandler.Position = UDim2.new(0, HandleFrame.AbsolutePosition.X - 210, 0,                     HandleFrame.AbsolutePosition.Y - 245);
+			
 			NeverLose.PlayAnimate(ColorPickerHandler,SlowyTween , {
 				BackgroundTransparency = 0.035
 			})
@@ -6163,25 +6163,8 @@ end);
 			end;
 
 			function InnerBlock:Input(func)
-				local clickCount = 0
-				local _, s = NeverLose:CreateInput(Frame, LPH_NO_VIRTUALIZE(function()
-					clickCount = clickCount + 1
-					if clickCount == 1 then
-						task.delay(0.25, function()
-							if clickCount == 1 then
-								if Window and Window.ToggleInterface then
-									Window:ToggleInterface()
-								end
-							elseif clickCount >= 2 then
-								if Window and Window.ToggleSideBar then
-									Window:ToggleSideBar()
-								end
-							end
-							clickCount = 0
-						end)
-					end
-					if func then func() end
-				end));
+				local c,s = NeverLose:CreateInput(Frame,func);
+
 				return s;
 			end;
 
