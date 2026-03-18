@@ -1124,53 +1124,7 @@ function NeverLose:RollingEffect(parent)
 	return UIGradient;
 end;
 
-function NeverLose:CreateMarquee(parent, config)
-    config = NeverLose:ProcessParams(config, {
-        Thickness = 2,
-        Colors = {NeverLose.AccentColor, Color3.fromRGB(255, 255, 255), NeverLose.AccentColor},
-        Speed = 2,
-    })
 
-    local Marquee = {}
-    local Stroke = Instance.new("UIStroke")
-    Stroke.Thickness = config.Thickness
-    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Stroke.LineJoinMode = Enum.LineJoinMode.Round
-    Stroke.Transparency = 0
-    Stroke.Parent = parent
-
-    local Gradient = Instance.new("UIGradient")
-    local ColorKeys = {}
-    for i, color in ipairs(config.Colors) do
-        table.insert(ColorKeys, ColorSequenceKeypoint.new((i-1)/(#config.Colors-1), color))
-    end
-    Gradient.Color = ColorSequence.new(ColorKeys)
-    Gradient.Parent = Stroke
-
-    local rotation = 0
-    local connection
-    
-    function Marquee:SetEnabled(state)
-        if state then
-            if connection then return end
-            connection = NeverLose:AddSignal(RunService.RenderStepped:Connect(function(dt)
-                rotation = (rotation + (config.Speed * 60 * dt)) % 360
-                Gradient.Rotation = rotation
-            end))
-        else
-            if connection then
-                connection:Disconnect()
-                connection = nil
-            end
-        end
-    end
-
-    Marquee:SetEnabled(true)
-    Marquee.Stroke = Stroke
-    Marquee.Gradient = Gradient
-    
-    return Marquee
-end
 
 function NeverLose:CreateShadow(parent , RollingEffect)
 	local Shadow = {};
@@ -1272,6 +1226,57 @@ function NeverLose:CreateShadow(parent , RollingEffect)
 
 	return Shadow;
 end;
+
+function NeverLose:CreateMarquee(parent, config)
+    config = NeverLose:ProcessParams(config, {
+        Thickness = 2,
+        Colors = {NeverLose.AccentColor, Color3.fromRGB(255, 255, 255), NeverLose.AccentColor},
+        Speed = 2,
+    })
+
+    local Marquee = {}
+    
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Thickness = config.Thickness
+    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Stroke.LineJoinMode = Enum.LineJoinMode.Round
+    Stroke.Transparency = 0
+    Stroke.Enabled = true
+    Stroke.Color = Color3.fromRGB(255, 255, 255)
+    Stroke.Parent = parent
+
+    local Gradient = Instance.new("UIGradient")
+    local ColorKeys = {}
+    for i, color in ipairs(config.Colors) do
+        table.insert(ColorKeys, ColorSequenceKeypoint.new((i-1)/(#config.Colors-1), color))
+    end
+    Gradient.Color = ColorSequence.new(ColorKeys)
+    Gradient.Parent = Stroke
+
+    local connection
+    local currentRotation = 0
+
+    function Marquee:SetEnabled(state)
+        if state then
+            if connection then return end
+            connection = RunService.RenderStepped:Connect(function(dt)
+                currentRotation = (currentRotation + (config.Speed * 120 * dt)) % 360
+                Gradient.Rotation = currentRotation
+            end)
+            Stroke.Enabled = true
+        else
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            Stroke.Enabled = false
+        end
+    end
+
+    Marquee:SetEnabled(true)
+    Marquee.Stroke = Stroke
+    return Marquee
+end
 
 function NeverLose:CreateOptionWindow(Frame: Frame , Zindex)
 	Zindex = Zindex or 9;
@@ -3963,22 +3968,22 @@ function NeverLose:CreateWindow(Config)
 	WindowFrame.BorderSizePixel = 0
 	WindowFrame.ClipsDescendants = true
 	WindowFrame.Position = UDim2.new(255, 0, 255, 0)
-    WindowFrame.Size = Window.Size
-    WindowFrame.Active = true;
+WindowFrame.Size = Window.Size
+WindowFrame.Active = true;
 
-Window.MarqueeBorder = NeverLose:CreateMarquee(WindowFrame, {
+local Marquee = NeverLose:CreateMarquee(WindowFrame, {
     Thickness = 2,
     Colors = {NeverLose.AccentColor, Color3.fromRGB(255, 255, 255), NeverLose.AccentColor},
-    Speed = 2.5
+    Speed = 2
 })
 
+Window.Marquee = Marquee
+
 NeverLose:AddSignal(Window.Signal:Connect(function(isVisible)
-    Window.MarqueeBorder:SetEnabled(isVisible)
-    if isVisible then
-        NeverLose.PlayAnimate(Window.MarqueeBorder.Stroke, SlowyTween, {Transparency = 0})
-    else
-        NeverLose.PlayAnimate(Window.MarqueeBorder.Stroke, SlowyTween, {Transparency = 1})
-    end
+    Marquee:SetEnabled(isVisible)
+    NeverLose.PlayAnimate(Marquee.Stroke, SlowyTween, {
+        Transparency = isVisible and 0 or 1
+    })
 end))
 
 	if not NeverLose.EnabledBlur then
