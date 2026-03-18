@@ -6156,9 +6156,6 @@ end);
 
 	Window:SetRender(false);
 
-	return Window;
-end;
-
 Window.SideBarOpened = true
 
 local function toggleSideBar()
@@ -6201,6 +6198,9 @@ window.UserSettings:AddLabel('Menu Scale'):AddDropdown({
 		Logging.new("crop",'Changed ui size to '..tostring(v),5)
 	end,
 })
+
+	return Window;
+end;
 
 function NeverLose:CreateNotification()
 	if NeverLose.__Notification_Cache then
