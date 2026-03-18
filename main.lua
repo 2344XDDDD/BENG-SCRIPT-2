@@ -5709,57 +5709,46 @@ end end function a.C()
     local ab = aa.New
     local ad = aa.Tween
     local ac = {}
-
     function ac.New(ae, af)
         af.Hover = false
         af.TextOffset = 0
         af.ParentConfig = af
         af.IsButtons = af.Buttons and #af.Buttons > 0 and true or false
-
         local ag = {
             __type = "Paragraph",
             Title = af.Title or "Paragraph",
             Desc = af.Desc or nil,
             Locked = af.Locked or false,
         }
-        
         local ah = a.load'B'(af)
         ag.ParagraphFrame = ah
-
         function ag.SetTitle(self, text)
             local label = ah.UIElements.Title
             if not label then return end
-            
             label.Text = text
             label.TextTransparency = 1
-            local originalPos = UDim2.new(label.Position.X.Scale, label.Position.X.Offset, 0, 0)
-            label.Position = originalPos + UDim2.new(0, 0, 0, -10)
-            
+            local targetPos = UDim2.new(label.Position.X.Scale, label.Position.X.Offset, 0, 0)
+            label.Position = targetPos + UDim2.new(0, 0, 0, -10)
             ad(label, 0.6, {
                 TextTransparency = 0,
-                Position = originalPos
+                Position = targetPos
             }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
         end
-
         function ag.SetDesc(self, text)
             local label = ah.UIElements.Desc
             if not label then return end
-            
             label.Text = text or ""
             label.Visible = (text ~= nil and text ~= "")
-            
             label.TextTransparency = 1
-            local originalPos = UDim2.new(label.Position.X.Scale, label.Position.X.Offset, 0, 0)
-            label.Position = originalPos + UDim2.new(0, 0, 0, -10)
-            
+            local targetPos = UDim2.new(label.Position.X.Scale, label.Position.X.Offset, 0, 0)
+            label.Position = targetPos + UDim2.new(0, 0, 0, -10)
             task.delay(0.15, function()
                 ad(label, 0.6, {
                     TextTransparency = 0.3,
-                    Position = originalPos
+                    Position = targetPos
                 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
             end)
         end
-
         if af.Buttons and #af.Buttons > 0 then
             local ai = ab("Frame", {
                 Size = UDim2.new(1, 0, 0, 0),
@@ -5767,19 +5756,14 @@ end end function a.C()
                 AutomaticSize = "Y",
                 Parent = ah.UIElements.Container
             }, {
-                ab("UIListLayout", {
-                    Padding = UDim.new(0, 10),
-                    FillDirection = "Vertical",
-                })
+                ab("UIListLayout", {Padding = UDim.new(0, 10), FillDirection = "Vertical"})
             })
-
             local buttonMod = a.load'l'.New
             for aj, ak in next, af.Buttons do
                 local al = buttonMod(ak.Title, ak.Icon, ak.Callback, ak.Variant or "Secondary", ai, nil, nil, af.Window.NewElements and 999 or 10)
                 al.Size = UDim2.new(1, 0, 0, 38)
             end
         end
-
         return ag.__type, ag
     end
     return ac end function a.E()
