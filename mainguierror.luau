@@ -6156,48 +6156,34 @@ end);
 
 	Window:SetRender(false);
 
-Window.SideBarOpened = true
+	Window.SideBarOpened = true
+	Window._LeftFrame = LeftMenuFrame
+	Window._RightFrame = RightMenuFrame
 
-local function toggleSideBar()
-    Window.SideBarOpened = not Window.SideBarOpened
-    
-    local targetLeftWidth = Window.SideBarOpened and 175 or 0
-    local targetRightPos = Window.SideBarOpened and 176 or 0
-    local targetRightWidthOffset = Window.SideBarOpened and -176 or 0
-    
-    LeftMenuFrame.ClipsDescendants = true 
-   
-    NeverLose.PlayAnimate(LeftMenuFrame, SlowyTween, {
-        Size = UDim2.new(0, targetLeftWidth, 1, 0)
-    })
-    
-    NeverLose.PlayAnimate(RightMenuFrame, SlowyTween, {
-        Position = UDim2.new(0, targetRightPos, 0, 0),
-        Size = UDim2.new(1, targetRightWidthOffset, 1, 0)
-    })
-end
+	function Window:ToggleSideBar()
+		self.SideBarOpened = not self.SideBarOpened
+		
+		local targetLeftWidth = self.SideBarOpened and 175 or 0
+		local targetRightPos = self.SideBarOpened and 176 or 5
+		local targetRightWidthOffset = self.SideBarOpened and -176 or -10
+		
+		self._LeftFrame.ClipsDescendants = true 
 
-NeverLose:AddSignal(UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.RightShift then
-        toggleSideBar()
-    end
-end))
-
-window.UserSettings:AddLabel('Menu Scale'):AddDropdown({
-	Default = "Default",
-	Values = {"Default",'Large','Mobile','Small'},
-	Callback = function(v)
-		window:SetSize(NeverLose.Scales[v]);
-        task.delay(0.2, function()
-            if not window.SideBarOpened then
-                RightMenuFrame.Position = UDim2.new(0, 0, 0, 0)
-                RightMenuFrame.Size = UDim2.new(1, 0, 1, 0)
-            end
-        end)
-
-		Logging.new("crop",'Changed ui size to '..tostring(v),5)
-	end,
-})
+		NeverLose.PlayAnimate(self._LeftFrame, SlowyTween, {
+			Size = UDim2.new(0, targetLeftWidth, 1, 0)
+		})
+		
+		NeverLose.PlayAnimate(self._RightFrame, SlowyTween, {
+			Position = UDim2.new(0, targetRightPos, 0, 0),
+			Size = UDim2.new(1, targetRightWidthOffset, 1, 0)
+		})
+	end
+	
+	NeverLose:AddSignal(UserInputService.InputBegan:Connect(LPH_NO_VIRTUALIZE(function(input, processed)
+		if not processed and input.KeyCode == Enum.KeyCode.RightShift then
+			Window:ToggleSideBar()
+		end
+	end)))
 
 	return Window;
 end;
