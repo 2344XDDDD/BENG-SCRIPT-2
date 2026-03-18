@@ -3963,8 +3963,23 @@ function NeverLose:CreateWindow(Config)
 	WindowFrame.BorderSizePixel = 0
 	WindowFrame.ClipsDescendants = true
 	WindowFrame.Position = UDim2.new(255, 0, 255, 0)
-	WindowFrame.Size = Window.Size
-	WindowFrame.Active = true;
+    WindowFrame.Size = Window.Size
+    WindowFrame.Active = true;
+
+Window.MarqueeBorder = NeverLose:CreateMarquee(WindowFrame, {
+    Thickness = 2,
+    Colors = {NeverLose.AccentColor, Color3.fromRGB(255, 255, 255), NeverLose.AccentColor},
+    Speed = 2.5
+})
+
+NeverLose:AddSignal(Window.Signal:Connect(function(isVisible)
+    Window.MarqueeBorder:SetEnabled(isVisible)
+    if isVisible then
+        NeverLose.PlayAnimate(Window.MarqueeBorder.Stroke, SlowyTween, {Transparency = 0})
+    else
+        NeverLose.PlayAnimate(Window.MarqueeBorder.Stroke, SlowyTween, {Transparency = 1})
+    end
+end))
 
 	if not NeverLose.EnabledBlur then
 		WindowFrame.BackgroundTransparency = 0.0255
