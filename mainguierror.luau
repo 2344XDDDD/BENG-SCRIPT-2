@@ -6231,7 +6231,6 @@ function Watermark_lb:AddBlock(IconStr , Name)
 
 	return Window;
 end;
-
 function NeverLose:CreateNotification()
 	if NeverLose.__Notification_Cache then
 		return NeverLose.__Notification_Cache
@@ -6262,6 +6261,7 @@ function NeverLose:CreateNotification()
 			Content = "Hello World!",
 			Logo = NeverLose.GlobalLogo or "",
 			Duration = 5,
+			Color = NeverLose.AccentColor 
 		})
 
 		if NeverLose.__WatermarkCache then
@@ -6319,7 +6319,7 @@ function NeverLose:CreateNotification()
 		LogoImage.ZIndex = 131
 		LogoImage.Image = Config.Logo
 		LogoImage.Visible = hasLogo
-		LogoImage.ImageColor3 = NeverLose.IconColor
+		LogoImage.ImageColor3 = Config.Color
 
 		UICorner_2.CornerRadius = UDim.new(0, 6)
 		UICorner_2.Parent = LogoImage
@@ -6350,6 +6350,11 @@ function NeverLose:CreateNotification()
 		NotifyContent.TextXAlignment = Enum.TextXAlignment.Left
 
 		local shadow = NeverLose:CreateShadow(NotifyFrame, true)
+		for _, v in next, NotifyFrame:GetChildren() do
+			if v:IsA("UIStroke") and v ~= UIStroke then
+				v.Color = Config.Color
+			end
+		end
 		shadow:Render(true)
 
 		NeverLose.PlayAnimate(NotifyFrame, VSlowTween, {
