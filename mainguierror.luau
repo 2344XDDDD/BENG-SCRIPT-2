@@ -888,7 +888,7 @@ function NeverLose:MoreThanHalfY(Value: number)
 end;
 
 NeverLose.IsStudio = RunService:IsStudio();
-NeverLose.IsMobile = UserInputService.TouchEnabled;
+NeverLose.IsMobile = UserInputService.TouchEnabled or (game:GetService("GuiService"):GetScreenResolution().X < 800);
 
 NeverLose.CreateInput = LPH_NO_VIRTUALIZE(function(self , Frame , Callback)
 	local Button = Instance.new('ImageButton',Frame);
@@ -3827,15 +3827,29 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 end;
 
 function NeverLose:CreateWindow(Config)
+	-- NeverLose.Scales.Mobile (640, 385)
+	-- NeverLose.Scales.Default (640, 480)
+	local PreferredSize = (NeverLose.IsMobile and NeverLose.Scales.Mobile) or UDim2.new(0, 640, 0, 480);
+
 	Config = NeverLose:ProcessParams(Config , {
 		Logo = NeverLose.GlobalLogo,
 		Name = "Neverlose",
 		Content = "Counter-Strike 2",
-		Size = UDim2.new(0, 640, 0, 480),
+		Size = PreferredSize,
 		ConfigFolder = "NeverLoseConfigs",
 		Enable3DRenderer = false,
 		Keybind = "Insert"
 	});
+
+	if NeverLose.IsMobile then
+		local ScreenSize = NeverLose.ScreenGui.AbsoluteSize;
+		local Padding = 20;
+		
+		local maxWidth = math.min(Config.Size.X.Offset, ScreenSize.X - Padding);
+		local maxHeight = math.min(Config.Size.Y.Offset, ScreenSize.Y - Padding);
+		
+		Config.Size = UDim2.fromOffset(maxWidth, maxHeight);
+	end;
 
 	local Window = {
 		Logo = Config.Logo,
