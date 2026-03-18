@@ -3879,6 +3879,49 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 	return idx;
 end;
 
+Window.SideBarOpened = true
+
+local function toggleSideBar()
+    Window.SideBarOpened = not Window.SideBarOpened
+    
+    local targetLeftWidth = Window.SideBarOpened and 175 or 0
+    local targetRightPos = Window.SideBarOpened and 176 or 0
+    local targetRightWidthOffset = Window.SideBarOpened and -176 or 0
+    
+    LeftMenuFrame.ClipsDescendants = true 
+   
+    NeverLose.PlayAnimate(LeftMenuFrame, SlowyTween, {
+        Size = UDim2.new(0, targetLeftWidth, 1, 0)
+    })
+    
+    NeverLose.PlayAnimate(RightMenuFrame, SlowyTween, {
+        Position = UDim2.new(0, targetRightPos, 0, 0),
+        Size = UDim2.new(1, targetRightWidthOffset, 1, 0)
+    })
+end
+
+NeverLose:AddSignal(UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.RightShift then
+        toggleSideBar()
+    end
+end))
+
+window.UserSettings:AddLabel('Menu Scale'):AddDropdown({
+	Default = "Default",
+	Values = {"Default",'Large','Mobile','Small'},
+	Callback = function(v)
+		window:SetSize(NeverLose.Scales[v]);
+        task.delay(0.2, function()
+            if not window.SideBarOpened then
+                RightMenuFrame.Position = UDim2.new(0, 0, 0, 0)
+                RightMenuFrame.Size = UDim2.new(1, 0, 1, 0)
+            end
+        end)
+
+		Logging.new("crop",'Changed ui size to '..tostring(v),5)
+	end,
+})
+
 function NeverLose:CreateWindow(Config)
 	-- NeverLose.Scales.Mobile (640, 385)
 	-- NeverLose.Scales.Default (640, 480)
