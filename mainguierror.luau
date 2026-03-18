@@ -6553,6 +6553,40 @@ function NeverLose:CreateLogger()
 	return Logging
 end;
 
+function NeverLose:CreateToggleButton(Window)
+    local MainButton = Instance.new("TextButton")
+    local UICorner = Instance.new("UICorner")
+    local Icon = Instance.new("ImageLabel")
+    
+    MainButton.Name = "NeverLose_MobileToggle"
+    MainButton.Parent = NeverLose.ScreenGui
+    MainButton.BackgroundColor3 = Color3.fromRGB(8, 8, 13)
+    MainButton.BackgroundTransparency = 0.2
+    MainButton.Position = UDim2.new(0, 20, 0, 80)
+    MainButton.Size = UDim2.fromOffset(45, 45)
+    MainButton.Text = ""
+    MainButton.ZIndex = 200
+    
+    UICorner.CornerRadius = UDim.new(1, 0)
+    UICorner.Parent = MainButton
+    
+    Icon.Parent = MainButton
+    Icon.BackgroundTransparency = 1
+    Icon.Size = UDim2.fromScale(0.7, 0.7)
+    Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+    Icon.Position = UDim2.fromScale(0.5, 0.5)
+    Icon.Image = Window.Logo
+    Icon.ZIndex = 201
+    
+    NeverLose.Drag(MainButton, MainButton, 0.1)
+    
+    MainButton.MouseButton1Click:Connect(function()
+        Window:ToggleInterface()
+    end)
+    
+    return MainButton
+end
+
 function NeverLose:CreateIndicator()
 	local IndicatorFrame = Instance.new("Frame")
 	local UIListLayout = Instance.new("UIListLayout")
