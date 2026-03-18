@@ -6057,125 +6057,139 @@ end);
 			end
 		end;
 
-	function Watermark_lb:AddBlock(IconStr , Name)
-    local InnerBlock = {};
+		function Watermark_lb:AddBlock(IconStr , Name)
+			local InnerBlock = {};
 
-    local Frame = Instance.new("Frame")
-    local Content = Instance.new("TextLabel")
-    local Icon = Instance.new("TextLabel")
+			local Frame = Instance.new("Frame")
+			local Content = Instance.new("TextLabel")
+			local Icon = Instance.new("TextLabel")
 
-    Frame.Parent = Watermark
-    Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Frame.BackgroundTransparency = 1.000
-    Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Frame.BorderSizePixel = 0
-    Frame.Size = UDim2.new(0, 50, 0, 30)
+			Frame.Parent = Watermark
+			Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			Frame.BackgroundTransparency = 1.000
+			Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			Frame.BorderSizePixel = 0
+			Frame.Size = UDim2.new(0, 50, 0, 30)
 
-    Content.Name = NeverLose.RandomString();
-    Content.Parent = Frame
-    Content.AnchorPoint = Vector2.new(0, 0.5)
-    Content.BackgroundColor3 = Color3.fromRGB(186, 186, 186)
-    Content.BackgroundTransparency = 1.000
-    Content.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Content.BorderSizePixel = 0
-    Content.Position = UDim2.new(0, 35, 0.5, 0)
-    Content.Size = UDim2.new(0, 1, 0, 25)
-    Content.ZIndex = 17
-    Content.Font = Enum.Font.GothamBold
-    Content.Text = Name
-    Content.TextColor3 = Color3.fromRGB(186, 186, 186)
-    Content.TextSize = 15.000
-    Content.TextTransparency = 0.200
-    Content.TextXAlignment = Enum.TextXAlignment.Left
+			Content.Name = NeverLose.RandomString();
+			Content.Parent = Frame
+			Content.AnchorPoint = Vector2.new(0, 0.5)
+			Content.BackgroundColor3 = Color3.fromRGB(186, 186, 186)
+			Content.BackgroundTransparency = 1.000
+			Content.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			Content.BorderSizePixel = 0
+			Content.Position = UDim2.new(0, 35, 0.5, 0)
+			Content.Size = UDim2.new(0, 1, 0, 25)
+			Content.ZIndex = 17
+			Content.Font = Enum.Font.GothamBold
+			Content.Text = Name
+			Content.TextColor3 = Color3.fromRGB(186, 186, 186)
+			Content.TextSize = 15.000
+			Content.TextTransparency = 0.200
+			Content.TextXAlignment = Enum.TextXAlignment.Left
 
-    Icon.Name = NeverLose.RandomString();
-    Icon.Parent = Frame
-    Icon.AnchorPoint = Vector2.new(0, 0.5)
-    Icon.BackgroundColor3 = Color3.fromRGB(186, 186, 186)
-    Icon.BackgroundTransparency = 1.000
-    Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Icon.BorderSizePixel = 0
-    Icon.Position = UDim2.new(0, 10, 0.5, 0)
-    Icon.Size = UDim2.new(0, 20, 0, 20)
-    Icon.ZIndex = 17
-    Icon.FontFace = NeverLose.BuiltInBold;
-    Icon.Text = IconStr
-    Icon.TextColor3 = NeverLose.AccentColor
-    Icon.TextSize = 18.000
-    Icon.TextTransparency = 0.250
-    Icon.TextWrapped = true
+			Icon.Name = NeverLose.RandomString();
+			Icon.Parent = Frame
+			Icon.AnchorPoint = Vector2.new(0, 0.5)
+			Icon.BackgroundColor3 = Color3.fromRGB(186, 186, 186)
+			Icon.BackgroundTransparency = 1.000
+			Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			Icon.BorderSizePixel = 0
+			Icon.Position = UDim2.new(0, 10, 0.5, 0)
+			Icon.Size = UDim2.new(0, 20, 0, 20)
+			Icon.ZIndex = 17
+			Icon.FontFace = NeverLose.BuiltInBold;
+			Icon.Text = IconStr
+			Icon.TextColor3 = NeverLose.AccentColor
+			Icon.TextSize = 18.000
+			Icon.TextTransparency = 0.250
+			Icon.TextWrapped = true
 
-    InnerBlock.Update = LPH_NO_VIRTUALIZE(function(value)
-        local size = TextService:GetTextSize(Content.Text , Content.TextSize,Content.Font,Vector2.new(math.huge,math.huge))
+			InnerBlock.Update = LPH_NO_VIRTUALIZE(function(value)
+				local size = TextService:GetTextSize(Content.Text , Content.TextSize,Content.Font,Vector2.new(math.huge,math.huge))
 
-        if InnerBlock.Visible then
-            NeverLose.PlayAnimate(Frame,VSlowTween,{
-                Size = UDim2.new(0, size.X + 35, 0, 30)
-            })
-        else
-            NeverLose.PlayAnimate(Frame,VSlowTween,{
-                Size = UDim2.new(0, 0, 0, 30)
-            })
-        end;
-    end);
+				if InnerBlock.Visible then
+					NeverLose.PlayAnimate(Frame,VSlowTween,{
+						Size = UDim2.new(0, size.X + 35, 0, 30)
+					})
+				else
+					NeverLose.PlayAnimate(Frame,VSlowTween,{
+						Size = UDim2.new(0, 0, 0, 30)
+					})
+				end;
+			end);
 
-    InnerBlock.Visible = true;
-    InnerBlock.Update();
+			InnerBlock.Visible = true;
 
-    function InnerBlock:SetVisible(v)
-        InnerBlock.Visible = v;
-        if Watermark_lb.Status then
-            InnerBlock.SetRender(v);
-        end;
-        InnerBlock.Update();
-    end;
+			InnerBlock.Update();
 
-    InnerBlock.SetRender = LPH_NO_VIRTUALIZE(function(value)
-        if value and InnerBlock.Visible then
-            NeverLose.PlayAnimate(Content,SlowyTween , {
-                TextTransparency = 0.200
-            })
-            NeverLose.PlayAnimate(Icon,SlowyTween , {
-                TextTransparency = 0.250
-            })
-        else
-            NeverLose.PlayAnimate(Content,SlowyTween , {
-                TextTransparency = 1
-            })
-            NeverLose.PlayAnimate(Icon,SlowyTween , {
-                TextTransparency = 1
-            })
-        end;
-    end);
+			function InnerBlock:SetVisible(v)
+				InnerBlock.Visible = v;
 
-    table.insert(Watermark_lb.Renders,InnerBlock.SetRender);
+				if Watermark_lb.Status then
+					InnerBlock.SetRender(v);
+				end;
 
-    function InnerBlock:SetText(t)
-        Content.Text = t;
-        InnerBlock.Update();
-    end;
+				InnerBlock.Update();
+			end;
 
-    function InnerBlock:Input(singleFunc, doubleFunc)
-        local clickCount = 0
-        local _, signal = NeverLose:CreateInput(Frame, function()
-            clickCount = clickCount + 1
-            
-            if clickCount == 1 then
-                task.delay(0.25, function()
-                    if clickCount == 1 then
-                        if singleFunc then singleFunc() end
-                    elseif clickCount >= 2 then
-                        if doubleFunc then doubleFunc() end
-                    end
-                    clickCount = 0
-                end)
-            end
-        end);
-        return signal;
-    end;
+			InnerBlock.SetRender = LPH_NO_VIRTUALIZE(function(value)
+				if value and InnerBlock.Visible then
+					NeverLose.PlayAnimate(Content,SlowyTween , {
+						TextTransparency = 0.200
+					})
 
-    return InnerBlock;
-end
+					NeverLose.PlayAnimate(Icon,SlowyTween , {
+						TextTransparency = 0.250
+					})
+				else
+
+					NeverLose.PlayAnimate(Content,SlowyTween , {
+						TextTransparency = 1
+					})
+
+					NeverLose.PlayAnimate(Icon,SlowyTween , {
+						TextTransparency = 1
+					})
+				end;
+			end);
+
+			table.insert(Watermark_lb.Renders,InnerBlock.SetRender);
+
+			function InnerBlock:SetText(t)
+				Content.Text = t;
+
+				InnerBlock.Update();
+			end;
+
+			function InnerBlock:Input(func)
+				local clickCount = 0
+				local _, s = NeverLose:CreateInput(Frame, LPH_NO_VIRTUALIZE(function()
+					clickCount = clickCount + 1
+					if clickCount == 1 then
+						task.delay(0.25, function()
+							if clickCount == 1 then
+								if Window and Window.ToggleInterface then
+									Window:ToggleInterface()
+								end
+							elseif clickCount >= 2 then
+								if Window and Window.ToggleSideBar then
+									Window:ToggleSideBar()
+								end
+							end
+							clickCount = 0
+						end)
+					end
+					if func then func() end
+				end));
+				return s;
+			end;
+
+			return InnerBlock;
+		end;
+
+		return Watermark_lb;
+	end;
 
 	Window:SetRender(false);
 
