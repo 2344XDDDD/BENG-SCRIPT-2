@@ -6292,13 +6292,13 @@ ContainerFrame.Size = UDim2.new(0, 0, 0, 100)
 
 NotifyFrame.Name = NeverLose.RandomString()
 NotifyFrame.Parent = ContainerFrame
-NotifyFrame.AnchorPoint = Vector2.new(0, 0)
+NotifyFrame.AnchorPoint = Vector2.new(1, 0)
 NotifyFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
 NotifyFrame.BackgroundTransparency = 0.075
 NotifyFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 NotifyFrame.BorderSizePixel = 0
 NotifyFrame.ClipsDescendants = true
-NotifyFrame.Position = UDim2.new(0, -500, 0, 0)
+NotifyFrame.Position = UDim2.new(0, 750, 0, 0)
 NotifyFrame.Size = UDim2.new(0, 220, 0, 55)
 NotifyFrame.ZIndex = 130
 
@@ -6365,7 +6365,7 @@ NotifyFrame.Size = UDim2.new(0, MainSize + 65, 0, 55)
 
 shadow:Render(true)
 NeverLose.PlayAnimate(NotifyFrame , VSlowTween , {
-    Position = UDim2.new(0, 20, 0, 0)
+    Position = UDim2.new(1, 0, 0, 0)
 })
 
 ContainerFrame.Size = UDim2.new(0, 0, 0, 65)
@@ -6374,7 +6374,7 @@ task.delay(Config.Duration or 5 , LPH_NO_VIRTUALIZE(function()
 
     if NeverLose.__WatermarkCache then
         NeverLose.PlayAnimate(Notification,SlowyTween , {
-            Position = UDim2.new(0, 25, 0, 55)
+            Position = UDim2.new(1, -25, 0, 55)
         })
     end
 
