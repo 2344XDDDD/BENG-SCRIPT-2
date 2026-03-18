@@ -3968,13 +3968,26 @@ function NeverLose:CreateWindow(Config)
 	WindowFrame.BorderSizePixel = 0
 	WindowFrame.ClipsDescendants = true
 	WindowFrame.Position = UDim2.new(255, 0, 255, 0)
+
+math.randomseed(tick())
+
+local colorPresets = {
+    {Color3.fromHex("#DDA0DD"), Color3.fromHex("#FFB6C1"), Color3.fromHex("#FFF8DC")},
+    {Color3.fromHex("#E6E6FA"), Color3.fromHex("#6495ED"), Color3.fromHex("#6A5ACD")},
+    {Color3.fromHex("#AEEEEE"), Color3.fromHex("#B0C4DE"), Color3.fromHex("#F5F5DC")},
+    {Color3.fromHex("#e6bafb"), Color3.fromHex("#a1a9e1"), Color3.fromHex("#8ac9f2")},
+    {Color3.fromHex("#DDA0DD"), Color3.fromHex("#5F9EA0"), Color3.fromHex("#E6E6FA")}
+}
+
+local randomColors = colorPresets[math.random(1, #colorPresets)]
+
 WindowFrame.Size = Window.Size
 WindowFrame.Active = true;
 
 local Marquee = NeverLose:CreateMarquee(WindowFrame, {
     Thickness = 2,
-    Colors = {NeverLose.AccentColor, Color3.fromRGB(255, 255, 255), NeverLose.AccentColor},
-    Speed = 2
+    Colors = randomColors, 
+    Speed = 0.75
 })
 
 Window.Marquee = Marquee
@@ -3986,36 +3999,34 @@ NeverLose:AddSignal(Window.Signal:Connect(function(isVisible)
     })
 end))
 
-	if not NeverLose.EnabledBlur then
-		WindowFrame.BackgroundTransparency = 0.0255
-	end;
+if not NeverLose.EnabledBlur then
+    WindowFrame.BackgroundTransparency = 0.0255
+end;
 
-	local renderParentWindow = LPH_NO_VIRTUALIZE(function()
-		if Window.__3DRender then
-			if WindowFrame.BackgroundTransparency > 0.9 then
-				WindowFrame.Visible = false;
-				WindowFrame.Parent = nil
-			else
-				WindowFrame.Visible = true;
+local renderParentWindow = LPH_NO_VIRTUALIZE(function()
+    if Window.__3DRender then
+        if WindowFrame.BackgroundTransparency > 0.9 then
+            WindowFrame.Visible = false;
+            WindowFrame.Parent = nil
+        else
+            WindowFrame.Visible = true;
 
-				NeverLose.PlayAnimate(WindowFrame,VSlowTween , {
-					Position = UDim2.fromScale(0.5,0.5);
-				});
-				
-				WindowFrame.Parent = Window.SurfaceGui;
-			end;
-		else
-			if WindowFrame.BackgroundTransparency > 0.9 then
-				WindowFrame.Visible = false;
-				WindowFrame.Parent = nil
-			else
-				WindowFrame.Visible = true;
-				WindowFrame.Parent = NeverLose.ScreenGui
-
-
-			end;
-		end;
-	end);
+            NeverLose.PlayAnimate(WindowFrame, VSlowTween, {
+                Position = UDim2.fromScale(0.5, 0.5);
+            });
+            
+            WindowFrame.Parent = Window.SurfaceGui;
+        end;
+    else
+        if WindowFrame.BackgroundTransparency > 0.9 then
+            WindowFrame.Visible = false;
+            WindowFrame.Parent = nil
+        else
+            WindowFrame.Visible = true;
+            WindowFrame.Parent = NeverLose.ScreenGui
+        end;
+    end;
+end);
 
 	NeverLose:AddSignal(WindowFrame:GetPropertyChangedSignal('BackgroundTransparency'):Connect(renderParentWindow))
 
