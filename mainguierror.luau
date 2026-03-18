@@ -1124,6 +1124,54 @@ function NeverLose:RollingEffect(parent)
 	return UIGradient;
 end;
 
+function NeverLose:CreateMarquee(parent, config)
+    config = NeverLose:ProcessParams(config, {
+        Thickness = 2,
+        Colors = {NeverLose.AccentColor, Color3.fromRGB(255, 255, 255), NeverLose.AccentColor},
+        Speed = 2,
+    })
+
+    local Marquee = {}
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Thickness = config.Thickness
+    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Stroke.LineJoinMode = Enum.LineJoinMode.Round
+    Stroke.Transparency = 0
+    Stroke.Parent = parent
+
+    local Gradient = Instance.new("UIGradient")
+    local ColorKeys = {}
+    for i, color in ipairs(config.Colors) do
+        table.insert(ColorKeys, ColorSequenceKeypoint.new((i-1)/(#config.Colors-1), color))
+    end
+    Gradient.Color = ColorSequence.new(ColorKeys)
+    Gradient.Parent = Stroke
+
+    local rotation = 0
+    local connection
+    
+    function Marquee:SetEnabled(state)
+        if state then
+            if connection then return end
+            connection = NeverLose:AddSignal(RunService.RenderStepped:Connect(function(dt)
+                rotation = (rotation + (config.Speed * 60 * dt)) % 360
+                Gradient.Rotation = rotation
+            end))
+        else
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+        end
+    end
+
+    Marquee:SetEnabled(true)
+    Marquee.Stroke = Stroke
+    Marquee.Gradient = Gradient
+    
+    return Marquee
+end
+
 function NeverLose:CreateShadow(parent , RollingEffect)
 	local Shadow = {};
 
