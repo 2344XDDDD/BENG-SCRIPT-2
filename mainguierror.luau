@@ -3948,7 +3948,7 @@ function NeverLose:CreateWindow(Config)
 	local UICorner = Instance.new("UICorner")
 	local LeftMenuFrame = Instance.new("Frame")
 	local HeadFrame = Instance.new("Frame")
-	--local LogoImage = Instance.new("ImageLabel")
+	local LogoImage = Instance.new("ImageLabel")
 	local UICorner_2 = Instance.new("UICorner")
 	local WindowName = Instance.new("TextLabel")
 	local WindowContent = Instance.new("TextLabel")
@@ -4277,7 +4277,6 @@ end);
 	HeadFrame.Size = UDim2.new(1, 0, 0, 50)
 	HeadFrame.ZIndex = 7
 
-	LogoImage.Name = NeverLose.RandomString();
 	LogoImage.Parent = HeadFrame
 	LogoImage.AnchorPoint = Vector2.new(0, 0.5)
 	LogoImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -6276,7 +6275,7 @@ function NeverLose:CreateNotification()
 		local NotifyFrame = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
 		local UIStroke = Instance.new("UIStroke")
-		--local LogoImage = Instance.new("ImageLabel")
+		local LogoImage = Instance.new("ImageLabel")
 		local UICorner_2 = Instance.new("UICorner")
 		local NotifyName = Instance.new("TextLabel")
 		local NotifyContent = Instance.new("TextLabel");
@@ -6309,7 +6308,6 @@ function NeverLose:CreateNotification()
 		UIStroke.Color = Color3.fromRGB(45, 48, 58)
 		UIStroke.Parent = NotifyFrame
 
-		LogoImage.Name = NeverLose.RandomString();
 		LogoImage.Parent = NotifyFrame
 		LogoImage.AnchorPoint = Vector2.new(0, 0.5)
 		LogoImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
