@@ -387,6 +387,7 @@ NeverLose.LoadIcon = LPH_NO_VIRTUALIZE(function()
 		["check"] = "check",
 		["check-large"] = "check-large",
 		["check-small"] = "check-small",
+		["cpu"] = "cpu",
 		["chevron-large-down"] = "chevron-large-down",
 		["chevron-large-down-to-line"] = "chevron-large-down-to-line",
 		["chevron-large-left"] = "chevron-large-left",
@@ -5899,18 +5900,16 @@ end);
 	Window.UserSettings = UserSettings;
 
 	function Window:SetAccount(Config)
-    BottomFrame.Visible = true;
-    
-    Config = NeverLose:ProcessParams(Config , {
-        Profile = NeverLose.UserProfile,
-        Username = LocalPlayer.DisplayName,
-        Expires = "Never",
-    });
+		Config = NeverLose:ProcessParams(Config , {
+			Profile = NeverLose.UserProfile,
+			Username = LocalPlayer.DisplayName,
+			Expires = "Never",
+		});
 
-    AccountName.Text = Config.Username;
-    AccountProfile.Image = Config.Profile;
-    ExpireLabel.Text = Config.Expires;
-    
+		AccountName.Text = Config.Username;
+		AccountProfile.Image = Config.Profile;
+		ExpireLabel.Text = Config.Expires;
+
 		Window.Username = Config.Username or Window.Username;
 		Window.Profile = Config.Profile or Window.Profile;
 		Window.Expires = Config.Expires or Window.Expires;
