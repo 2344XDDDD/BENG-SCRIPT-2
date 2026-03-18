@@ -6056,6 +6056,7 @@ end);
 				end;
 			end
 		end;
+
 function Watermark_lb:AddBlock(IconStr , Name)
 			local InnerBlock = {};
 
@@ -6163,16 +6164,20 @@ function Watermark_lb:AddBlock(IconStr , Name)
 
 			function InnerBlock:Input(func)
 				local clickCount = 0
+				local isProcessing = false
 				local _, s = NeverLose:CreateInput(Frame, LPH_NO_VIRTUALIZE(function()
+					if isProcessing then return end
 					clickCount = clickCount + 1
 					if clickCount == 1 then
-						task.delay(0.25, function()
+						task.spawn(function()
+							task.wait(0.22)
+							isProcessing = true
 							if clickCount == 1 then
 								if Window and Window.ToggleInterface then
 									Window:ToggleInterface()
 								end
 								if func then
-									func()
+									pcall(func)
 								end
 							elseif clickCount >= 2 then
 								if Window and Window.ToggleSideBar then
@@ -6180,12 +6185,13 @@ function Watermark_lb:AddBlock(IconStr , Name)
 								end
 							end
 							clickCount = 0
+							isProcessing = false
 						end)
 					end
 				end));
 				return s;
 			end;
-
+			
 			return InnerBlock;
 		end;
 
