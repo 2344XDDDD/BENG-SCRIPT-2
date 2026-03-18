@@ -6428,14 +6428,6 @@ function Logging.new(IconStr: string, Message: string, Duration: number, ShadowC
 	local Icon = Instance.new("TextLabel")
 	local Shadow = NeverLose:CreateShadow(LogFrame, true);
 
-	pcall(function()
-		if Shadow.ShadowFrame then
-			Shadow.ShadowFrame.ImageColor3 = ShadowColor
-		elseif Shadow.ImageColor3 then
-			Shadow.ImageColor3 = ShadowColor
-		end
-	end)
-
 	local size = TextService:GetTextSize(Message, 12, Enum.Font.GothamBold, Vector2.new(math.huge, math.huge));
 	local TargetWidth = size.X + 45;
 
@@ -6501,6 +6493,16 @@ function Logging.new(IconStr: string, Message: string, Duration: number, ShadowC
 
 	task.delay(0.05, function()
 		Shadow:Render(true);
+		
+		pcall(function()
+			local shadowInstance = Shadow.ShadowFrame or Shadow.ImageLabel or Shadow.Main or Shadow
+			if shadowInstance and shadowInstance:IsA("ImageLabel") then
+				shadowInstance.ImageColor3 = ShadowColor
+			elseif Shadow.ImageColor3 then
+				Shadow.ImageColor3 = ShadowColor
+			end
+		end)
+
 		NeverLose.PlayAnimate(UIStroke, SlowyTween, {Transparency = 0.65});
 		NeverLose.PlayAnimate(LogContent, SlowyTween, {TextTransparency = 0.25});
 		NeverLose.PlayAnimate(Line, SlowyTween, {BackgroundTransparency = 0});
