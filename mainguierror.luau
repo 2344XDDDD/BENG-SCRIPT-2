@@ -5899,16 +5899,18 @@ end);
 	Window.UserSettings = UserSettings;
 
 	function Window:SetAccount(Config)
-		Config = NeverLose:ProcessParams(Config , {
-			Profile = NeverLose.UserProfile,
-			Username = LocalPlayer.DisplayName,
-			Expires = "Never",
-		});
+    BottomFrame.Visible = true;
+    
+    Config = NeverLose:ProcessParams(Config , {
+        Profile = NeverLose.UserProfile,
+        Username = LocalPlayer.DisplayName,
+        Expires = "Never",
+    });
 
-		AccountName.Text = Config.Username;
-		AccountProfile.Image = Config.Profile;
-		ExpireLabel.Text = Config.Expires;
-
+    AccountName.Text = Config.Username;
+    AccountProfile.Image = Config.Profile;
+    ExpireLabel.Text = Config.Expires;
+    
 		Window.Username = Config.Username or Window.Username;
 		Window.Profile = Config.Profile or Window.Profile;
 		Window.Expires = Config.Expires or Window.Expires;
