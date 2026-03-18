@@ -215,7 +215,7 @@ if getcustomasset then
 		end;
 
 		if isfile(dir..'/'..'logo.png') then
-			NeverLose.GlobalLogo = getcustomasset(dir..'/'..'logo.png')
+			--NeverLose.GlobalLogo = getcustomasset(dir..'/'..'logo.png')
 		end;
 	end);
 
