@@ -1291,6 +1291,15 @@ function NeverLose:CreateOptionWindow(Frame: Frame , Zindex)
 	local UIListLayout = Instance.new("UIListLayout")
 	local UIStroke = Instance.new("UIStroke")
 	local shadow = NeverLose:CreateShadow(OptionHandler);
+	
+	local marqueeColors = {Color3.fromHex("#e6bafb"), Color3.fromHex("#a1a9e1"), Color3.fromHex("#8ac9f2")}
+	local marquee = NeverLose:CreateMarquee(OptionHandler, {
+		Thickness = 1.8,
+		Speed = 0.8,
+		Colors = marqueeColors
+	})
+	
+	marquee.Stroke.Transparency = 1
 
 	OptionHandler.Name = NeverLose.RandomString();
 	OptionHandler.Parent = NeverLose.ScreenGui
@@ -1366,6 +1375,11 @@ function NeverLose:CreateOptionWindow(Frame: Frame , Zindex)
 				Transparency = 0.650
 			})
 
+			marquee:SetEnabled(true)
+			NeverLose.PlayAnimate(marquee.Stroke, SlowyTween, {
+				Transparency = 0
+			})
+
 			shadow:Render(true);
 
 			if NeverLose.Global3DRenderMode then
@@ -1387,6 +1401,11 @@ function NeverLose:CreateOptionWindow(Frame: Frame , Zindex)
 			NeverLose.PlayAnimate(UIStroke , SlowyTween , {
 				Transparency = 1
 			})
+
+			NeverLose.PlayAnimate(marquee.Stroke, SlowyTween, {
+				Transparency = 1
+			})
+			task.delay(0.2, function() marquee:SetEnabled(false) end)
 
 			shadow:Render(false);
 		end;
