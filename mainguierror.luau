@@ -190,6 +190,14 @@ NeverLose.Scales = {
 NeverLose.IconColor = Color3.fromRGB(255, 255, 255);
 NeverLose.ScreenGui = GlobalWindow;
 NeverLose.Flags = {};
+NeverLose.ThemeObjects = {
+    Tabs = {},
+    Toggles = {},
+    Sliders = {},
+    Buttons = {},
+    Indicators = {},
+    Dropdowns = {}
+};
 NeverLose.AccentColor = Color3.fromRGB(78, 127, 252);
 NeverLose.MainColor = Color3.fromRGB(8, 8, 13);
 NeverLose.RegisiteryColor = {};
@@ -1125,7 +1133,32 @@ function NeverLose:RollingEffect(parent)
 	return UIGradient;
 end;
 
+function NeverLose:SetThemeColor(NewColor)
+    self.AccentColor = NewColor
+    
+    for _, tab in next, self.ThemeObjects.Tabs do
+        if tab.Signal:GetValue() then
+            tab.Icon.TextColor3 = NewColor
+        end
+    end
 
+    for _, toggle in next, self.ThemeObjects.Toggles do
+        if toggle.Lib:GetValue() then
+            toggle.Root.BackgroundColor3 = NewColor
+        end
+    end
+
+    for _, slider in next, self.ThemeObjects.Sliders do
+        slider.Moving.BackgroundColor3 = NewColor
+    end
+
+    for _, btn in next, self.ThemeObjects.Buttons do
+        btn.Icon.TextColor3 = NewColor
+    end
+    
+    if self.__Notification_Cache then
+    end
+end
 
 function NeverLose:CreateShadow(parent , RollingEffect)
 	local Shadow = {};
@@ -1907,6 +1940,8 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		if Config.Flag then
 			NeverLose.Flags[Config.Flag] = ToggleLib;
 		end;
+		
+		table.insert(NeverLose.ThemeObjects.Toggles, {Root = Toggle, Lib = ToggleLib});
 
 		return ToggleLib;
 	end;
@@ -2234,6 +2269,8 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		if Config.Flag then
 			NeverLose.Flags[Config.Flag] = SliderLib;
 		end;
+		
+		table.insert(NeverLose.ThemeObjects.Sliders, {Moving = SlideMoving, Circle = Frame});
 
 		return SliderLib;
 	end;
@@ -3758,6 +3795,8 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 
 		Button.SetRender(Signel:GetValue())
 		Signel:Connect(Button.SetRender);
+		
+		table.insert(NeverLose.ThemeObjects.Buttons, {Icon = Icon, Label = BasedLabel});
 
 		return Button;
 	end;
@@ -5002,6 +5041,8 @@ end);
 		end);
 
 		table.insert(Window.Tabs,Tab);
+		
+		table.insert(NeverLose.ThemeObjects.Tabs, {Icon = TabIcon, Signal = Tab.Signal});
 
 		if Window.Tabs[Window.CurrentTab] == Tab then
 			Tab.SetValue(true)
