@@ -199,6 +199,7 @@ NeverLose.ThemeObjects = {
     Dropdowns = {}
 };
 NeverLose.AccentColor = Color3.fromRGB(78, 127, 252);
+NeverLose.ThemeGradient = nil;
 NeverLose.MainColor = Color3.fromRGB(8, 8, 13);
 NeverLose.RegisiteryColor = {};
 NeverLose.NameRegisitry = {};
@@ -1133,31 +1134,82 @@ function NeverLose:RollingEffect(parent)
 	return UIGradient;
 end;
 
-function NeverLose:SetThemeColor(NewColor)
-    self.AccentColor = NewColor
-    
+function NeverLose:SetThemeColor(ThemeData)
+    local isGradient = typeof(ThemeData) == "ColorSequence"
+    if not isGradient then
+        self.AccentColor = ThemeData
+        self.ThemeGradient = nil
+    else
+        self.ThemeGradient = ThemeData
+        self.AccentColor = ThemeData.Keypoints[1].Value
+    end
+
     for _, tab in next, self.ThemeObjects.Tabs do
         if tab.Signal:GetValue() then
-            tab.Icon.TextColor3 = NewColor
+            if isGradient then
+                self:ApplyThemeGradient(tab.Icon, ThemeData)
+            else
+                local g = tab.Icon:FindFirstChild("ThemeGradient")
+                if g then g:Destroy() end
+                tab.Icon.TextColor3 = ThemeData
+            end
         end
     end
 
     for _, toggle in next, self.ThemeObjects.Toggles do
         if toggle.Lib:GetValue() then
-            toggle.Root.BackgroundColor3 = NewColor
+            if isGradient then
+                self:ApplyThemeGradient(toggle.Root, ThemeData)
+            else
+                local g = toggle.Root:FindFirstChild("ThemeGradient")
+                if g then g:Destroy() end
+                toggle.Root.BackgroundColor3 = ThemeData
+            end
         end
     end
 
     for _, slider in next, self.ThemeObjects.Sliders do
-        slider.Moving.BackgroundColor3 = NewColor
+        if isGradient then
+            self:ApplyThemeGradient(slider.Moving, ThemeData)
+        else
+            local g = slider.Moving:FindFirstChild("ThemeGradient")
+            if g then g:Destroy() end
+            slider.Moving.BackgroundColor3 = ThemeData
+        end
     end
 
     for _, btn in next, self.ThemeObjects.Buttons do
-        btn.Icon.TextColor3 = NewColor
+        if isGradient then
+            self:ApplyThemeGradient(btn.Icon, ThemeData)
+        else
+            local g = btn.Icon:FindFirstChild("ThemeGradient")
+            if g then g:Destroy() end
+            btn.Icon.TextColor3 = ThemeData
+        end
+    end
+end
+
+function NeverLose:ApplyThemeGradient(instance, colorData)
+    if not instance then return end
+    
+    local gradient = instance:FindFirstChild("ThemeGradient")
+    if not gradient then
+        gradient = Instance.new("UIGradient")
+        gradient.Name = "ThemeGradient"
+        gradient.Parent = instance
+    end
+
+    if typeof(colorData) == "Color3" then
+        gradient.Color = ColorSequence.new(colorData)
+    elseif typeof(colorData) == "ColorSequence" then
+        gradient.Color = colorData
     end
     
-    if self.__Notification_Cache then
+    if instance:IsA("TextLabel") or instance:IsA("TextBox") then
+        instance.TextColor3 = Color3.new(1, 1, 1)
     end
+    
+    return gradient
 end
 
 function NeverLose:CreateShadow(parent , RollingEffect)
