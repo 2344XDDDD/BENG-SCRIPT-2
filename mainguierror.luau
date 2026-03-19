@@ -2348,29 +2348,6 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		local ColorPickerLib = {};
-		
-local InternalWatermark = Instance.new("TextLabel")
-InternalWatermark.Name = "UI_Watermark"
-InternalWatermark.Parent = Window._RightFrame 
-InternalWatermark.AnchorPoint = Vector2.new(1, 1)
-InternalWatermark.Position = UDim2.new(1, -15, 1, -10)
-InternalWatermark.Size = UDim2.new(0, 200, 0, 20)
-InternalWatermark.BackgroundTransparency = 1
-InternalWatermark.Text = "BENG UI 0.5.7"
-InternalWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
-InternalWatermark.TextTransparency = 0.6
-InternalWatermark.Font = Enum.Font.GothamBold
-InternalWatermark.TextSize = 11
-InternalWatermark.TextXAlignment = Enum.TextXAlignment.Right
-InternalWatermark.ZIndex = 10
-
-Window.Signal:Connect(function(isVisible)
-    local targetTrans = isVisible and 0.6 or 1
-    game:GetService("TweenService"):Create(InternalWatermark, TweenInfo.new(0.3), {
-        TextTransparency = targetTrans
-    }):Play()
-end)
-		
 		local ColorPicker = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
 		local UIStroke = Instance.new("UIStroke")
