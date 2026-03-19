@@ -199,7 +199,6 @@ NeverLose.ThemeObjects = {
     Dropdowns = {}
 };
 NeverLose.AccentColor = Color3.fromRGB(78, 127, 252);
-NeverLose.ThemeGradient = nil;
 NeverLose.MainColor = Color3.fromRGB(8, 8, 13);
 NeverLose.RegisiteryColor = {};
 NeverLose.NameRegisitry = {};
@@ -1134,79 +1133,29 @@ function NeverLose:RollingEffect(parent)
 	return UIGradient;
 end;
 
-function NeverLose:SetThemeColor(ThemeData)
-    local isGradient = typeof(ThemeData) == "ColorSequence"
+function NeverLose:SetThemeColor(NewColor)
+    self.AccentColor = NewColor
+    local info = SlowyTween
     
-    if isGradient then
-        self.ThemeGradient = ThemeData
-        self.AccentColor = ThemeData.Keypoints[1].Value
-    else
-        self.ThemeGradient = nil
-        self.AccentColor = ThemeData
-    end
-
-    local function applyTheme(instance, prop)
-        if not instance then return end
-        local gradient = instance:FindFirstChild("ThemeGradient")
-        
-        if isGradient then
-            if not gradient then
-                gradient = Instance.new("UIGradient")
-                gradient.Name = "ThemeGradient"
-                gradient.Parent = instance
-            end
-            gradient.Color = ThemeData
-            if instance:IsA("TextLabel") or instance:IsA("TextBox") then
-                instance.TextColor3 = Color3.new(1, 1, 1)
-            end
-        else
-            if gradient then gradient:Destroy() end
-            instance[prop] = ThemeData
-        end
-    end
-
     for _, tab in next, self.ThemeObjects.Tabs do
         if tab.Signal:GetValue() then
-            applyTheme(tab.Icon, "TextColor3")
+            NeverLose.PlayAnimate(tab.Icon, info, {TextColor3 = NewColor})
         end
     end
 
     for _, toggle in next, self.ThemeObjects.Toggles do
         if toggle.Lib:GetValue() then
-            applyTheme(toggle.Root, "BackgroundColor3")
+            NeverLose.PlayAnimate(toggle.Root, info, {BackgroundColor3 = NewColor})
         end
     end
-    
+
     for _, slider in next, self.ThemeObjects.Sliders do
-        applyTheme(slider.Moving, "BackgroundColor3")
+        NeverLose.PlayAnimate(slider.Moving, info, {BackgroundColor3 = NewColor})
     end
 
     for _, btn in next, self.ThemeObjects.Buttons do
-        applyTheme(btn.Icon, "TextColor3")
+        NeverLose.PlayAnimate(btn.Icon, info, {TextColor3 = NewColor})
     end
-end
-
-function NeverLose:ApplyThemeGradient(instance, colorData)
-    if not instance then return end
-    
-    local gradient = instance:FindFirstChild("ThemeGradient")
-    if not gradient then
-        gradient = Instance.new("UIGradient")
-        gradient.Name = "ThemeGradient"
-        gradient.Parent = instance
-    end
-
-    if typeof(colorData) == "Color3" then
-        gradient.Color = ColorSequence.new(colorData)
-    elseif typeof(colorData) == "ColorSequence" then
-        gradient.Color = colorData
-    end
-    
-    if instance:IsA("TextLabel") or instance:IsA("TextBox") then
-        instance.TextColor3 = Color3.new(1, 1, 1)
-    end
-    
-    return gradient
 end
 
 function NeverLose:CreateShadow(parent , RollingEffect)
@@ -6453,28 +6402,29 @@ function NeverLose:CreateNotification()
 		})
 
 		task.delay(Config.Duration or 5, function()
-			shadow:Render(false)
-			NeverLose.PlayAnimate(NotifyFrame, SlowyTween, { BackgroundTransparency = 1 })
-			NeverLose.PlayAnimate(MainStroke, SlowyTween, { Transparency = 1 })
-			NeverLose.PlayAnimate(LogoImage, SlowyTween, { ImageTransparency = 1 })
-			NeverLose.PlayAnimate(NotifyName, SlowyTween, { TextTransparency = 1 })
-			NeverLose.PlayAnimate(NotifyContent, SlowyTween, { TextTransparency = 1 })
-			
-			task.wait(0.2)
-			
-			NeverLose.PlayAnimate(ContainerFrame, SlowyTween, {
-				Size = UDim2.new(0, FinalWidth, 0, 0)
-			})
-			
-			task.wait(0.3)
-			ContainerFrame:Destroy()
-			
-			if #Notification:GetChildren() <= 1 and NeverLose.__WatermarkCache then
-				NeverLose.PlayAnimate(Notification, SlowyTween, {
-					Position = UDim2.new(1, -25, 0, 25)
-				})
-			end
-		end)
+            shadow:Render(false)
+            NeverLose.PlayAnimate(NotifyFrame, SlowyTween, { BackgroundTransparency = 1 })
+            NeverLose.PlayAnimate(MainStroke, SlowyTween, { Transparency = 1 })
+            NeverLose.PlayAnimate(LogoImage, SlowyTween, { ImageTransparency = 1 })
+            NeverLose.PlayAnimate(NotifyName, SlowyTween, { TextTransparency = 1 })
+            NeverLose.PlayAnimate(NotifyContent, SlowyTween, { TextTransparency = 1 })
+            
+            task.wait(0.2)
+            
+            ContainerFrame.ClipsDescendants = true
+            local shrink = TweenService:Create(ContainerFrame, VSlowTween, {
+                Size = UDim2.new(0, FinalWidth, 0, 0)
+            })
+            shrink:Play()
+            shrink.Completed:Wait()
+            ContainerFrame:Destroy()
+            
+            if #Notification:GetChildren() <= 1 and NeverLose.__WatermarkCache then
+                NeverLose.PlayAnimate(Notification, SlowyTween, {
+                    Position = UDim2.new(1, -25, 0, 25)
+                })
+            end
+        end)
 	end
 
 	return Notifier
