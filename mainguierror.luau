@@ -142,13 +142,14 @@ isfolder = isfolder or getgenv().isfolder;
 isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
+NeverLose.CornerRadius = 10;
 
-NeverLose.ThemeCorner = 10 
-
-function NeverLose:GetCorner(base)
-    local ratio = base / 10
-    return UDim.new(0, math.clamp(math.floor(self.ThemeCorner * ratio), 0, 30))
-end
+NeverLose.GetCorner = LPH_NO_VIRTUALIZE(function(self, baseValue)
+    local configValue = self.CornerRadius or 10
+    local ratio = baseValue / 10
+    local finalRounding = math.clamp(configValue * ratio, 0, 30)
+    return UDim.new(0, finalRounding)
+end);
 
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
@@ -3918,11 +3919,11 @@ function NeverLose:CreateWindow(Config)
 		Size = PreferredSize,
 		ConfigFolder = "NeverLoseConfigs",
 		Enable3DRenderer = false,
-		Keybind = "Insert"
+		Keybind = "Insert",
 		CornerRadius = 10
 	});
-	
-	NeverLose.ThemeCorner = math.clamp(tonumber(Config.CornerRadius) or 10, 0, 30)
+
+	NeverLose.CornerRadius = tonumber(Config.CornerRadius) or 10;
 
 	if NeverLose.IsMobile then
 		local ScreenSize = NeverLose.ScreenGui.AbsoluteSize;
