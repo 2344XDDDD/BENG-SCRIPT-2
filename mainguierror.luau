@@ -6284,7 +6284,6 @@ function NeverLose:CreateNotification()
 		ContainerFrame.Parent = Notification
 		ContainerFrame.BackgroundTransparency = 1.000
 		ContainerFrame.BorderSizePixel = 0
-		ContainerFrame.ClipsDescendants = false
 
 		NotifyFrame.Name = NeverLose.RandomString()
 		NotifyFrame.Parent = ContainerFrame
@@ -6301,7 +6300,7 @@ function NeverLose:CreateNotification()
 		UICorner.Parent = NotifyFrame
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Config.Color
 		UIStroke.Parent = NotifyFrame
 
 		local hasLogo = (Config.Logo ~= "" and Config.Logo ~= nil)
