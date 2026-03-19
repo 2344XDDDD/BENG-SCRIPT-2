@@ -1136,56 +1136,53 @@ end;
 
 function NeverLose:SetThemeColor(ThemeData)
     local isGradient = typeof(ThemeData) == "ColorSequence"
-    if not isGradient then
-        self.AccentColor = ThemeData
-        self.ThemeGradient = nil
-    else
+    
+    if isGradient then
         self.ThemeGradient = ThemeData
         self.AccentColor = ThemeData.Keypoints[1].Value
+    else
+        self.ThemeGradient = nil
+        self.AccentColor = ThemeData
+    end
+
+    local function applyTheme(instance, prop)
+        if not instance then return end
+        local gradient = instance:FindFirstChild("ThemeGradient")
+        
+        if isGradient then
+            if not gradient then
+                gradient = Instance.new("UIGradient")
+                gradient.Name = "ThemeGradient"
+                gradient.Parent = instance
+            end
+            gradient.Color = ThemeData
+            if instance:IsA("TextLabel") or instance:IsA("TextBox") then
+                instance.TextColor3 = Color3.new(1, 1, 1)
+            end
+        else
+            if gradient then gradient:Destroy() end
+            instance[prop] = ThemeData
+        end
     end
 
     for _, tab in next, self.ThemeObjects.Tabs do
         if tab.Signal:GetValue() then
-            if isGradient then
-                self:ApplyThemeGradient(tab.Icon, ThemeData)
-            else
-                local g = tab.Icon:FindFirstChild("ThemeGradient")
-                if g then g:Destroy() end
-                tab.Icon.TextColor3 = ThemeData
-            end
+            applyTheme(tab.Icon, "TextColor3")
         end
     end
 
     for _, toggle in next, self.ThemeObjects.Toggles do
         if toggle.Lib:GetValue() then
-            if isGradient then
-                self:ApplyThemeGradient(toggle.Root, ThemeData)
-            else
-                local g = toggle.Root:FindFirstChild("ThemeGradient")
-                if g then g:Destroy() end
-                toggle.Root.BackgroundColor3 = ThemeData
-            end
+            applyTheme(toggle.Root, "BackgroundColor3")
         end
     end
-
+    
     for _, slider in next, self.ThemeObjects.Sliders do
-        if isGradient then
-            self:ApplyThemeGradient(slider.Moving, ThemeData)
-        else
-            local g = slider.Moving:FindFirstChild("ThemeGradient")
-            if g then g:Destroy() end
-            slider.Moving.BackgroundColor3 = ThemeData
-        end
+        applyTheme(slider.Moving, "BackgroundColor3")
     end
 
     for _, btn in next, self.ThemeObjects.Buttons do
-        if isGradient then
-            self:ApplyThemeGradient(btn.Icon, ThemeData)
-        else
-            local g = btn.Icon:FindFirstChild("ThemeGradient")
-            if g then g:Destroy() end
-            btn.Icon.TextColor3 = ThemeData
-        end
+        applyTheme(btn.Icon, "TextColor3")
     end
 end
 
