@@ -142,14 +142,6 @@ isfolder = isfolder or getgenv().isfolder;
 isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
-NeverLose.CornerRadius = 10;
-
-NeverLose.GetCorner = LPH_NO_VIRTUALIZE(function(self, baseValue)
-    local configValue = self.CornerRadius or 10
-    local ratio = baseValue / 10
-    local finalRounding = math.clamp(configValue * ratio, 0, 30)
-    return UDim.new(0, finalRounding)
-end);
 
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
@@ -2356,6 +2348,29 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		local ColorPickerLib = {};
+		
+local InternalWatermark = Instance.new("TextLabel")
+InternalWatermark.Name = "UI_Watermark"
+InternalWatermark.Parent = Window._RightFrame 
+InternalWatermark.AnchorPoint = Vector2.new(1, 1)
+InternalWatermark.Position = UDim2.new(1, -15, 1, -10)
+InternalWatermark.Size = UDim2.new(0, 200, 0, 20)
+InternalWatermark.BackgroundTransparency = 1
+InternalWatermark.Text = "BENG UI 0.5.7"
+InternalWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
+InternalWatermark.TextTransparency = 0.6
+InternalWatermark.Font = Enum.Font.GothamBold
+InternalWatermark.TextSize = 11
+InternalWatermark.TextXAlignment = Enum.TextXAlignment.Right
+InternalWatermark.ZIndex = 10
+
+Window.Signal:Connect(function(isVisible)
+    local targetTrans = isVisible and 0.6 or 1
+    game:GetService("TweenService"):Create(InternalWatermark, TweenInfo.new(0.3), {
+        TextTransparency = targetTrans
+    }):Play()
+end)
+		
 		local ColorPicker = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
 		local UIStroke = Instance.new("UIStroke")
@@ -3919,11 +3934,8 @@ function NeverLose:CreateWindow(Config)
 		Size = PreferredSize,
 		ConfigFolder = "NeverLoseConfigs",
 		Enable3DRenderer = false,
-		Keybind = "Insert",
-		CornerRadius = 10
+		Keybind = "Insert"
 	});
-
-	NeverLose.CornerRadius = tonumber(Config.CornerRadius) or 10;
 
 	if NeverLose.IsMobile then
 		local ScreenSize = NeverLose.ScreenGui.AbsoluteSize;
