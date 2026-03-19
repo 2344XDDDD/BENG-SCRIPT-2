@@ -143,6 +143,13 @@ isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
 
+NeverLose.ThemeCorner = 10 
+
+function NeverLose:GetCorner(base)
+    local ratio = base / 10
+    return UDim.new(0, math.clamp(math.floor(self.ThemeCorner * ratio), 0, 30))
+end
+
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
 NeverLose.GlobalSignals = {};
@@ -3912,7 +3919,10 @@ function NeverLose:CreateWindow(Config)
 		ConfigFolder = "NeverLoseConfigs",
 		Enable3DRenderer = false,
 		Keybind = "Insert"
+		CornerRadius = 10
 	});
+	
+	NeverLose.ThemeCorner = math.clamp(tonumber(Config.CornerRadius) or 10, 0, 30)
 
 	if NeverLose.IsMobile then
 		local ScreenSize = NeverLose.ScreenGui.AbsoluteSize;
