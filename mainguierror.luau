@@ -6252,7 +6252,7 @@ function NeverLose:CreateNotification()
 	UIListLayout.Parent = Notification
 	UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	UIListLayout.Padding = UDim.new(0, 8)
+	UIListLayout.Padding = UDim.new(0, 10)
 
 	NeverLose.__Notification_Cache = Notifier
 
@@ -6262,7 +6262,7 @@ function NeverLose:CreateNotification()
 			Content = "Hello World!",
 			Logo = NeverLose.GlobalLogo or "",
 			Duration = 5,
-			Color = Color3.fromRGB(255, 255, 255)
+			Color = Color3.fromRGB(0, 150, 255)
 		})
 
 		if NeverLose.__WatermarkCache then
@@ -6284,7 +6284,7 @@ function NeverLose:CreateNotification()
 		ContainerFrame.Parent = Notification
 		ContainerFrame.BackgroundTransparency = 1.000
 		ContainerFrame.BorderSizePixel = 0
-		ContainerFrame.Size = UDim2.new(0, 0, 0, 65)
+		ContainerFrame.ClipsDescendants = false
 
 		NotifyFrame.Name = NeverLose.RandomString()
 		NotifyFrame.Parent = ContainerFrame
@@ -6293,7 +6293,7 @@ function NeverLose:CreateNotification()
 		NotifyFrame.BackgroundTransparency = 0.075
 		NotifyFrame.BorderSizePixel = 0
 		NotifyFrame.ClipsDescendants = true
-		NotifyFrame.Position = UDim2.new(1.5, 0, 0, 0)
+		NotifyFrame.Position = UDim2.new(2, 0, 0, 0)
 		NotifyFrame.Size = UDim2.new(0, 220, 0, 55)
 		NotifyFrame.ZIndex = 130
 
@@ -6301,7 +6301,7 @@ function NeverLose:CreateNotification()
 		UICorner.Parent = NotifyFrame
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Config.Color
+		UIStroke.Color = Color3.fromRGB(45, 48, 58)
 		UIStroke.Parent = NotifyFrame
 
 		local hasLogo = (Config.Logo ~= "" and Config.Logo ~= nil)
@@ -6316,7 +6316,7 @@ function NeverLose:CreateNotification()
 		LogoImage.ZIndex = 131
 		LogoImage.Image = Config.Logo
 		LogoImage.Visible = hasLogo
-		LogoImage.ImageColor3 = NeverLose.IconColor or Color3.new(1,1,1)
+		LogoImage.ImageColor3 = Color3.new(1, 1, 1)
 
 		UICorner_2.CornerRadius = UDim.new(0, 7)
 		UICorner_2.Parent = LogoImage
@@ -6348,9 +6348,10 @@ function NeverLose:CreateNotification()
 
 		local Size1 = game:GetService("TextService"):GetTextSize(NotifyName.Text, NotifyName.TextSize, NotifyName.Font, Vector2.new(math.huge, math.huge))
 		local Size2 = game:GetService("TextService"):GetTextSize(NotifyContent.Text, NotifyContent.TextSize, NotifyContent.Font, Vector2.new(math.huge, math.huge))
-		local MainSize = math.max(Size1.X, Size2.X)
+		local MainWidth = math.max(Size1.X, Size2.X) + textX + 25
 
-		NotifyFrame.Size = UDim2.new(0, MainSize + textX + 20, 0, 55)
+		ContainerFrame.Size = UDim2.new(0, MainWidth, 0, 65)
+		NotifyFrame.Size = UDim2.new(0, MainWidth, 0, 55)
 
 		local shadow = NeverLose:CreateShadow(NotifyFrame, true)
 		if shadow.SetColor then
@@ -6378,10 +6379,10 @@ function NeverLose:CreateNotification()
 			task.wait(0.125)
 
 			NeverLose.PlayAnimate(ContainerFrame, SlowyTween, {
-				Size = UDim2.new(0, 0, 0, 0)
+				Size = UDim2.new(0, MainWidth, 0, 0)
 			})
 
-			task.wait(0.125)
+			task.wait(0.2)
 			ContainerFrame:Destroy()
 			
 			if #Notification:GetChildren() <= 1 and NeverLose.__WatermarkCache then
