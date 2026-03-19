@@ -6231,6 +6231,7 @@ function Watermark_lb:AddBlock(IconStr , Name)
 
 	return Window;
 end;
+
 function NeverLose:CreateNotification()
 	if NeverLose.__Notification_Cache then
 		return NeverLose.__Notification_Cache
@@ -6325,10 +6326,10 @@ function NeverLose:CreateNotification()
 		NotifyName.Size = UDim2.new(1, -(textX + 10), 0, 20)
 		NotifyName.ZIndex = 132
 		NotifyName.Font = Enum.Font.GothamBold
+		NotifyName.Text = Config.Title
 		NotifyName.TextColor3 = Color3.fromRGB(255, 255, 255)
 		NotifyName.TextSize = 16
 		NotifyName.TextXAlignment = Enum.TextXAlignment.Left
-		NotifyName.TextTransparency = 1
 
 		NotifyContent.Name = NeverLose.RandomString()
 		NotifyContent.Parent = NotifyFrame
@@ -6337,10 +6338,17 @@ function NeverLose:CreateNotification()
 		NotifyContent.Size = UDim2.new(1, -(textX + 10), 0, 15)
 		NotifyContent.ZIndex = 132
 		NotifyContent.Font = Enum.Font.GothamBold
+		NotifyContent.Text = Config.Content
 		NotifyContent.TextColor3 = Color3.fromRGB(255, 255, 255)
 		NotifyContent.TextSize = 12
-		NotifyContent.TextTransparency = 1
+		NotifyContent.TextTransparency = 0.55
 		NotifyContent.TextXAlignment = Enum.TextXAlignment.Left
+
+		local Size1 = game:GetService("TextService"):GetTextSize(NotifyName.Text, NotifyName.TextSize, NotifyName.Font, Vector2.new(math.huge, math.huge))
+		local Size2 = game:GetService("TextService"):GetTextSize(NotifyContent.Text, NotifyContent.TextSize, NotifyContent.Font, Vector2.new(math.huge, math.huge))
+		local MainSize = math.max(Size1.X, Size2.X)
+
+		NotifyFrame.Size = UDim2.new(0, MainSize + textX + 20, 0, 52)
 
 		local shadow = NeverLose:CreateShadow(NotifyFrame, true)
 		shadow:Render(true)
@@ -6349,64 +6357,30 @@ function NeverLose:CreateNotification()
 			Position = UDim2.new(1, 0, 0, 0)
 		})
 
-		local InstanceObj = {}
-		local closeThread = nil
-
-		local function Dismiss()
-			if closeThread then task.cancel(closeThread) closeThread = nil end
+		task.delay(Config.Duration or 5, function()
 			shadow:Render(false)
+
 			NeverLose.PlayAnimate(NotifyFrame, SlowyTween, { BackgroundTransparency = 1 })
 			NeverLose.PlayAnimate(UIStroke, SlowyTween, { Transparency = 1 })
 			NeverLose.PlayAnimate(LogoImage, SlowyTween, { ImageTransparency = 1 })
 			NeverLose.PlayAnimate(NotifyName, SlowyTween, { TextTransparency = 1 })
 			NeverLose.PlayAnimate(NotifyContent, SlowyTween, { TextTransparency = 1 })
+
 			task.wait(0.2)
-			NeverLose.PlayAnimate(ContainerFrame, SlowyTween, { Size = UDim2.new(0, 0, 0, 0) })
-			task.wait(0.3)
-			ContainerFrame:Destroy()
-			if #Notification:GetChildren() <= 1 and NeverLose.__WatermarkCache then
-				NeverLose.PlayAnimate(Notification, SlowyTween, { Position = UDim2.new(1, -25, 0, 25) })
-			end
-		end
 
-		function InstanceObj:Set(NewConfig)
-			NewConfig = NewConfig or {}
-			local Title = NewConfig.Title or Config.Title
-			local Content = NewConfig.Content or Config.Content
-			local Duration = NewConfig.Duration or Config.Duration
-
-			local ts = game:GetService("TextService")
-			local s1 = ts:GetTextSize(Title, NotifyName.TextSize, NotifyName.Font, Vector2.new(math.huge, math.huge))
-			local s2 = ts:GetTextSize(Content, NotifyContent.TextSize, NotifyContent.Font, Vector2.new(math.huge, math.huge))
-			local maxW = math.max(s1.X, s2.X)
-			NeverLose.PlayAnimate(NotifyFrame, SlowyTween, { Size = UDim2.new(0, maxW + textX + 25, 0, 52) })
-
-			NotifyName.Text = Title
-			NotifyName.Position = UDim2.new(0, textX, 0, -5)
-			NotifyName.TextTransparency = 1
-			NeverLose.PlayAnimate(NotifyName, SlowyTween, {
-				Position = UDim2.new(0, textX, 0, 8),
-				TextTransparency = 0
+			NeverLose.PlayAnimate(ContainerFrame, SlowyTween, {
+				Size = UDim2.new(0, 0, 0, 0)
 			})
 
-			task.delay(0.15, function()
-				NotifyContent.Text = Content
-				NotifyContent.Position = UDim2.new(0, textX, 0, 15)
-				NotifyContent.TextTransparency = 1
-				NeverLose.PlayAnimate(NotifyContent, SlowyTween, {
-					Position = UDim2.new(0, textX, 0, 26),
-					TextTransparency = 0.55
+			task.wait(0.3)
+			ContainerFrame:Destroy()
+		
+			if #Notification:GetChildren() <= 1 and NeverLose.__WatermarkCache then
+				NeverLose.PlayAnimate(Notification, SlowyTween, {
+					Position = UDim2.new(1, -25, 0, 25)
 				})
-			end)
-
-			if closeThread then task.cancel(closeThread) end
-			closeThread = task.delay(Duration, function()
-				Dismiss()
-			end)
-		end
-
-		InstanceObj:Set(Config)
-		return InstanceObj
+			end
+		end)
 	end
 
 	return Notifier
