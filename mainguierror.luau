@@ -3495,10 +3495,9 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 	local idx = {};
 	local LayerIndex = Frame.ZIndex;
 
-	function idx:AddLabel(Name: string, EnglishName: string, Warp: boolean)
+	function idx:AddLabel(Name: string,Warp: boolean)
 		local BasedFrame = Instance.new("Frame")
 		local BasedLabel = Instance.new("TextLabel")
-		local SubLabel = Instance.new("TextLabel")
 		local LineFrame = Instance.new("Frame")
 		local BasedHandler = Instance.new("Frame")
 		local UIListLayout = Instance.new("UIListLayout")
@@ -3522,7 +3521,7 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 		BasedLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		BasedLabel.BorderSizePixel = 0
 		BasedLabel.Position = UDim2.new(0, 11, 0, 6)
-		BasedLabel.Size = UDim2.new(0, 1, 0, 15)
+		BasedLabel.Size = UDim2.new(0,1, 0, 15)
 		BasedLabel.ZIndex = LayerIndex + 9
 		BasedLabel.Font = Enum.Font.GothamMedium
 		BasedLabel.Text = Name
@@ -3530,20 +3529,6 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 		BasedLabel.TextSize = 13.000
 		BasedLabel.TextTransparency = 0.35
 		BasedLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-		SubLabel.Name = NeverLose.RandomString();
-		SubLabel.Parent = BasedFrame
-		SubLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		SubLabel.BackgroundTransparency = 1.000
-		SubLabel.Position = UDim2.new(0, 11 + TextService:GetTextSize(Name, 13, Enum.Font.GothamMedium, Vector2.new(math.huge, math.huge)).X + 5, 0, 8)
-		SubLabel.Size = UDim2.new(0, 1, 0, 15)
-		SubLabel.ZIndex = LayerIndex + 9
-		SubLabel.Font = Enum.Font.GothamMedium
-		SubLabel.Text = EnglishName or ""
-		SubLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-		SubLabel.TextSize = 10.000
-		SubLabel.TextTransparency = 0.6
-		SubLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 		LineFrame.Name = NeverLose.RandomString();
 		LineFrame.Parent = BasedFrame
@@ -3577,38 +3562,91 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 		UICorner.CornerRadius = UDim.new(0, 10)
 		UICorner.Parent = BasedFrame
 
+		local UpdateWarp = LPH_NO_VIRTUALIZE(function()
+			local size = TextService:GetTextSize(BasedLabel.Text , BasedLabel.TextSize , BasedLabel.Font , Vector2.new(math.huge,math.huge));
+			NeverLose.PlayAnimate(BasedFrame , SlowyTween , {
+				Size = UDim2.new(1, 0, 0, size.Y + 13);
+			})
+
+			BasedLabel.Size = UDim2.new(1, -35, 1, 0)
+			BasedLabel.TextYAlignment = Enum.TextYAlignment.Top;
+		end);
+
+		if Warp then
+			UpdateWarp();
+		end;
+
 		local handle = NeverLose:RegisiterHandler(BasedHandler , Signel);
+
 		handle.Root = BasedFrame;
 
 		handle.SetRender = LPH_NO_VIRTUALIZE(function(value)
 			if value then
-				NeverLose.PlayAnimate(BasedLabel , SlowyTween , {TextTransparency = 0.35})
-				NeverLose.PlayAnimate(SubLabel , SlowyTween , {TextTransparency = 0.6})
-				NeverLose.PlayAnimate(LineFrame , SlowyTween , {BackgroundTransparency = 0.650})
+				NeverLose.PlayAnimate(BasedFrame , SlowyTween , {
+					BackgroundTransparency = 1
+				});
+
+				NeverLose.PlayAnimate(BasedLabel , SlowyTween , {
+					TextTransparency = 0.35
+				})
+
+				NeverLose.PlayAnimate(LineFrame , SlowyTween , {
+					BackgroundTransparency = 0.650
+				})
 			else
-				NeverLose.PlayAnimate(BasedLabel , SlowyTween , {TextTransparency = 1})
-				NeverLose.PlayAnimate(SubLabel , SlowyTween , {TextTransparency = 1})
-				NeverLose.PlayAnimate(LineFrame , SlowyTween , {BackgroundTransparency = 1})
+				NeverLose.PlayAnimate(BasedFrame , SlowyTween , {
+					BackgroundTransparency = 1
+				});
+
+				NeverLose.PlayAnimate(BasedLabel , SlowyTween , {
+					TextTransparency = 1
+				})
+
+				NeverLose.PlayAnimate(LineFrame , SlowyTween , {
+					BackgroundTransparency = 1
+				})
 			end;
 		end);
-		
+
+		function handle:SetVisible(val)
+			BasedFrame.Visible = val;
+		end;
+
 		NeverLose:AddSignal(BasedFrame.MouseEnter:Connect(LPH_NO_VIRTUALIZE(function()
-			NeverLose.PlayAnimate(BasedFrame , SlowyTween , {BackgroundTransparency = 0.35});
-			NeverLose.PlayAnimate(BasedLabel , SlowyTween , {TextTransparency = 0.25})
-			NeverLose.PlayAnimate(SubLabel , SlowyTween , {TextTransparency = 0.45})
+			NeverLose.PlayAnimate(BasedFrame , SlowyTween , {
+				BackgroundTransparency = 0.35
+			});
+
+			NeverLose.PlayAnimate(BasedLabel , SlowyTween , {
+				TextTransparency = 0.25
+			})
+
 		end)))
 
 		NeverLose:AddSignal(BasedFrame.MouseLeave:Connect(LPH_NO_VIRTUALIZE(function()
-			NeverLose.PlayAnimate(BasedFrame , SlowyTween , {BackgroundTransparency = 1});
-			NeverLose.PlayAnimate(BasedLabel , SlowyTween , {TextTransparency = 0.35})
-			NeverLose.PlayAnimate(SubLabel , SlowyTween , {TextTransparency = 0.6})
+			NeverLose.PlayAnimate(BasedFrame , SlowyTween , {
+				BackgroundTransparency = 1
+			});
+
+			NeverLose.PlayAnimate(BasedLabel , SlowyTween , {
+				TextTransparency = 0.35
+			})
 		end)))
 
-		-- 动态更新函数
-		function handle:SetEnglishText(t)
-			SubLabel.Text = t;
-			local sizeMain = TextService:GetTextSize(BasedLabel.Text, 13, Enum.Font.GothamMedium, Vector2.new(math.huge, math.huge))
-			SubLabel.Position = UDim2.new(0, 11 + sizeMain.X + 5, 0, 8)
+		function handle:SetText(t)
+			local oldtxt = BasedLabel.Text;
+
+			BasedLabel.Text = t;
+
+			if Warp and oldtxt ~= t then
+				UpdateWarp();
+			end;
+		end;
+
+		function handle:ToolTip(Content: string)
+			handle.ToolTip = NeverLose:CreateToolTips(BasedFrame , Name , Content);
+
+			return handle;
 		end;
 
 		handle.SetRender(Signel:GetValue());
@@ -3616,7 +3654,7 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 
 		return handle;
 	end;
-	
+
 	function idx:AddButton(Config)
 		Config = NeverLose:ProcessParams(Config , {
 			Icon = 'chevron-large-left',
