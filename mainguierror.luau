@@ -5023,7 +5023,7 @@ end);
 		TabIcon.Size = UDim2.new(0, 25, 0, 25)
 		TabIcon.ZIndex = 9
 		TabIcon.FontFace = NeverLose.BuiltInBold
-        NeverLose:SetIconMode(TabIcon, Config.Icon);
+		TabIcon.Text = Config.Icon;
 		TabIcon.TextColor3 = NeverLose.AccentColor
 		TabIcon.TextSize = 16.000
 		TabIcon.TextWrapped = true
