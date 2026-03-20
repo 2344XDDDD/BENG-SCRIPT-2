@@ -143,8 +143,14 @@ isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
 
+NeverLose.IconMap = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"))()
+
+NeverLose.LucideFont = Font.fromId(7040297955, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+NeverLose.GoogleFont = Font.fromId(7040455735, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
+
 NeverLose.GlobalSignals = {};
 NeverLose.UnloadEnabled = false;
 
@@ -870,31 +876,50 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 	return bind;
 end);
 
-NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self , Label: TextLabel , Icon: string)
-	local useBold = string.lower(string.sub(Icon , -5)) == '-bold';
-
-	if useBold then
-		Label.Text = Icon:sub(1,-6);
-		Label.FontFace = NeverLose.BuiltInBold;
+NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon: string)
+	local customIcon = NeverLose.IconMap[Icon]
+	
+	if customIcon then
+		Label.Text = customIcon
+		if string.find(Icon, "lucide") then
+			Label.FontFace = NeverLose.LucideFont
+		elseif string.find(Icon, "google") then
+			Label.FontFace = NeverLose.GoogleFont
+		else
+			Label.FontFace = NeverLose.LucideFont
+		end
 	else
-		Label.Text = Icon;
-		Label.FontFace = NeverLose.BuiltInRegular;
-	end;
-end);
+		local useBold = string.lower(string.sub(Icon, -5)) == '-bold'
+		if useBold then
+			Label.Text = Icon:sub(1, -6)
+			Label.FontFace = NeverLose.BuiltInBold
+		else
+			Label.Text = Icon
+			Label.FontFace = NeverLose.BuiltInRegular
+		end
+	end
+end)
 
 function NeverLose:GetIconFont(icon: string)
-	local useBold = string.lower(string.sub(icon , -5)) == '-bold';
-
+	if NeverLose.IconMap[icon] then
+		if string.find(icon, "lucide") then
+			return NeverLose.LucideFont
+		elseif string.find(icon, "google") then
+			return NeverLose.GoogleFont
+		end
+		return NeverLose.LucideFont
+	end
+	
+	local useBold = string.lower(string.sub(icon, -5)) == '-bold'
 	if useBold then
-		return NeverLose.BuiltInBold;
-	end;
-
-	return NeverLose.BuiltInRegular;
-end;
+		return NeverLose.BuiltInBold
+	end
+	return NeverLose.BuiltInRegular
+end
 
 function NeverLose:MoreThanHalfY(Value: number)
 	return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
-end;
+end
 
 NeverLose.IsStudio = RunService:IsStudio();
 NeverLose.IsMobile = UserInputService.TouchEnabled or (game:GetService("GuiService"):GetScreenResolution().X < 800);
