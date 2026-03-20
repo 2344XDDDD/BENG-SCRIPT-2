@@ -143,7 +143,18 @@ isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
 
-local LucideIcons = loadstring(game:HttpGet("https://raw.githubusercontent.com/notpoiu/lucide-roblox-direct/main/src/init.lua"))()
+local IconsModule = nil
+local Success = pcall(function()
+    local source = game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua")
+    IconsModule = loadstring(source)()
+end)
+
+function NeverLose:GetIcon(iconName)
+    if not Success or not IconsModule then return nil end
+    local cleanName = iconName:gsub("-bold", ""):gsub("-", "_"):lower()
+    local iconData = IconsModule.GetAsset(cleanName) or IconsModule.GetAsset("help_circle")
+    return iconData
+end
 
 function NeverLose:GetIcon(iconName)
     local cleanName = iconName:gsub("-bold", ""):gsub("-", "_")
@@ -891,31 +902,30 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 	return bind;
 end);
 
-NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self , Label: TextLabel , Icon: string)
-	local useBold = string.lower(string.sub(Icon , -5)) == '-bold';
+NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, LabelOrImage, IconName)
+    local iconData = self:GetIcon(IconName)
+    if not iconData then return end
 
-	if useBold then
-		Label.Text = Icon:sub(1,-6);
-		Label.FontFace = NeverLose.BuiltInBold;
-	else
-		Label.Text = Icon;
-		Label.FontFace = NeverLose.BuiltInRegular;
-	end;
-end);
+    local targetImage = nil
 
-function NeverLose:GetIconFont(icon: string)
-	local useBold = string.lower(string.sub(icon , -5)) == '-bold';
+    if LabelOrImage:IsA("ImageLabel") or LabelOrImage:IsA("ImageButton") then
+        targetImage = LabelOrImage
+    elseif LabelOrImage:IsA("TextLabel") then
+        LabelOrImage.Text = ""
+        local img = LabelOrImage:FindFirstChild("LucideIcon") or Instance.new("ImageLabel", LabelOrImage)
+        img.Name = "LucideIcon"
+        img.BackgroundTransparency = 1
+        img.Size = UDim2.fromScale(1, 1)
+        img.ImageColor3 = LabelOrImage.TextColor3
+        targetImage = img
+    end
 
-	if useBold then
-		return NeverLose.BuiltInBold;
-	end;
-
-	return NeverLose.BuiltInRegular;
-end;
-
-function NeverLose:MoreThanHalfY(Value: number)
-	return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
-end;
+    if targetImage then
+        targetImage.Image = iconData.Url
+        targetImage.ImageRectOffset = iconData.ImageRectOffset
+        targetImage.ImageRectSize = iconData.ImageRectSize
+    end
+end)
 
 NeverLose.IsStudio = RunService:IsStudio();
 NeverLose.IsMobile = UserInputService.TouchEnabled or (game:GetService("GuiService"):GetScreenResolution().X < 800);
