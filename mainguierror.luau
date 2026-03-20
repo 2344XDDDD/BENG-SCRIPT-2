@@ -6437,16 +6437,6 @@ function NeverLose:CreateNotification()
 		local UICorner = Instance.new("UICorner")
 		local MainStroke = Instance.new("UIStroke")
 		local LogoImage = Instance.new("TextLabel")
-        LogoImage.Name = NeverLose.RandomString()
-        LogoImage.Parent = NotifyFrame
-        LogoImage.AnchorPoint = Vector2.new(0, 0.5)
-        LogoImage.BackgroundTransparency = 1.000
-        LogoImage.Position = UDim2.new(0, 12, 0.5, 0)
-        LogoImage.Size = UDim2.new(0, 28, 0, 28)
-        LogoImage.ZIndex = 131
-        LogoImage.TextSize = 20
-        LogoImage.TextColor3 = Config.Color
-        NeverLose:SetIconMode(LogoImage, Config.Logo)
 		local UICorner_2 = Instance.new("UICorner")
 		local NotifyName = Instance.new("TextLabel")
 		local NotifyContent = Instance.new("TextLabel")
