@@ -669,47 +669,83 @@ p.SetLangForObject(r)
 return v
 end
 
-function p.UpdateTheme(r, u, v, x, z, A)
-    local function ApplyTheme(B)
-        for C, F in pairs(B.Properties or {}) do
-            local G = p.GetThemeProperty(F, p.Theme)
-            if G ~= nil then
-                if typeof(G) == "Color3" then
-                    if v then
-                        p.Tween(B.Object, x or 0.5, {[C] = G}, z or Enum.EasingStyle.Quint, A or Enum.EasingDirection.Out):Play()
-                    else
-                        B.Object[C] = G
-                    end
-                elseif typeof(G) == "table" and G.Color and G.Transparency then
-                    local H = B.Object:FindFirstChild"LibraryGradient"
-                    if not H then
-                        H = Instance.new"UIGradient"
-                        H.Name = "LibraryGradient"
-                        H.Parent = B.Object
-                    end
-                    
-                    if v then
-                        p.Tween(H, x or 0.5, {Rotation = G.Rotation or 0, Offset = G.Offset or Vector2.new(0,0)}, z, A):Play()
-                        H.Color = G.Color
-                        H.Transparency = G.Transparency
-                    else
-                        H.Color = G.Color
-                        H.Transparency = G.Transparency
-                        H.Rotation = G.Rotation or 0
-                    end
-                end
-            end
-        end
-    end
+function p.UpdateTheme(r,u,v,x,z,A)
+local function ApplyTheme(B)
+for C,F in pairs(B.Properties or{})do
+local G=p.GetThemeProperty(F,p.Theme)
+if G~=nil then
+if typeof(G)=="Color3"then
+local H=B.Object:FindFirstChild"LibraryGradient"
+if H then
+H:Destroy()
+end
 
-    if r then
-        local B = p.Objects[r]
-        if B then ApplyTheme(B) end
-    else
-        for B, C in pairs(p.Objects) do
-            ApplyTheme(C)
-        end
-    end
+if v then
+p.Tween(
+B.Object,
+x or 0.2,
+{[C]=G},
+z or Enum.EasingStyle.Quint,
+A or Enum.EasingDirection.Out
+):Play()
+elseif u then
+p.Tween(B.Object,0.08,{[C]=G}):Play()
+else
+B.Object[C]=G
+end
+elseif typeof(G)=="table"and G.Color and G.Transparency then
+B.Object[C]=Color3.new(1,1,1)
+
+local H=B.Object:FindFirstChild"LibraryGradient"
+if not H then
+H=Instance.new"UIGradient"
+H.Name="LibraryGradient"
+H.Parent=B.Object
+end
+
+H.Color=G.Color
+H.Transparency=G.Transparency
+
+for J,L in pairs(G)do
+if J~="Color"and J~="Transparency"and H[J]~=nil then
+H[J]=L
+end
+end
+elseif typeof(G)=="number"then
+if v then
+p.Tween(
+B.Object,
+x or 0.2,
+{[C]=G},
+z or Enum.EasingStyle.Quint,
+A or Enum.EasingDirection.Out
+):Play()
+elseif u then
+p.Tween(B.Object,0.08,{[C]=G}):Play()
+else
+B.Object[C]=G
+end
+end
+else
+
+local H=B.Object:FindFirstChild"LibraryGradient"
+if H then
+H:Destroy()
+end
+end
+end
+end
+
+if r then
+local B=p.Objects[r]
+if B then
+ApplyTheme(B)
+end
+else
+for B,C in pairs(p.Objects)do
+ApplyTheme(C)
+end
+end
 end
 
 
@@ -12969,18 +13005,6 @@ cloneref=nil,
 UIScaleObj=nil,
 }
 
-function ae:SetThemeAnimated(themeName, duration)
-    if ae.Themes[themeName] then
-        ae.Theme = ae.Themes[themeName]
-        ap.SetTheme(ae.Themes[themeName])
-        ap.UpdateTheme(nil, false, true, duration or 0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-        
-        if ae.OnThemeChangeFunction then
-            ae.OnThemeChangeFunction(themeName)
-        end
-        return ae.Themes[themeName]
-    end
-end
 
 local af=(cloneref or clonereference or function(af)return af end)
 
