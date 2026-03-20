@@ -877,28 +877,42 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 end);
 
 NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon: string)
-	local customIcon = NeverLose.IconMap[Icon]
-	
-	if customIcon then
-		Label.Text = customIcon
-		if string.find(Icon, "lucide") then
-			Label.FontFace = NeverLose.LucideFont
-		elseif string.find(Icon, "google") then
-			Label.FontFace = NeverLose.GoogleFont
-		else
-			Label.FontFace = NeverLose.LucideFont
-		end
-	else
-		local useBold = string.lower(string.sub(Icon, -5)) == '-bold'
-		if useBold then
-			Label.Text = Icon:sub(1, -6)
-			Label.FontFace = NeverLose.BuiltInBold
-		else
-			Label.Text = Icon
-			Label.FontFace = NeverLose.BuiltInRegular
-		end
-	end
+    local customIcon = NeverLose.IconMap[Icon]
+    
+    if customIcon then
+        Label.Text = customIcon
+        if string.find(Icon, "lucide") then
+            Label.FontFace = NeverLose.LucideFont
+        elseif string.find(Icon, "google") then
+            Label.FontFace = NeverLose.GoogleFont
+        else
+            Label.FontFace = NeverLose.LucideFont
+        end
+    else
+        local useBold = string.lower(string.sub(Icon, -5)) == '-bold'
+        if useBold then
+            Label.Text = Icon:sub(1, -6)
+            Label.FontFace = NeverLose.BuiltInBold
+        else
+            Label.Text = Icon
+            Label.FontFace = NeverLose.BuiltInRegular
+        end
+    end
 end)
+
+function NeverLose:GetIconFont(icon: string)
+    if NeverLose.IconMap[icon] then
+        if string.find(icon, "lucide") then
+            return NeverLose.LucideFont
+        elseif string.find(icon, "google") then
+            return NeverLose.GoogleFont
+        end
+        return NeverLose.LucideFont
+    end
+
+    local useBold = string.lower(string.sub(icon, -5)) == '-bold'
+    return useBold and NeverLose.BuiltInBold or NeverLose.BuiltInRegular
+end
 
 function NeverLose:GetIconFont(icon: string)
 	if NeverLose.IconMap[icon] then
