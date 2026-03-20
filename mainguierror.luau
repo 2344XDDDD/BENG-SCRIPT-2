@@ -143,44 +143,15 @@ isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
 
-local IconsModule = nil
-local Success = pcall(function()
-    local source = game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua")
-    IconsModule = loadstring(source)()
-end)
-
-function NeverLose:GetIcon(iconName)
-    if not Success or not IconsModule then return nil end
-    local cleanName = iconName:gsub("-bold", ""):gsub("-", "_"):lower()
-    local iconData = IconsModule.GetAsset(cleanName) or IconsModule.GetAsset("help_circle")
-    return iconData
-end
-
-function NeverLose:GetIcon(iconName)
-    local cleanName = iconName:gsub("-bold", ""):gsub("-", "_")
-    return LucideIcons[cleanName] or LucideIcons["help_circle"]
-end
-
-NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, LabelOrImage, Icon)
-    if LabelOrImage:IsA("ImageLabel") or LabelOrImage:IsA("ImageButton") then
-        LabelOrImage.Image = self:GetIcon(Icon)
-    elseif LabelOrImage:IsA("TextLabel") then
-        LabelOrImage.Text = ""
-        local img = LabelOrImage:FindFirstChild("LucideIcon") or Instance.new("ImageLabel", LabelOrImage)
-        img.Name = "LucideIcon"
-        img.BackgroundTransparency = 1
-        img.Size = UDim2.fromScale(1, 1)
-        img.Image = self:GetIcon(Icon)
-        img.ImageColor3 = LabelOrImage.TextColor3
-    end
-end)
-
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
 NeverLose.GlobalSignals = {};
 NeverLose.UnloadEnabled = false;
 
 local cloneref: cloneref = cloneref or function(f) return f end;
+local FetchIcons, Icons = pcall(function()
+    return (loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua")))()
+end)
 local TweenService: TweenService = cloneref(game:GetService('TweenService'));
 local UserInputService: UserInputService = cloneref(game:GetService('UserInputService'));
 local TextService: TextService = cloneref(game:GetService('TextService'));
@@ -902,30 +873,38 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 	return bind;
 end);
 
-NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, LabelOrImage, IconName)
-    local iconData = self:GetIcon(IconName)
-    if not iconData then return end
-
-    local targetImage = nil
-
-    if LabelOrImage:IsA("ImageLabel") or LabelOrImage:IsA("ImageButton") then
-        targetImage = LabelOrImage
-    elseif LabelOrImage:IsA("TextLabel") then
-        LabelOrImage.Text = ""
-        local img = LabelOrImage:FindFirstChild("LucideIcon") or Instance.new("ImageLabel", LabelOrImage)
-        img.Name = "LucideIcon"
-        img.BackgroundTransparency = 1
-        img.Size = UDim2.fromScale(1, 1)
-        img.ImageColor3 = LabelOrImage.TextColor3
-        targetImage = img
+NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self , Label: TextLabel , Icon: string)
+    local LucideImg = Label:FindFirstChild("LucideIcon")
+    if Icons and Icons[Icon] then
+        if not LucideImg then
+            LucideImg = Instance.new("ImageLabel")
+            LucideImg.Name = "LucideIcon"
+            LucideImg.AnchorPoint = Vector2.new(0.5, 0.5)
+            LucideImg.Position = UDim2.fromScale(0.5, 0.5)
+            LucideImg.Size = UDim2.fromScale(0.8, 0.8)
+            LucideImg.BackgroundTransparency = 1
+            LucideImg.ZIndex = Label.ZIndex + 1
+            LucideImg.Parent = Label
+        end
+        
+        Label.Text = ""
+        LucideImg.Image = Icons[Icon]
+        LucideImg.ImageColor3 = Label.TextColor3
+        LucideImg.ImageTransparency = Label.TextTransparency
+        LucideImg.Visible = true
+    else
+        if LucideImg then LucideImg.Visible = false end
+        
+        local useBold = string.lower(string.sub(Icon , -5)) == '-bold';
+        if useBold then
+            Label.Text = Icon:sub(1,-6);
+            Label.FontFace = NeverLose.BuiltInBold;
+        else
+            Label.Text = Icon;
+            Label.FontFace = NeverLose.BuiltInRegular;
+        end;
     end
-
-    if targetImage then
-        targetImage.Image = iconData.Url
-        targetImage.ImageRectOffset = iconData.ImageRectOffset
-        targetImage.ImageRectSize = iconData.ImageRectSize
-    end
-end)
+end);
 
 NeverLose.IsStudio = RunService:IsStudio();
 NeverLose.IsMobile = UserInputService.TouchEnabled or (game:GetService("GuiService"):GetScreenResolution().X < 800);
@@ -5001,7 +4980,7 @@ end);
 
 		local TabButton = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
-		local TabIcon = Instance.new("ImageLabel")
+		local TabIcon = Instance.new("TextLabel")
 		local TabContentLabel = Instance.new("TextLabel")
 
 		Tab.Idx = TabButton;
@@ -5029,7 +5008,7 @@ end);
 		TabIcon.Size = UDim2.new(0, 25, 0, 25)
 		TabIcon.ZIndex = 9
 		TabIcon.FontFace = NeverLose.BuiltInBold
-		NeverLose:SetIconMode(TabIcon, Config.Icon);
+		TabIcon.Text = Config.Icon;
 		TabIcon.TextColor3 = NeverLose.AccentColor
 		TabIcon.TextSize = 16.000
 		TabIcon.TextWrapped = true
