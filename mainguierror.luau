@@ -143,10 +143,24 @@ isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
 
-NeverLose.IconMap = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"))()
+NeverLose.IconMap = {}
+local IconLoadSuccess = false
 
-NeverLose.LucideFont = Font.fromId(7040297955, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-NeverLose.GoogleFont = Font.fromId(7040455735, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+task.spawn(function()
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"))()
+    end)
+    if success and type(result) == "table" then
+        NeverLose.IconMap = result
+        IconLoadSuccess = true
+        print("NeverLose: Icons loaded successfully!")
+    else
+        warn("NeverLose: Icons failed to load!")
+    end
+end)
+
+NeverLose.LucideFont = Font.new("rbxassetid://7040297955", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+NeverLose.GoogleFont = Font.new("rbxassetid://7040455735", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
@@ -876,14 +890,13 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 	return bind;
 end);
 
+-- [[ 图标渲染核心函数 ]]
 NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon: string)
-    local customIcon = NeverLose.IconMap[Icon]
+    local customIcon = NeverLose.IconMap and NeverLose.IconMap[Icon]
     
     if customIcon then
         Label.Text = customIcon
-        if string.find(Icon, "lucide") then
-            Label.FontFace = NeverLose.LucideFont
-        elseif string.find(Icon, "google") then
+        if string.find(Icon, "google") then
             Label.FontFace = NeverLose.GoogleFont
         else
             Label.FontFace = NeverLose.LucideFont
@@ -901,38 +914,22 @@ NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon:
 end)
 
 function NeverLose:GetIconFont(icon: string)
-    if NeverLose.IconMap[icon] then
-        if string.find(icon, "lucide") then
-            return NeverLose.LucideFont
-        elseif string.find(icon, "google") then
+    if NeverLose.IconMap and NeverLose.IconMap[icon] then
+        if string.find(icon, "google") then
             return NeverLose.GoogleFont
         end
         return NeverLose.LucideFont
     end
-
+    
     local useBold = string.lower(string.sub(icon, -5)) == '-bold'
-    return useBold and NeverLose.BuiltInBold or NeverLose.BuiltInRegular
-end
-
-function NeverLose:GetIconFont(icon: string)
-	if NeverLose.IconMap[icon] then
-		if string.find(icon, "lucide") then
-			return NeverLose.LucideFont
-		elseif string.find(icon, "google") then
-			return NeverLose.GoogleFont
-		end
-		return NeverLose.LucideFont
-	end
-	
-	local useBold = string.lower(string.sub(icon, -5)) == '-bold'
-	if useBold then
-		return NeverLose.BuiltInBold
-	end
-	return NeverLose.BuiltInRegular
+    if useBold then
+        return NeverLose.BuiltInBold
+    end
+    return NeverLose.BuiltInRegular
 end
 
 function NeverLose:MoreThanHalfY(Value: number)
-	return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
+    return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
 end
 
 NeverLose.IsStudio = RunService:IsStudio();
