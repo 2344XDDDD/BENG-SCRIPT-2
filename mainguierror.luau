@@ -153,15 +153,13 @@ task.spawn(function()
     if success and type(result) == "table" then
         NeverLose.IconMap = result
         IconLoadSuccess = true
-        print("NeverLose: Icons loaded successfully!")
     else
-        warn("NeverLose: Icons failed to load!")
+        warn("Icons failed to load: " .. tostring(result))
     end
 end)
 
-NeverLose.LucideFont = Font.new("rbxassetid://7040297955", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 NeverLose.GoogleFont = Font.new("rbxassetid://7040455735", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-
+NeverLose.LucideFont = Font.new("rbxassetid://7040297955", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
 
@@ -890,8 +888,9 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 	return bind;
 end);
 
--- [[ 图标渲染核心函数 ]]
 NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon: string)
+    if not (Label:IsA("TextLabel") or Label:IsA("TextButton")) then return end
+    
     local customIcon = NeverLose.IconMap and NeverLose.IconMap[Icon]
     
     if customIcon then
@@ -911,25 +910,15 @@ NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon:
             Label.FontFace = NeverLose.BuiltInRegular
         end
     end
+    Label.RichText = true
 end)
 
 function NeverLose:GetIconFont(icon: string)
     if NeverLose.IconMap and NeverLose.IconMap[icon] then
-        if string.find(icon, "google") then
-            return NeverLose.GoogleFont
-        end
-        return NeverLose.LucideFont
+        return string.find(icon, "google") and NeverLose.GoogleFont or NeverLose.LucideFont
     end
-    
     local useBold = string.lower(string.sub(icon, -5)) == '-bold'
-    if useBold then
-        return NeverLose.BuiltInBold
-    end
-    return NeverLose.BuiltInRegular
-end
-
-function NeverLose:MoreThanHalfY(Value: number)
-    return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
+    return useBold and NeverLose.BuiltInBold or NeverLose.BuiltInRegular
 end
 
 NeverLose.IsStudio = RunService:IsStudio();
@@ -5034,7 +5023,7 @@ end);
 		TabIcon.Size = UDim2.new(0, 25, 0, 25)
 		TabIcon.ZIndex = 9
 		TabIcon.FontFace = NeverLose.BuiltInBold
-		TabIcon.Text = Config.Icon;
+        NeverLose:SetIconMode(TabIcon, Config.Icon);
 		TabIcon.TextColor3 = NeverLose.AccentColor
 		TabIcon.TextSize = 16.000
 		TabIcon.TextWrapped = true
@@ -6447,7 +6436,17 @@ function NeverLose:CreateNotification()
 		local NotifyFrame = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
 		local MainStroke = Instance.new("UIStroke")
-		local LogoImage = Instance.new("ImageLabel")
+		local LogoImage = Instance.new("TextLabel")
+        LogoImage.Name = NeverLose.RandomString()
+        LogoImage.Parent = NotifyFrame
+        LogoImage.AnchorPoint = Vector2.new(0, 0.5)
+        LogoImage.BackgroundTransparency = 1.000
+        LogoImage.Position = UDim2.new(0, 12, 0.5, 0)
+        LogoImage.Size = UDim2.new(0, 28, 0, 28)
+        LogoImage.ZIndex = 131
+        LogoImage.TextSize = 20
+        LogoImage.TextColor3 = Config.Color
+        NeverLose:SetIconMode(LogoImage, Config.Logo)
 		local UICorner_2 = Instance.new("UICorner")
 		local NotifyName = Instance.new("TextLabel")
 		local NotifyContent = Instance.new("TextLabel")
