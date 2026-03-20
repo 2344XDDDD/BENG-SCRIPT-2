@@ -3654,6 +3654,93 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 
 		return handle;
 	end;
+	
+	function idx:AddInfoCard(Title: string, Content: string)
+		local InfoFrame = Instance.new("Frame")
+		local UICorner = Instance.new("UICorner")
+		local UIStroke = Instance.new("UIStroke")
+		local TitleLabel = Instance.new("TextLabel")
+		local ContentLabel = Instance.new("TextLabel")
+		local UIListLayout = Instance.new("UIListLayout")
+		local UIPadding = Instance.new("UIPadding")
+
+		InfoFrame.Name = NeverLose.RandomString()
+		InfoFrame.Parent = Frame
+		InfoFrame.BackgroundColor3 = Color3.fromRGB(35, 37, 43)
+		InfoFrame.BackgroundTransparency = 0.4
+		InfoFrame.BorderSizePixel = 0
+		InfoFrame.Size = UDim2.new(1, -20, 0, 0)
+		InfoFrame.ZIndex = LayerIndex + 8
+		InfoFrame.ClipsDescendants = true
+
+		UICorner.CornerRadius = UDim.new(0, 10)
+		UICorner.Parent = InfoFrame
+
+		UIStroke.Color = Color3.fromRGB(55, 58, 68)
+		UIStroke.Transparency = 0.6
+		UIStroke.Thickness = 1
+		UIStroke.Parent = InfoFrame
+
+		UIListLayout.Parent = InfoFrame
+		UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		UIListLayout.Padding = UDim.new(0, 5)
+
+		UIPadding.Parent = InfoFrame
+		UIPadding.PaddingBottom = UDim.new(0, 12)
+		UIPadding.PaddingLeft = UDim.new(0, 15)
+		UIPadding.PaddingRight = UDim.new(0, 15)
+		UIPadding.PaddingTop = UDim.new(0, 12)
+
+		TitleLabel.Name = "Title"
+		TitleLabel.Parent = InfoFrame
+		TitleLabel.BackgroundTransparency = 1
+		TitleLabel.Size = UDim2.new(1, 0, 0, 20)
+		TitleLabel.Font = Enum.Font.GothamBold
+		TitleLabel.Text = Title:upper()
+		TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		TitleLabel.TextSize = 14
+		TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+		ContentLabel.Name = "Content"
+		ContentLabel.Parent = InfoFrame
+		ContentLabel.BackgroundTransparency = 1
+		ContentLabel.Size = UDim2.new(1, 0, 0, 0)
+		ContentLabel.Font = Enum.Font.GothamMedium
+		ContentLabel.Text = Content
+		ContentLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+		ContentLabel.TextSize = 12
+		ContentLabel.TextWrapped = true
+		ContentLabel.TextXAlignment = Enum.TextXAlignment.Left
+		ContentLabel.TextTransparency = 0.3
+
+		local function UpdateHeight()
+			local contentSize = TextService:GetTextSize(ContentLabel.Text, ContentLabel.TextSize, ContentLabel.Font, Vector2.new(InfoFrame.AbsoluteSize.X - 30, math.huge))
+			ContentLabel.Size = UDim2.new(1, 0, 0, contentSize.Y)
+			InfoFrame.Size = UDim2.new(1, -20, 0, contentSize.Y + 55)
+		end
+
+		task.spawn(UpdateHeight)
+	
+		local handle = {}
+		handle.SetRender = LPH_NO_VIRTUALIZE(function(value)
+			if value then
+				NeverLose.PlayAnimate(InfoFrame, SlowyTween, {BackgroundTransparency = 0.4})
+				NeverLose.PlayAnimate(TitleLabel, SlowyTween, {TextTransparency = 0})
+				NeverLose.PlayAnimate(ContentLabel, SlowyTween, {TextTransparency = 0.3})
+				NeverLose.PlayAnimate(UIStroke, SlowyTween, {Transparency = 0.6})
+			else
+				NeverLose.PlayAnimate(InfoFrame, SlowyTween, {BackgroundTransparency = 1})
+				NeverLose.PlayAnimate(TitleLabel, SlowyTween, {TextTransparency = 1})
+				NeverLose.PlayAnimate(ContentLabel, SlowyTween, {TextTransparency = 1})
+				NeverLose.PlayAnimate(UIStroke, SlowyTween, {Transparency = 1})
+			end
+		end)
+
+		handle.SetRender(Signel:GetValue())
+		Signel:Connect(handle.SetRender)
+
+		return handle
+	end
 
 	function idx:AddButton(Config)
 		Config = NeverLose:ProcessParams(Config , {
