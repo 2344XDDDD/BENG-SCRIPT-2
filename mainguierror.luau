@@ -143,23 +143,24 @@ isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
 
-NeverLose.IconMap = {}
-local IconLoadSuccess = false
+NeverLose.IconMap = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"))()
 
-task.spawn(function()
-    local success, result = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"))()
-    end)
-    if success and type(result) == "table" then
-        NeverLose.IconMap = result
-        IconLoadSuccess = true
-    else
-        warn("Icons failed to load: " .. tostring(result))
-    end
-end)
+local GoogleIcons = {
+    ["google/home"] = "home",
+    ["google/settings"] = "settings",
+    ["google/favorite"] = "favorite",
+    ["google/person"] = "person",
+    ["google/search"] = "search",
+    ["google/close"] = "close",
+}
 
-NeverLose.GoogleFont = Font.new("rbxassetid://7040455735", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-NeverLose.LucideFont = Font.new("rbxassetid://7040297955", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+for k, v in next, GoogleIcons do
+    NeverLose.IconMap[k] = v
+end
+
+NeverLose.LucideFont = Font.fromId(7040297955, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+NeverLose.GoogleFont = Font.fromId(7040455735, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
 
@@ -888,15 +889,15 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 	return bind;
 end);
 
-NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon: string)
-    if not (Label:IsA("TextLabel") or Label:IsA("TextButton")) then return end
-    
-    local customIcon = NeverLose.IconMap and NeverLose.IconMap[Icon]
+NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label, Icon)
+    local customIcon = NeverLose.IconMap[Icon]
     
     if customIcon then
         Label.Text = customIcon
-        if string.find(Icon, "google") then
+        if string.find(string.lower(Icon), "google") then
             Label.FontFace = NeverLose.GoogleFont
+        elseif string.find(string.lower(Icon), "lucide") then
+            Label.FontFace = NeverLose.LucideFont
         else
             Label.FontFace = NeverLose.LucideFont
         end
@@ -906,19 +907,36 @@ NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label: TextLabel, Icon:
             Label.Text = Icon:sub(1, -6)
             Label.FontFace = NeverLose.BuiltInBold
         else
-            Label.Text = Icon
-            Label.FontFace = NeverLose.BuiltInRegular
+            if NeverLose.RobloxIcon and NeverLose.RobloxIcon[Icon] then
+                Label.Text = Icon
+                Label.FontFace = NeverLose.BuiltInRegular
+            else
+                Label.Text = Icon
+                Label.FontFace = NeverLose.LucideFont
+            end
         end
     end
-    Label.RichText = true
 end)
 
 function NeverLose:GetIconFont(icon: string)
-    if NeverLose.IconMap and NeverLose.IconMap[icon] then
-        return string.find(icon, "google") and NeverLose.GoogleFont or NeverLose.LucideFont
-    end
-    local useBold = string.lower(string.sub(icon, -5)) == '-bold'
-    return useBold and NeverLose.BuiltInBold or NeverLose.BuiltInRegular
+	if NeverLose.IconMap[icon] then
+		if string.find(icon, "lucide") then
+			return NeverLose.LucideFont
+		elseif string.find(icon, "google") then
+			return NeverLose.GoogleFont
+		end
+		return NeverLose.LucideFont
+	end
+	
+	local useBold = string.lower(string.sub(icon, -5)) == '-bold'
+	if useBold then
+		return NeverLose.BuiltInBold
+	end
+	return NeverLose.BuiltInRegular
+end
+
+function NeverLose:MoreThanHalfY(Value: number)
+	return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
 end
 
 NeverLose.IsStudio = RunService:IsStudio();
