@@ -143,27 +143,29 @@ isfile = isfile or getgenv().isfile;
 
 local NeverLose = {};
 
-NeverLose.IconMap = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"))()
+local LucideIcons = loadstring(game:HttpGet("https://raw.githubusercontent.com/notpoiu/lucide-roblox-direct/main/src/init.lua"))()
 
-local GoogleIcons = {
-    ["google/home"] = "home",
-    ["google/settings"] = "settings",
-    ["google/favorite"] = "favorite",
-    ["google/person"] = "person",
-    ["google/search"] = "search",
-    ["google/close"] = "close",
-}
-
-for k, v in next, GoogleIcons do
-    NeverLose.IconMap[k] = v
+function NeverLose:GetIcon(iconName)
+    local cleanName = iconName:gsub("-bold", ""):gsub("-", "_")
+    return LucideIcons[cleanName] or LucideIcons["help_circle"]
 end
 
-NeverLose.LucideFont = Font.fromId(7040297955, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-NeverLose.GoogleFont = Font.fromId(7040455735, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, LabelOrImage, Icon)
+    if LabelOrImage:IsA("ImageLabel") or LabelOrImage:IsA("ImageButton") then
+        LabelOrImage.Image = self:GetIcon(Icon)
+    elseif LabelOrImage:IsA("TextLabel") then
+        LabelOrImage.Text = ""
+        local img = LabelOrImage:FindFirstChild("LucideIcon") or Instance.new("ImageLabel", LabelOrImage)
+        img.Name = "LucideIcon"
+        img.BackgroundTransparency = 1
+        img.Size = UDim2.fromScale(1, 1)
+        img.Image = self:GetIcon(Icon)
+        img.ImageColor3 = LabelOrImage.TextColor3
+    end
+end)
 
 NeverLose.BuiltInRegular = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Regular,Enum.FontStyle.Normal);
 NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json',Enum.FontWeight.Bold,Enum.FontStyle.Normal);
-
 NeverLose.GlobalSignals = {};
 NeverLose.UnloadEnabled = false;
 
@@ -889,55 +891,31 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 	return bind;
 end);
 
-NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self, Label, Icon)
-    local customIcon = NeverLose.IconMap[Icon]
-    
-    if customIcon then
-        Label.Text = customIcon
-        if string.find(string.lower(Icon), "google") then
-            Label.FontFace = NeverLose.GoogleFont
-        elseif string.find(string.lower(Icon), "lucide") then
-            Label.FontFace = NeverLose.LucideFont
-        else
-            Label.FontFace = NeverLose.LucideFont
-        end
-    else
-        local useBold = string.lower(string.sub(Icon, -5)) == '-bold'
-        if useBold then
-            Label.Text = Icon:sub(1, -6)
-            Label.FontFace = NeverLose.BuiltInBold
-        else
-            if NeverLose.RobloxIcon and NeverLose.RobloxIcon[Icon] then
-                Label.Text = Icon
-                Label.FontFace = NeverLose.BuiltInRegular
-            else
-                Label.Text = Icon
-                Label.FontFace = NeverLose.LucideFont
-            end
-        end
-    end
-end)
+NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self , Label: TextLabel , Icon: string)
+	local useBold = string.lower(string.sub(Icon , -5)) == '-bold';
+
+	if useBold then
+		Label.Text = Icon:sub(1,-6);
+		Label.FontFace = NeverLose.BuiltInBold;
+	else
+		Label.Text = Icon;
+		Label.FontFace = NeverLose.BuiltInRegular;
+	end;
+end);
 
 function NeverLose:GetIconFont(icon: string)
-	if NeverLose.IconMap[icon] then
-		if string.find(icon, "lucide") then
-			return NeverLose.LucideFont
-		elseif string.find(icon, "google") then
-			return NeverLose.GoogleFont
-		end
-		return NeverLose.LucideFont
-	end
-	
-	local useBold = string.lower(string.sub(icon, -5)) == '-bold'
+	local useBold = string.lower(string.sub(icon , -5)) == '-bold';
+
 	if useBold then
-		return NeverLose.BuiltInBold
-	end
-	return NeverLose.BuiltInRegular
-end
+		return NeverLose.BuiltInBold;
+	end;
+
+	return NeverLose.BuiltInRegular;
+end;
 
 function NeverLose:MoreThanHalfY(Value: number)
 	return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
-end
+end;
 
 NeverLose.IsStudio = RunService:IsStudio();
 NeverLose.IsMobile = UserInputService.TouchEnabled or (game:GetService("GuiService"):GetScreenResolution().X < 800);
@@ -5013,7 +4991,7 @@ end);
 
 		local TabButton = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
-		local TabIcon = Instance.new("TextLabel")
+		local TabIcon = Instance.new("ImageLabel")
 		local TabContentLabel = Instance.new("TextLabel")
 
 		Tab.Idx = TabButton;
@@ -5041,7 +5019,7 @@ end);
 		TabIcon.Size = UDim2.new(0, 25, 0, 25)
 		TabIcon.ZIndex = 9
 		TabIcon.FontFace = NeverLose.BuiltInBold
-		TabIcon.Text = Config.Icon;
+		NeverLose:SetIconMode(TabIcon, Config.Icon);
 		TabIcon.TextColor3 = NeverLose.AccentColor
 		TabIcon.TextSize = 16.000
 		TabIcon.TextWrapped = true
