@@ -149,9 +149,6 @@ NeverLose.GlobalSignals = {};
 NeverLose.UnloadEnabled = false;
 
 local cloneref: cloneref = cloneref or function(f) return f end;
-local FetchIcons, Icons = pcall(function()
-    return (loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua")))()
-end)
 local TweenService: TweenService = cloneref(game:GetService('TweenService'));
 local UserInputService: UserInputService = cloneref(game:GetService('UserInputService'));
 local TextService: TextService = cloneref(game:GetService('TextService'));
@@ -874,37 +871,30 @@ NeverLose.CreateSignal = LPH_NO_VIRTUALIZE(function(self , DefaultValue)
 end);
 
 NeverLose.SetIconMode = LPH_NO_VIRTUALIZE(function(self , Label: TextLabel , Icon: string)
-    local LucideImg = Label:FindFirstChild("LucideIcon")
-    if Icons and Icons[Icon] then
-        if not LucideImg then
-            LucideImg = Instance.new("ImageLabel")
-            LucideImg.Name = "LucideIcon"
-            LucideImg.AnchorPoint = Vector2.new(0.5, 0.5)
-            LucideImg.Position = UDim2.fromScale(0.5, 0.5)
-            LucideImg.Size = UDim2.fromScale(0.8, 0.8)
-            LucideImg.BackgroundTransparency = 1
-            LucideImg.ZIndex = Label.ZIndex + 1
-            LucideImg.Parent = Label
-        end
-        
-        Label.Text = ""
-        LucideImg.Image = Icons[Icon]
-        LucideImg.ImageColor3 = Label.TextColor3
-        LucideImg.ImageTransparency = Label.TextTransparency
-        LucideImg.Visible = true
-    else
-        if LucideImg then LucideImg.Visible = false end
-        
-        local useBold = string.lower(string.sub(Icon , -5)) == '-bold';
-        if useBold then
-            Label.Text = Icon:sub(1,-6);
-            Label.FontFace = NeverLose.BuiltInBold;
-        else
-            Label.Text = Icon;
-            Label.FontFace = NeverLose.BuiltInRegular;
-        end;
-    end
+	local useBold = string.lower(string.sub(Icon , -5)) == '-bold';
+
+	if useBold then
+		Label.Text = Icon:sub(1,-6);
+		Label.FontFace = NeverLose.BuiltInBold;
+	else
+		Label.Text = Icon;
+		Label.FontFace = NeverLose.BuiltInRegular;
+	end;
 end);
+
+function NeverLose:GetIconFont(icon: string)
+	local useBold = string.lower(string.sub(icon , -5)) == '-bold';
+
+	if useBold then
+		return NeverLose.BuiltInBold;
+	end;
+
+	return NeverLose.BuiltInRegular;
+end;
+
+function NeverLose:MoreThanHalfY(Value: number)
+	return (NeverLose.ScreenGui.AbsoluteSize.Y / 2) < Value
+end;
 
 NeverLose.IsStudio = RunService:IsStudio();
 NeverLose.IsMobile = UserInputService.TouchEnabled or (game:GetService("GuiService"):GetScreenResolution().X < 800);
