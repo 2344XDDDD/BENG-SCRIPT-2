@@ -4822,10 +4822,11 @@ end);
 			end;
 		end));	
 
-		local wati_for_finish = tick();
+local wati_for_finish = tick();
 local last_thread;
 local max_time = 0.2;
 local is_error_active = false;
+local is_success_active = false;
 
 NeverLose:AddSignal(SearchBox:GetPropertyChangedSignal('Text'):Connect(LPH_NO_VIRTUALIZE(function()
 	local currentQuery = SearchBox.Text
@@ -4834,6 +4835,13 @@ NeverLose:AddSignal(SearchBox:GetPropertyChangedSignal('Text'):Connect(LPH_NO_VI
 		for i,v in next , NeverLose.NameRegisitry do
 			v.Root.Visible = true;
 		end;
+		for _, v in next, WindowFrame:GetChildren() do
+			if v:IsA("UIStroke") and v.Thickness >= 3 then
+				NeverLose.PlayAnimate(v, SlowyTween, {
+					Color = Color3.fromRGB(0, 0, 0)
+				})
+			end
+		end
 		return;	
 	end;
 
@@ -4857,8 +4865,42 @@ NeverLose:AddSignal(SearchBox:GetPropertyChangedSignal('Text'):Connect(LPH_NO_VI
 				end;
 			end;
 
-			if not found_any and currentQuery ~= "" and not is_error_active then
+			if found_any and not is_success_active then
+				is_success_active = true
+				is_error_active = false
+				local successDuration = 3
+
+				local notifier = NeverLose:CreateNotification()
+				notifier.new({
+					Title = "Notification system info",
+					Content = 'Found results for: "' .. currentQuery .. '"',
+					Color = Color3.fromRGB(100, 255, 100),
+					Duration = successDuration,
+					Logo = Window.Logo
+				})
+
+				for _, v in next, WindowFrame:GetChildren() do
+					if v:IsA("UIStroke") and v.Thickness >= 3 then
+						NeverLose.PlayAnimate(v, SlowyTween, {
+							Color = Color3.fromRGB(100, 255, 100)
+						})
+					end
+				end
+
+				task.delay(successDuration, function()
+					for _, v in next, WindowFrame:GetChildren() do
+						if v:IsA("UIStroke") and v.Thickness >= 3 then
+							NeverLose.PlayAnimate(v, SlowyTween, {
+								Color = Color3.fromRGB(0, 0, 0)
+							})
+						end
+					end
+					is_success_active = false
+				end)
+
+			elseif not found_any and currentQuery ~= "" and not is_error_active then
 				is_error_active = true
+				is_success_active = false
 				local errorDuration = 5
 
 				local notifier = NeverLose:CreateNotification()
@@ -6509,7 +6551,7 @@ function NeverLose:CreateNotification()
 		MainStroke.Color = Color3.fromRGB(45, 48, 58)
 		MainStroke.Parent = NotifyFrame
 
-		local shadow = NeverLose:CreateShadow(NotifyFrame, false)
+		local shadow = NeverLose:CreateShadow(NotifyFrame, true)
 		for _, v in next, NotifyFrame:GetChildren() do
 			if v:IsA("UIStroke") and v ~= MainStroke then
 				v.Color = Config.Color
