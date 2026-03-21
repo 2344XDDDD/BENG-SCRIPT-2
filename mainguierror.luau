@@ -4882,7 +4882,7 @@ NeverLose:AddSignal(SearchBox:GetPropertyChangedSignal('Text'):Connect(LPH_NO_VI
 					for _, v in next, WindowFrame:GetChildren() do
 						if v:IsA("UIStroke") and v.Thickness >= 3 then
 							NeverLose.PlayAnimate(v, SlowyTween, {
-								Color = Color3.fromRGB(255, 255, 255)
+								Color = Color3.fromRGB(0, 0, 0)
 							})
 						end
 					end
@@ -6509,7 +6509,7 @@ function NeverLose:CreateNotification()
 		MainStroke.Color = Color3.fromRGB(45, 48, 58)
 		MainStroke.Parent = NotifyFrame
 
-		local shadow = NeverLose:CreateShadow(NotifyFrame, true)
+		local shadow = NeverLose:CreateShadow(NotifyFrame, false)
 		for _, v in next, NotifyFrame:GetChildren() do
 			if v:IsA("UIStroke") and v ~= MainStroke then
 				v.Color = Config.Color
