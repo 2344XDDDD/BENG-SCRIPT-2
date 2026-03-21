@@ -1055,8 +1055,8 @@ NeverLose.CreateBlurModule = LPH_NO_VIRTUALIZE(function(self , Frame , Signal)
 	Part.Color = Color3.fromRGB(0,0,0);
 
 	DepthOfField.Enabled = true;
-	DepthOfField.FarIntensity = 0.1;
-	DepthOfField.FocusDistance = 0;
+	DepthOfField.FarIntensity = 0;
+	DepthOfField.FocusDistance = 1;
 	DepthOfField.InFocusRadius = 5;
 	DepthOfField.NearIntensity = 1;
 	DepthOfField.Name = NeverLose.RandomString();
@@ -4142,7 +4142,7 @@ function NeverLose:CreateWindow(Config)
 	WindowFrame.Parent = NeverLose.ScreenGui;
 	WindowFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 	WindowFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 13)
-	WindowFrame.BackgroundTransparency = 0.55
+	WindowFrame.BackgroundTransparency = 0.055
 	WindowFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	WindowFrame.BorderSizePixel = 0
 	WindowFrame.ClipsDescendants = true
@@ -4211,10 +4211,10 @@ end);
 
 	Window.SetRender = LPH_NO_VIRTUALIZE(function(self , value)
 		if value then
-NeverLose.PlayAnimate(WindowFrame , SlowyTween , {
-    BackgroundTransparency = 1,
-    Size = Window.Size
-})
+			NeverLose.PlayAnimate(WindowFrame , SlowyTween , {
+				BackgroundTransparency = (NeverLose.EnabledBlur and 0.055) or 0.0255,
+				Size = Window.Size
+			})
 
 			NeverLose.PlayAnimate(LogoImage , SlowyTween , {
 				ImageTransparency = 0
@@ -4616,7 +4616,7 @@ NeverLose.PlayAnimate(WindowFrame , SlowyTween , {
 	RightMenuFrame.Name = NeverLose.RandomString();
 	RightMenuFrame.Parent = WindowFrame
 	RightMenuFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 13)
-	RightMenuFrame.BackgroundTransparency = 0.7
+	RightMenuFrame.BackgroundTransparency = 0.600
 	RightMenuFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	RightMenuFrame.BorderSizePixel = 0
 	RightMenuFrame.ClipsDescendants = true
