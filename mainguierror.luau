@@ -1038,7 +1038,10 @@ NeverLose.CreateBlurModule = LPH_NO_VIRTUALIZE(function(self , Frame , Signal)
 	end;
 
 	local Part = Instance.new('Part',NeverLose.BlurModuleParent);
-	local DepthOfField = Instance.new('DepthOfFieldEffect',cloneref(game:GetService('Lighting')));
+	local DepthOfField = Instance.new('BlurEffect',cloneref(game:GetService('Lighting')));
+	DepthOfField.Enabled = true;
+	DepthOfField.Size = 0;
+	DepthOfField.Name = NeverLose.RandomString();
 	local BlockMesh = Instance.new("BlockMesh");
 
 	BlockMesh.Parent = Part;
@@ -1055,9 +1058,9 @@ NeverLose.CreateBlurModule = LPH_NO_VIRTUALIZE(function(self , Frame , Signal)
 	Part.Color = Color3.fromRGB(0,0,0);
 
 	DepthOfField.Enabled = true;
-	DepthOfField.FarIntensity = 0;
-	DepthOfField.FocusDistance = 2;
-	DepthOfField.InFocusRadius = 3;
+	DepthOfField.FarIntensity = 1;
+	DepthOfField.FocusDistance = 0;
+	DepthOfField.InFocusRadius = 0;
 	DepthOfField.NearIntensity = 1;
 	DepthOfField.Name = NeverLose.RandomString();
 
@@ -1072,17 +1075,21 @@ NeverLose.CreateBlurModule = LPH_NO_VIRTUALIZE(function(self , Frame , Signal)
 
 			NeverLose.PlayAnimate(DepthOfField,TweenInfo.new(0.1),{
 				NearIntensity = 1
+				
+				FarIntensity = 1
 			})
 
 			NeverLose.PlayAnimate(Part,TweenInfo.new(0.1),{
-				Transparency = 0.97,
+				Transparency = 0.75,
 				Size = Vector3.new(1, 1, 1) * 0.01;
 			})
 
 			Part.Parent = NeverLose.BlurModuleParent;
 		else
 			NeverLose.PlayAnimate(DepthOfField,TweenInfo.new(0.1),{
-				NearIntensity = 0
+				NearIntensity = 0,
+				
+				FarIntensity = 0
 			})
 
 			NeverLose.PlayAnimate(Part,TweenInfo.new(0.1),{
