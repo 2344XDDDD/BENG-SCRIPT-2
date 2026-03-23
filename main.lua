@@ -2084,6 +2084,7 @@ end
 local ao=ah~="Input"
 
 local ap=ac("TextBox",{
+Name="TextBox",
 BackgroundTransparency=1,
 TextSize=17,
 FontFace=Font.new(ab.Font,Enum.FontWeight.Regular),
@@ -2101,6 +2102,27 @@ PlaceholderColor3="PlaceholderText",
 TextColor3="Text",
 },
 })
+
+local innerChildren = {
+ac("UIPadding",{
+PaddingTop=UDim.new(0,ah=="Input"and 0 or 12),
+PaddingLeft=UDim.new(0,12),
+PaddingRight=UDim.new(0,12),
+PaddingBottom=UDim.new(0,ah=="Input"and 0 or 12),
+}),
+ac("UIListLayout",{
+FillDirection="Horizontal",
+Padding=UDim.new(0,8),
+VerticalAlignment=ah=="Input"and"Center"or"Top",
+HorizontalAlignment="Left",
+})
+}
+
+if an then
+    table.insert(innerChildren, an)
+end
+table.insert(innerChildren, ap)
+
 
 local aq=ac("Frame",{
 Size=UDim2.new(1,0,0,42),
@@ -2141,28 +2163,12 @@ Color="Outline",
 }
 })
 }),
--- 内容承载层
 ab.NewRoundFrame(am,"Squircle",{
 Size=UDim2.new(1,0,1,0),
 Name="Frame",
 ImageColor3=Color3.new(1,1,1),
 ImageTransparency=.95
-},{
-ac("UIPadding",{
-PaddingTop=UDim.new(0,ah=="Input"and 0 or 12),
-PaddingLeft=UDim.new(0,12),
-PaddingRight=UDim.new(0,12),
-PaddingBottom=UDim.new(0,ah=="Input"and 0 or 12),
-}),
-ac("UIListLayout",{
-FillDirection="Horizontal",
-Padding=UDim.new(0,8),
-VerticalAlignment=ah=="Input"and"Center"or"Top",
-HorizontalAlignment="Left",
-}),
-an,
-ap,
-})
+}, innerChildren) -- Pass the safely constructed table here
 })
 })
 
