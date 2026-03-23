@@ -2123,22 +2123,25 @@ ThemeTag={
 ImageColor3="Outline",
 },
 Size=UDim2.new(1,0,1,0),
-ImageTransparency=.75,
-},{
-
-
-
-
-
-
-
-
-
-
-
-
-
+ImageTransparency=.85,
 }),
+ac("Frame",{
+Size=UDim2.new(1,0,1,0),
+BackgroundTransparency=1,
+},{
+ac("UICorner",{
+CornerRadius=UDim.new(0,am)
+}),
+ac("UIStroke",{
+ApplyStrokeMode="Border",
+Thickness=1,
+Transparency=0.75,
+ThemeTag={
+Color="Outline",
+}
+})
+}),
+-- 内容承载层
 ab.NewRoundFrame(am,"Squircle",{
 Size=UDim2.new(1,0,1,0),
 Name="Frame",
@@ -2163,15 +2166,6 @@ ap,
 })
 })
 
-
-
-
-
-
-
-
-
-
 if aj then
 ab.AddSignal(ap:GetPropertyChangedSignal"Text",function()
 if ai then
@@ -2188,7 +2182,6 @@ end
 
 return aq
 end
-
 
 return aa end function a.n()
 local aa=a.load'c'
