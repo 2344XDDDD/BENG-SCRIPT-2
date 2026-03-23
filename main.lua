@@ -2084,7 +2084,6 @@ end
 local ao=ah~="Input"
 
 local ap=ac("TextBox",{
-Name="TextBox",
 BackgroundTransparency=1,
 TextSize=17,
 FontFace=Font.new(ab.Font,Enum.FontWeight.Regular),
@@ -2102,27 +2101,6 @@ PlaceholderColor3="PlaceholderText",
 TextColor3="Text",
 },
 })
-
-local innerChildren = {
-ac("UIPadding",{
-PaddingTop=UDim.new(0,ah=="Input"and 0 or 12),
-PaddingLeft=UDim.new(0,12),
-PaddingRight=UDim.new(0,12),
-PaddingBottom=UDim.new(0,ah=="Input"and 0 or 12),
-}),
-ac("UIListLayout",{
-FillDirection="Horizontal",
-Padding=UDim.new(0,8),
-VerticalAlignment=ah=="Input"and"Center"or"Top",
-HorizontalAlignment="Left",
-})
-}
-
-if an then
-    table.insert(innerChildren, an)
-end
-table.insert(innerChildren, ap)
-
 
 local aq=ac("Frame",{
 Size=UDim2.new(1,0,0,42),
@@ -2145,32 +2123,54 @@ ThemeTag={
 ImageColor3="Outline",
 },
 Size=UDim2.new(1,0,1,0),
-ImageTransparency=.85,
-}),
-ac("Frame",{
-Size=UDim2.new(1,0,1,0),
-BackgroundTransparency=1,
+ImageTransparency=.75,
 },{
-ac("UICorner",{
-CornerRadius=UDim.new(0,am)
-}),
-ac("UIStroke",{
-ApplyStrokeMode="Border",
-Thickness=1,
-Transparency=0.75,
-ThemeTag={
-Color="Outline",
-}
-})
+
+
+
+
+
+
+
+
+
+
+
+
+
 }),
 ab.NewRoundFrame(am,"Squircle",{
 Size=UDim2.new(1,0,1,0),
 Name="Frame",
 ImageColor3=Color3.new(1,1,1),
 ImageTransparency=.95
-}, innerChildren) -- Pass the safely constructed table here
+},{
+ac("UIPadding",{
+PaddingTop=UDim.new(0,ah=="Input"and 0 or 12),
+PaddingLeft=UDim.new(0,12),
+PaddingRight=UDim.new(0,12),
+PaddingBottom=UDim.new(0,ah=="Input"and 0 or 12),
+}),
+ac("UIListLayout",{
+FillDirection="Horizontal",
+Padding=UDim.new(0,8),
+VerticalAlignment=ah=="Input"and"Center"or"Top",
+HorizontalAlignment="Left",
+}),
+an,
+ap,
 })
 })
+})
+
+
+
+
+
+
+
+
+
 
 if aj then
 ab.AddSignal(ap:GetPropertyChangedSignal"Text",function()
@@ -2188,6 +2188,7 @@ end
 
 return aq
 end
+
 
 return aa end function a.n()
 local aa=a.load'c'
