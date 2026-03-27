@@ -11808,6 +11808,88 @@ PaddingBottom=UDim.new(0,au.UIPadding),
 })
 })
 
+task.spawn(function()
+    local player = ah.LocalPlayer
+    if not player then return end
+
+    local function getAvatar()
+        local success, result = pcall(function()
+            return ah:GetUserThumbnailAsync(
+                (au.User and au.User.Anonymous) and 1 or player.UserId,
+                Enum.ThumbnailType.HeadShot,
+                Enum.ThumbnailSize.Size420x420
+            )
+        end)
+        return success and result or ""
+    end
+
+    local function formatName(nameStr)
+        if utf8.len(nameStr) > 10 then
+            return string.sub(nameStr, 1, utf8.offset(nameStr, 10) - 1) .. "..."
+        elseif #nameStr > 10 and not utf8.len(nameStr) then
+            return string.sub(nameStr, 1, 10) .. "..."
+        end
+        return nameStr
+    end
+
+    local rawName = (au.User and au.User.Anonymous) and "Anonymous" or player.DisplayName
+    
+    local topbarProfile = am("Frame", {
+        Name = "CustomTopbarProfile",
+        Parent = au.UIElements.Main.Main.Topbar.Right,
+        BackgroundTransparency = 1,
+        AutomaticSize = "X",
+        Size = UDim2.new(0, 0, 1, 0),
+        LayoutOrder = -999,
+    }, {
+        am("UIListLayout", {
+            FillDirection = "Horizontal",
+            VerticalAlignment = "Center",
+            Padding = UDim.new(0, 8),
+            SortOrder = "LayoutOrder"
+        }),
+        am("UIPadding", {
+            PaddingRight = UDim.new(0, 15)
+        }),
+        am("ImageLabel", {
+            Name = "Avatar",
+            Size = UDim2.new(0, 26, 0, 26), 
+            BackgroundTransparency = 1,
+            Image = getAvatar(),
+            LayoutOrder = 1
+        }, {
+            am("UICorner", { CornerRadius = UDim.new(1, 0) })
+        }),
+        am("TextLabel", {
+            Name = "NameLabel",
+            Text = formatName(rawName),
+            BackgroundTransparency = 1,
+            AutomaticSize = "XY",
+            FontFace = Font.new(al.Font, Enum.FontWeight.SemiBold),
+            TextSize = 14,
+            ThemeTag = { TextColor3 = "Text" },
+            LayoutOrder = 2
+        })
+    })
+
+    if au.User then
+        local oldSetAnon = au.User.SetAnonymous
+        if oldSetAnon then
+            au.User.SetAnonymous = function(b, d)
+                oldSetAnon(b, d)
+                if d ~= false then d = true end
+                if d then
+                    topbarProfile.Avatar.Image = ah:GetUserThumbnailAsync(1, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+                    topbarProfile.NameLabel.Text = formatName("Anonymous")
+                else
+                    topbarProfile.Avatar.Image = ah:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+                    topbarProfile.NameLabel.Text = formatName(player.DisplayName)
+                end
+            end
+        end
+    end
+end)
+
 al.AddSignal(au.UIElements.Main.Main.Topbar.Left:GetPropertyChangedSignal"AbsoluteSize",function()
 local u=0
 local v=au.UIElements.Main.Main.Topbar.Right.UIListLayout.AbsoluteContentSize.X/at.WindUI.UIScale
