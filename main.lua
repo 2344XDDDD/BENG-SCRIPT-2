@@ -10154,23 +10154,6 @@ end,
             return al:SelectTab(ao.Index)
         end
 
-function ao.SetIconColor(ay, color)
-            local function applyColor(img)
-                if img then
-                    if af.Objects and af.Objects[img] and af.Objects[img].Properties then
-                        af.Objects[img].Properties.ImageColor3 = nil
-                    end
-                    af.Tween(img, 0.3, {ImageColor3 = color}):Play()
-                end
-            end
-            if ao.UIElements.Icon then
-                applyColor(ao.UIElements.Icon:FindFirstChild("ImageLabel"))
-            end
-            if as then
-                applyColor(as:FindFirstChild("ImageLabel"))
-            end
-        end
-
         task.spawn(function()
             local ay = ah("Frame", {
                 BackgroundTransparency = 1,
