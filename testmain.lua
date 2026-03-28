@@ -12998,7 +12998,9 @@ au.CanResize=false
 end)
 end
 
-        local sidebarOpened = true
+
+
+local sidebarOpened = true
         au.ToggleSidebar = function(state)
             if state ~= nil then sidebarOpened = state else sidebarOpened = not sidebarOpened end
             local targetWidth = sidebarOpened and au.SideBarWidth or 0
@@ -13036,14 +13038,21 @@ end
             AnchorPoint = Vector2.new(1, 0),
             ClipsDescendants = true,
         }, {
-            am("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) }),
-            am("UIListLayout", { FillDirection = "Vertical", Padding = UDim.new(0, 4) }),
             al.NewRoundFrame(12, "Glass-1.4", {
                 Size = UDim2.new(1, 0, 1, 0),
                 ThemeTag = { ImageColor3 = "DropdownTabBorder" },
                 ImageTransparency = 1,
                 Name = "Outline",
                 ZIndex = 2
+            }),
+            am("Frame", {
+                Name = "Content",
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+                ZIndex = 3
+            }, {
+                am("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) }),
+                am("UIListLayout", { FillDirection = "Vertical", Padding = UDim.new(0, 4) })
             })
         })
         whiteBtnMenuBg.Parent = whiteBtnMenuCanvas
@@ -13105,12 +13114,12 @@ end
             return btn
         end
 
-        local opt1 = createMenuOption("Hide/Expand Tabs", true, function(state)
+        local opt1 = createMenuOption("Expand Tab", true, function(state)
             au.ToggleSidebar(state)
         end)
-        opt1.Parent = whiteBtnMenuBg
+        opt1.Parent = whiteBtnMenuBg.Content
 
-        local opt2 = createMenuOption("Show avatar and name", true, function(state)
+        local opt2 = createMenuOption("Show Avatar & Name", true, function(state)
             local topbarProfile = au.UIElements.Main.Main.Topbar.Right:FindFirstChild("CustomTopbarProfile")
             local animTime = 0.5
             local easing = Enum.EasingStyle.Quint
@@ -13151,7 +13160,7 @@ end
                 end
             end
         end)
-        opt2.Parent = whiteBtnMenuBg
+        opt2.Parent = whiteBtnMenuBg.Content
 
         local whiteMenuBtnObj
         whiteMenuBtnObj = au:CreateTopbarButton("SidebarMenu", "menu", function()
