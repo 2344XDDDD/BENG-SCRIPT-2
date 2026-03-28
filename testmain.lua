@@ -13164,7 +13164,7 @@ local sidebarOpened = true
                 end
             end
             
-            if aB then
+            if aB and au.User then
                 local userIcon = aB:FindFirstChild("UserIcon")
                 if userIcon then
                     local imgLabel = userIcon:FindFirstChildOfClass("ImageLabel")
@@ -13173,11 +13173,27 @@ local sidebarOpened = true
                     local usrName = frame and frame:FindFirstChild("UserName")
                     
                     if state then
+                        au.User.Enabled = true
                         aB.Visible = true
+                        
+                        if sidebarOpened then
+                            an(au.UIElements.SideBarContainer, animTime, {
+                                Size = UDim2.new(0, au.SideBarWidth, 1, -au.Topbar.Height - 42 - (au.UIPadding * 2))
+                            }, easing, Enum.EasingDirection.Out):Play()
+                        end
+
                         if imgLabel then an(imgLabel, animTime, { ImageTransparency = 0, BackgroundTransparency = 0.93 }, easing, Enum.EasingDirection.Out):Play() end
                         if dispName then an(dispName, animTime, { TextTransparency = 0 }, easing, Enum.EasingDirection.Out):Play() end
                         if usrName then an(usrName, animTime, { TextTransparency = 0.6 }, easing, Enum.EasingDirection.Out):Play() end
                     else
+                        au.User.Enabled = false
+                        
+                        if sidebarOpened then
+                            an(au.UIElements.SideBarContainer, animTime, {
+                                Size = UDim2.new(0, au.SideBarWidth, 1, -au.Topbar.Height)
+                            }, easing, Enum.EasingDirection.Out):Play()
+                        end
+
                         if imgLabel then an(imgLabel, animTime, { ImageTransparency = 1, BackgroundTransparency = 1 }, easing, Enum.EasingDirection.Out):Play() end
                         if dispName then an(dispName, animTime, { TextTransparency = 1 }, easing, Enum.EasingDirection.Out):Play() end
                         if usrName then an(usrName, animTime, { TextTransparency = 1 }, easing, Enum.EasingDirection.Out):Play() end
