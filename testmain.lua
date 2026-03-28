@@ -13127,14 +13127,40 @@ local sidebarOpened = true
             if topbarProfile then
                 local avatar = topbarProfile:FindFirstChild("Avatar")
                 local nameLabel = topbarProfile:FindFirstChild("NameLabel")
+                
+                local fullWidth = topbarProfile:GetAttribute("FullWidth")
+                if not fullWidth or fullWidth == 0 then
+                    topbarProfile.AutomaticSize = Enum.AutomaticSize.X
+                    fullWidth = topbarProfile.AbsoluteSize.X
+                    if fullWidth < 10 then fullWidth = 100 end
+                    topbarProfile:SetAttribute("FullWidth", fullWidth)
+                end
+                
+                topbarProfile.ClipsDescendants = true
+                
                 if state then
                     topbarProfile.Visible = true
+                    topbarProfile.AutomaticSize = Enum.AutomaticSize.None
+                    
+                    an(topbarProfile, animTime, { Size = UDim2.new(0, fullWidth, 1, 0) }, easing, Enum.EasingDirection.Out):Play()
+                    
                     if avatar then an(avatar, animTime, { ImageTransparency = 0 }, easing, Enum.EasingDirection.Out):Play() end
                     if nameLabel then an(nameLabel, animTime, { TextTransparency = 0 }, easing, Enum.EasingDirection.Out):Play() end
+                    
+                    task.delay(animTime, function()
+                        if state then topbarProfile.AutomaticSize = Enum.AutomaticSize.X end
+                    end)
                 else
+                    topbarProfile.AutomaticSize = Enum.AutomaticSize.None
+                    
+                    an(topbarProfile, animTime, { Size = UDim2.new(0, 0, 1, 0) }, easing, Enum.EasingDirection.Out):Play()
+                    
                     if avatar then an(avatar, animTime, { ImageTransparency = 1 }, easing, Enum.EasingDirection.Out):Play() end
                     if nameLabel then an(nameLabel, animTime, { TextTransparency = 1 }, easing, Enum.EasingDirection.Out):Play() end
-                    task.delay(animTime, function() if not state then topbarProfile.Visible = false end end)
+                    
+                    task.delay(animTime, function() 
+                        if not state then topbarProfile.Visible = false end 
+                    end)
                 end
             end
             
