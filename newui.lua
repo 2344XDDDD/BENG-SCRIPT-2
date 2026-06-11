@@ -5451,7 +5451,7 @@ UIPadding=af.Window.ElementConfig.UIPadding,
 UICorner=af.Window.ElementConfig.UICorner,
 Size=af.Size or"Default",
 UIElements={},
-
+UICorner=af.Radius or af.Window.ElementConfig.UICorner or 20,
 Index=af.Index,
 }
 
@@ -6057,7 +6057,7 @@ local ag={
 __type="Paragraph",
 Title=af.Title or"Paragraph",
 Desc=af.Desc or nil,
-
+Radius=ae.Radius or 20, 
 Locked=af.Locked or false,
 }
 local ah=a.load'B'(af)
@@ -6116,10 +6116,6 @@ af.ButtonFrame=a.load'B'{
 Title=af.Title,
 Desc=af.Desc,
 Parent=ae.Parent,
-
-
-
-
 Window=ae.Window,
 Color=af.Color,
 Justify=af.Justify,
@@ -6131,20 +6127,8 @@ Index=ae.Index,
 ElementTable=af,
 ParentConfig=ae,
 Size=ae.Size,
+Radius=ae.Radius, -- 核心：将按钮自定义圆角传给底板
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 af.UIElements.ButtonIcon=aa.Image(
 af.Icon,
@@ -6238,8 +6222,9 @@ math.floor(aq/ap.Cols)*ap.Size.Y
 )
 end
 
-local an=12
+local an = (al and al.Radius) and math.floor(al.Radius * 0.6) or 24
 local ao
+
 if ag and ag~=""then
 ao=ac("ImageLabel",{
 Size=UDim2.new(0,13,0,13),
@@ -6668,6 +6653,7 @@ Tab=ah.Tab,
 Index=ah.Index,
 ElementTable=ai,
 ParentConfig=ah,
+Radius=ah.Radius or 20, 
 }
 
 local aj=true
@@ -6860,6 +6846,7 @@ Index=ak.Index,
 Window=ak.Window,
 ElementTable=al,
 ParentConfig=ak,
+Radius=ak.Radius or 20, 
 }
 
 
@@ -7152,9 +7139,16 @@ Index=aj.Index,
 Window=aj.Window,
 ElementTable=ak,
 ParentConfig=aj,
+Radius=aj.Radius or 20, 
 }
 
-ak.UIElements.Keybind=ah(ak.Value,nil,ak.KeybindFrame.UIElements.Main,nil,aj.Window.NewElements and 12 or 10)
+ak.UIElements.Keybind=ah(
+    ak.Value,
+    nil,
+    ak.KeybindFrame.UIElements.Main,
+    nil,
+    aj.Radius or (aj.Window.NewElements and 12 or 10) 
+)
 
 ak.UIElements.Keybind.Size=UDim2.new(
 0,24
@@ -7305,19 +7299,20 @@ Index=ai.Index,
 Window=ai.Window,
 ElementTable=aj,
 ParentConfig=ai,
+Radius=ai.Radius or 20,
 }
 
 local al=ag(
-aj.Placeholder,
-aj.InputIcon,
-aj.Type=="Textarea"and aj.InputFrame.UIElements.Container or aj.InputFrame.UIElements.Main,
-aj.Type,
-function(al)
-aj:Set(al,true)
-end,
-nil,
-ai.Window.NewElements and 12 or 10,
-aj.ClearTextOnFocus
+    aj.Placeholder,
+    aj.InputIcon,
+    aj.Type=="Textarea"and aj.InputFrame.UIElements.Container or aj.InputFrame.UIElements.Main,
+    aj.Type,
+    function(al)
+        aj:Set(al,true)
+    end,
+    nil,
+    ai.Radius or (ai.Window.NewElements and 12 or 10), 
+    aj.ClearTextOnFocus
 )
 
 if aj.Type=="Input"then
@@ -8127,8 +8122,7 @@ ParentConfig=an,
 }
 
 if ao.Callback then
-ao.UIElements.Dropdown=
-ah("",nil,ao.DropdownFrame.UIElements.Main,nil,an.Window.NewElements and 12 or 10)
+ao.UIElements.Dropdown=ah("",nil,ao.UIElements.Dropdown=ah( "",nil,ao.DropdownFrame.UIElements.Main,nil, an.Radius or (an.Window.NewElements and 12 or 10) )
 
 ao.UIElements.Dropdown.Frame.Frame.TextLabel.TextTruncate="AtEnd"
 ao.UIElements.Dropdown.Frame.Frame.TextLabel.Size=
@@ -10223,46 +10217,38 @@ end
 
 function am.New(an,ao)
 local ap={
-__type="Tab",
-Title=an.Title or"Tab",
-Desc=an.Desc,
-Icon=an.Icon,
-IconColor=an.IconColor,
-IconShape=an.IconShape,
-IconThemed=an.IconThemed,
-Locked=an.Locked,
-ShowTabTitle=an.ShowTabTitle,
-TabTitleAlign=an.TabTitleAlign or"Left",
-CustomEmptyPage=(an.CustomEmptyPage and next(an.CustomEmptyPage)~=nil)and an.CustomEmptyPage
-or{Icon="lucide:frown",IconSize=48,Title="This tab is Empty",Desc=nil},
-Border=an.Border,
-Selected=false,
-Index=nil,
-Parent=an.Parent,
-UIElements={},
-Elements={},
-ContainerFrame=nil,
-UICorner=Window.UICorner-(Window.UIPadding/2),
+    __type="Tab",
+    Title=an.Title or"Tab",
+    Desc=an.Desc,
+    Icon=an.Icon,
+    IconColor=an.IconColor,
+    IconShape=an.IconShape,
+    IconThemed=an.IconThemed,
+    Locked=an.Locked,
+    ShowTabTitle=an.ShowTabTitle,
+    TabTitleAlign=an.TabTitleAlign or"Left",
+    CustomEmptyPage=(an.CustomEmptyPage and next(an.CustomEmptyPage)~=nil)and an.CustomEmptyPage
+    or{Icon="lucide:frown",IconSize=48,Title="This tab is Empty",Desc=nil},
+    Border=an.Border,
+    Selected=false,
+    Index=nil,
+    Parent=an.Parent,
+    UIElements={},
+    Elements={},
+    ContainerFrame=nil,
+    UICorner=Window.UICorner-(Window.UIPadding/2),
 
-Gap=Window.NewElements and 1 or 6,
+    Gap=Window.NewElements and 1 or 6,
 
-TabPaddingX=4+(Window.UIPadding/2),
-TabPaddingY=3+(Window.UIPadding/2),
-TitlePaddingY=0,
+    TabPaddingX=4+(Window.UIPadding/2),
+    TabPaddingY=3+(Window.UIPadding/2),
+    TitlePaddingY=0,
 }
 
-
-
-
-
-
-
-
-
 if ap.IconShape then
-ap.TabPaddingX=2+(Window.UIPadding/4)
-ap.TabPaddingY=2+(Window.UIPadding/4)
-ap.TitlePaddingY=2+(Window.UIPadding/4)
+    ap.TabPaddingX=2+(Window.UIPadding/4)
+    ap.TabPaddingY=2+(Window.UIPadding/4)
+    ap.TitlePaddingY=2+(Window.UIPadding/4)
 end
 
 am.TabCount=am.TabCount+1
@@ -10270,83 +10256,71 @@ am.TabCount=am.TabCount+1
 local aq=am.TabCount
 ap.Index=aq
 
+local tabTextPadding = aj("UIPadding",{
+    PaddingLeft = UDim.new(0, 0),
+    PaddingTop = UDim.new(0, ap.TitlePaddingY),
+    PaddingBottom = UDim.new(0, ap.TitlePaddingY),
+})
+ap.UIElements.TabTextPadding = tabTextPadding
+
 ap.UIElements.Main=ah.NewRoundFrame(ap.UICorner,"Squircle",{
-BackgroundTransparency=1,
-Size=UDim2.new(1,-7,0,0),
-AutomaticSize="Y",
-Parent=an.Parent,
-ThemeTag={
-ImageColor3="TabBackground",
-},
-ImageTransparency=1,
+    BackgroundTransparency=1,
+    Size=UDim2.new(1,-7,0,0),
+    AutomaticSize="Y",
+    Parent=an.Parent,
+    ThemeTag={
+        ImageColor3="TabBackground",
+    },
+    ImageTransparency=1,
 },{
-ah.NewRoundFrame(ap.UICorner,"Glass-1.4",{
-Size=UDim2.new(1,0,1,0),
-ThemeTag={
-ImageColor3="TabBorder",
-},
-ImageTransparency=1,
-Name="Outline",
-},{
-
-
-
-
-
-
-
-
-
-
-
-
-
-}),
-ah.NewRoundFrame(ap.UICorner,"Squircle",{
-Size=UDim2.new(1,0,0,0),
-AutomaticSize="Y",
-ThemeTag={
-ImageColor3="Text",
-},
-ImageTransparency=1,
-Name="Frame",
-},{
-aj("UIListLayout",{
-SortOrder="LayoutOrder",
-Padding=UDim.new(0,2+(Window.UIPadding/2)),
-FillDirection="Horizontal",
-VerticalAlignment="Center",
-}),
-aj("TextLabel",{
-Text=ap.Title,
-ThemeTag={
-TextColor3="TabTitle",
-},
-TextTransparency=not ap.Locked and 0.4 or 0.7,
-TextSize=15,
-Size=UDim2.new(1,0,0,0),
-FontFace=Font.new(ah.Font,Enum.FontWeight.Medium),
-TextWrapped=true,
-RichText=true,
-AutomaticSize="Y",
-LayoutOrder=2,
-TextXAlignment="Left",
-BackgroundTransparency=1,
-},{
-aj("UIPadding",{
-PaddingTop=UDim.new(0,ap.TitlePaddingY),
-
-
-PaddingBottom=UDim.new(0,ap.TitlePaddingY),
-}),
-}),
-aj("UIPadding",{
-PaddingTop=UDim.new(0,ap.TabPaddingY),
-PaddingLeft=UDim.new(0,ap.TabPaddingX),
-PaddingRight=UDim.new(0,ap.TabPaddingX),
-PaddingBottom=UDim.new(0,ap.TabPaddingY),
-}),
-}),
+    ah.NewRoundFrame(ap.UICorner,"Glass-1.4",{
+        Size=UDim2.new(1,0,1,0),
+        ThemeTag={
+            ImageColor3="TabBorder",
+        },
+        ImageTransparency=1,
+        Name="Outline",
+    }),
+    ah.NewRoundFrame(ap.UICorner,"Squircle",{
+        Size=UDim2.new(1,0,0,0),
+        AutomaticSize="Y",
+        ThemeTag={
+            ImageColor3="Text",
+        },
+        ImageTransparency=1,
+        Name="Frame",
+    },{
+        aj("UIListLayout",{
+            SortOrder="LayoutOrder",
+            Padding=UDim.new(0,2+(Window.UIPadding/2)),
+            FillDirection="Horizontal",
+            VerticalAlignment="Center",
+        }),
+        aj("TextLabel",{
+            Text=ap.Title,
+            ThemeTag={
+                TextColor3="TabTitle",
+            },
+            TextTransparency=not ap.Locked and 0.4 or 0.7,
+            TextSize=15,
+            Size=UDim2.new(1,0,0,0),
+            FontFace=Font.new(ah.Font,Enum.FontWeight.Medium),
+            TextWrapped=true,
+            RichText=true,
+            AutomaticSize="Y",
+            LayoutOrder=2,
+            TextXAlignment="Left",
+            BackgroundTransparency=1,
+        },{
+            tabTextPadding,
+        }),
+        aj("UIPadding",{
+            PaddingTop=UDim.new(0,ap.TabPaddingY),
+            PaddingLeft=UDim.new(0,ap.TabPaddingX),
+            PaddingRight=UDim.new(0,ap.TabPaddingX),
+            PaddingBottom=UDim.new(0,ap.TabPaddingY),
+        }),
+    }),
 },true)
 
 local ar=0
@@ -10354,169 +10328,213 @@ local as
 local at
 
 if ap.Icon then
-as=ah.Image(
-ap.Icon,
-ap.Icon..":"..ap.Title,
-0,
-Window.Folder,
-ap.__type,
-ap.IconColor and false or true,
-ap.IconThemed,
-"TabIcon"
-)
-as.Size=UDim2.new(0,16,0,16)
-if ap.IconColor then
-as.ImageLabel.ImageColor3=ap.IconColor
-end
-if not ap.IconShape then
-as.Parent=ap.UIElements.Main.Frame
-ap.UIElements.Icon=as
-as.ImageLabel.ImageTransparency=not ap.Locked and 0 or 0.7
-ar=-18-(Window.UIPadding/2)
-ap.UIElements.Main.Frame.TextLabel.Size=UDim2.new(1,ar,0,0)
-elseif ap.IconColor then
-ah.NewRoundFrame(
-ap.IconShape~="Circle"and(ap.UICorner+5-(2+(Window.UIPadding/4)))or 9999,
-"Squircle",
-{
-Size=UDim2.new(0,26,0,26),
-ImageColor3=ap.IconColor,
-Parent=ap.UIElements.Main.Frame,
-},
-{
-as,
-ah.NewRoundFrame(
-ap.IconShape~="Circle"and(ap.UICorner+5-(2+(Window.UIPadding/4)))or 9999,
-"Glass-1.4",
-{
-Size=UDim2.new(1,0,1,0),
-ThemeTag={
-ImageColor3="White",
-},
-ImageTransparency=0,
-Name="Outline",
-},
-{
+    as=ah.Image(
+        ap.Icon,
+        ap.Icon..":"..ap.Title,
+        0,
+        Window.Folder,
+        ap.__type,
+        ap.IconColor and false or true,
+        ap.IconThemed,
+        "TabIcon"
+    )
+    as.Size=UDim2.new(0,16,0,16)
+    if ap.IconColor then
+        as.ImageLabel.ImageColor3=ap.IconColor
+    end
+    if not ap.IconShape then
+        as.Parent=ap.UIElements.Main.Frame
+        ap.UIElements.Icon=as
+        as.ImageLabel.ImageTransparency=not ap.Locked and 0 or 0.7
+        ar=-18-(Window.UIPadding/2)
+        ap.UIElements.Main.Frame.TextLabel.Size=UDim2.new(1,ar,0,0)
+    elseif ap.IconColor then
+        ah.NewRoundFrame(
+            ap.IconShape~="Circle"and(ap.UICorner+5-(2+(Window.UIPadding/4)))or 9999,
+            "Squircle",
+            {
+                Size=UDim2.new(0,26,0,26),
+                ImageColor3=ap.IconColor,
+                Parent=ap.UIElements.Main.Frame,
+            },
+            {
+                as,
+                ah.NewRoundFrame(
+                    ap.IconShape~="Circle"and(ap.UICorner+5-(2+(Window.UIPadding/4)))or 9999,
+                    "Glass-1.4",
+                    {
+                        Size=UDim2.new(1,0,1,0),
+                        ThemeTag={
+                            ImageColor3="White",
+                        },
+                        ImageTransparency=0,
+                        Name="Outline",
+                    }
+                ),
+            }
+        )
+        as.AnchorPoint=Vector2.new(0.5,0.5)
+        as.Position=UDim2.new(0.5,0,0.5,0)
+        as.ImageLabel.ImageTransparency=0
+        as.ImageLabel.ImageColor3=ah.GetTextColorForHSB(ap.IconColor,0.68)
+        ar=-28-(Window.UIPadding/2)
+        ap.UIElements.Main.Frame.TextLabel.Size=UDim2.new(1,ar,0,0)
+    end
 
-
-
-
-
-
-
-
-
-
-
-
-
-}
-),
-}
-)
-as.AnchorPoint=Vector2.new(0.5,0.5)
-as.Position=UDim2.new(0.5,0,0.5,0)
-as.ImageLabel.ImageTransparency=0
-as.ImageLabel.ImageColor3=ah.GetTextColorForHSB(ap.IconColor,0.68)
-ar=-28-(Window.UIPadding/2)
-ap.UIElements.Main.Frame.TextLabel.Size=UDim2.new(1,ar,0,0)
-end
-
-at=
-ah.Image(ap.Icon,ap.Icon..":"..ap.Title,0,Window.Folder,ap.__type,true,ap.IconThemed)
-at.Size=UDim2.new(0,16,0,16)
-at.ImageLabel.ImageTransparency=not ap.Locked and 0 or 0.7
-ar=-30
-
-
-
-
+    at=ah.Image(ap.Icon,ap.Icon..":"..ap.Title,0,Window.Folder,ap.__type,true,ap.IconThemed)
+    at.Size=UDim2.new(0,16,0,16)
+    at.ImageLabel.ImageTransparency=not ap.Locked and 0 or 0.7
+    ar=-30
 end
 
 ap.UIElements.ContainerFrame=aj("ScrollingFrame",{
-Size=UDim2.new(1,0,1,ap.ShowTabTitle and-((Window.UIPadding*2.4)+12)or 0),
-BackgroundTransparency=1,
-ScrollBarThickness=0,
-ElasticBehavior="Never",
-CanvasSize=UDim2.new(0,0,0,0),
-AnchorPoint=Vector2.new(0,1),
-Position=UDim2.new(0,0,1,0),
-AutomaticCanvasSize="Y",
-
-ScrollingDirection="Y",
+    Size=UDim2.new(1,0,1,ap.ShowTabTitle and-((Window.UIPadding*2.4)+12)or 0),
+    BackgroundTransparency=1,
+    ScrollBarThickness=0,
+    ElasticBehavior="Never",
+    CanvasSize=UDim2.new(0,0,0,0),
+    AnchorPoint=Vector2.new(0,1),
+    Position=UDim2.new(0,0,1,0),
+    AutomaticCanvasSize="Y",
+    ScrollingDirection="Y",
 },{
-aj("UIPadding",{
-PaddingTop=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
-PaddingLeft=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
-PaddingRight=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
-PaddingBottom=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
-}),
-aj("UIListLayout",{
-SortOrder="LayoutOrder",
-Padding=UDim.new(0,ap.Gap),
-HorizontalAlignment="Center",
-}),
+    aj("UIPadding",{
+        PaddingTop=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
+        PaddingLeft=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
+        PaddingRight=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
+        PaddingBottom=UDim.new(0,not Window.HidePanelBackground and 20 or 10),
+    }),
+    aj("UIListLayout",{
+        SortOrder="LayoutOrder",
+        Padding=UDim.new(0,ap.Gap),
+        HorizontalAlignment="Center",
+    }),
 })
-
-
-
-
 
 ap.UIElements.ContainerFrameCanvas=aj("Frame",{
-Size=UDim2.new(1,0,1,0),
-BackgroundTransparency=1,
-Visible=false,
-Parent=Window.UIElements.MainBar,
-ZIndex=5,
+    Size=UDim2.new(1,0,1,0),
+    BackgroundTransparency=1,
+    Visible=false,
+    Parent=Window.UIElements.MainBar,
+    ZIndex=5,
 },{
-ap.UIElements.ContainerFrame,
-aj("Frame",{
-Size=UDim2.new(1,0,0,((Window.UIPadding*2.4)+12)),
-BackgroundTransparency=1,
-Visible=ap.ShowTabTitle or false,
-Name="TabTitle",
-},{
-at,
-aj("TextLabel",{
-Text=ap.Title,
-ThemeTag={
-TextColor3="Text",
-},
-TextSize=20,
-TextTransparency=0.1,
-Size=UDim2.new(0,0,1,0),
-FontFace=Font.new(ah.Font,Enum.FontWeight.SemiBold),
-
-RichText=true,
-LayoutOrder=2,
-TextXAlignment="Left",
-BackgroundTransparency=1,
-AutomaticSize="X",
-}),
-aj("UIPadding",{
-PaddingTop=UDim.new(0,20),
-PaddingLeft=UDim.new(0,20),
-PaddingRight=UDim.new(0,20),
-PaddingBottom=UDim.new(0,20),
-}),
-aj("UIListLayout",{
-SortOrder="LayoutOrder",
-Padding=UDim.new(0,10),
-FillDirection="Horizontal",
-VerticalAlignment="Center",
-HorizontalAlignment=ap.TabTitleAlign,
-}),
-}),
-aj("Frame",{
-Size=UDim2.new(1,0,0,1),
-BackgroundTransparency=0.9,
-ThemeTag={
-BackgroundColor3="Text",
-},
-Position=UDim2.new(0,0,0,((Window.UIPadding*2.4)+12)),
-Visible=ap.ShowTabTitle or false,
-}),
+    ap.UIElements.ContainerFrame,
+    aj("Frame",{
+        Size=UDim2.new(1,0,0,((Window.UIPadding*2.4)+12)),
+        BackgroundTransparency=1,
+        Visible=ap.ShowTabTitle or false,
+        Name="TabTitle",
+    },{
+        at,
+        aj("TextLabel",{
+            Text=ap.Title,
+            ThemeTag={
+                TextColor3="Text",
+            },
+            TextSize=20,
+            TextTransparency=0.1,
+            Size=UDim2.new(0,0,1,0),
+            FontFace=Font.new(ah.Font,Enum.FontWeight.SemiBold),
+            RichText=true,
+            LayoutOrder=2,
+            TextXAlignment="Left",
+            BackgroundTransparency=1,
+            AutomaticSize="X",
+        }),
+        aj("UIPadding",{
+            PaddingTop=UDim.new(0,20),
+            PaddingLeft=UDim.new(0,20),
+            PaddingRight=UDim.new(0,20),
+            PaddingBottom=UDim.new(0,20),
+        }),
+        aj("UIListLayout",{
+            SortOrder="LayoutOrder",
+            Padding=UDim.new(0,10),
+            FillDirection="Horizontal",
+            VerticalAlignment="Center",
+            HorizontalAlignment=ap.TabTitleAlign,
+        }),
+    }),
+    aj("Frame",{
+        Size=UDim2.new(1,0,0,1),
+        BackgroundTransparency=0.9,
+        ThemeTag={
+            BackgroundColor3="Text",
+        },
+        Position=UDim2.new(0,0,0,((Window.UIPadding*2.4)+12)),
+        Visible=ap.ShowTabTitle or false,
+    }),
 })
+
+if an.Searchable then
+    local searchBarHeight = 36
+    local searchBarGap = 10
+    local searchRadius = an.SearchRadius or ap.UICorner or 26
+    
+    local tabSearchInput = ah.NewRoundFrame(searchRadius, "Squircle", {
+        Size = UDim2.new(1, -40, 0, searchBarHeight),
+        Position = UDim2.new(0, 20, 0, ap.ShowTabTitle and ((Window.UIPadding*2.4)+12) or 10),
+        ThemeTag = {
+            ImageColor3 = "WindowSearchBarBackground",
+        },
+        ImageTransparency = 0,
+        Parent = ap.UIElements.ContainerFrameCanvas,
+        ZIndex = 6,
+    }, {
+        ah.NewRoundFrame(searchRadius, "Glass-1.4", {
+            Size = UDim2.new(1, 0, 1, 0),
+            ThemeTag = {
+                ImageColor3 = "Outline",
+            },
+            ImageTransparency = 0.85,
+        })
+    })
+    
+    local searchBox = aj("TextBox", {
+        Size = UDim2.new(1, -40, 1, 0),
+        Position = UDim2.new(0, 30, 0, 0),
+        BackgroundTransparency = 1,
+        PlaceholderText = "Search for elements on this page...",
+        Text = "",
+        TextXAlignment = "Left",
+        TextSize = 15,
+        FontFace = Font.new(ah.Font, Enum.FontWeight.Regular),
+        ThemeTag = {
+            TextColor3 = "Text",
+            PlaceholderColor3 = "Placeholder",
+        },
+        Parent = tabSearchInput,
+    })
+    
+    local searchIcon = ah.Image("search", "search", 0, Window.Folder, "TabSearch", true)
+    searchIcon.Size = UDim2.new(0, 16, 0, 16)
+    searchIcon.Position = UDim2.new(0, 8, 0.5, 0)
+    searchIcon.AnchorPoint = Vector2.new(0, 0.5)
+    searchIcon.Parent = tabSearchInput
+    
+    local titleOffset = ap.ShowTabTitle and ((Window.UIPadding*2.4)+12) or 0
+    ap.UIElements.ContainerFrame.Position = UDim2.new(0, 0, 0, titleOffset + searchBarHeight + (searchBarGap * 2))
+    ap.UIElements.ContainerFrame.Size = UDim2.new(1, 0, 1, -(titleOffset + searchBarHeight + (searchBarGap * 2)))
+    
+    ah.AddSignal(searchBox:GetPropertyChangedSignal("Text"), function()
+        local query = string.lower(searchBox.Text)
+        for _, element in ipairs(ap.Elements) do
+            if element.ElementFrame then
+                if query == "" then
+                    element.ElementFrame.Visible = true
+                else
+                    local nameMatch = element.Title and string.find(string.lower(element.Title), query, 1, true)
+                    local descMatch = element.Desc and string.find(string.lower(element.Desc), query, 1, true)
+                    if nameMatch or descMatch then
+                        element.ElementFrame.Visible = true
+                    else
+                        element.ElementFrame.Visible = false
+                    end
+                end
+            end
+        end
+    end)
+end
 
 am.Containers[aq]=ap.UIElements.ContainerFrameCanvas
 am.Tabs[aq]=ap
@@ -10524,13 +10542,13 @@ am.Tabs[aq]=ap
 ap.ContainerFrame=ap.UIElements.ContainerFrameCanvas
 
 ah.AddSignal(ap.UIElements.Main.MouseButton1Click,function()
-if not ap.Locked then
-am:SelectTab(aq)
-end
+    if not ap.Locked then
+        am:SelectTab(aq)
+    end
 end)
 
 if Window.ScrollBarEnabled then
-al(ap.UIElements.ContainerFrame,ap.UIElements.ContainerFrameCanvas,Window,3)
+    al(ap.UIElements.ContainerFrame,ap.UIElements.ContainerFrameCanvas,Window,3)
 end
 
 local au
@@ -10538,86 +10556,197 @@ local av
 local aw
 local ax=false
 
-
 if ap.Desc then
-ah.AddSignal(ap.UIElements.Main.InputBegan,function()
-ax=true
-av=task.spawn(function()
-task.wait(0.35)
-if ax and not au then
-au=ak(ap.Desc,am.ToolTipParent,true)
-au.Container.AnchorPoint=Vector2.new(0.5,0.5)
+    ah.AddSignal(ap.UIElements.Main.InputBegan,function()
+        ax=true
+        av=task.spawn(function()
+            task.wait(0.35)
+            if ax and not au then
+                au=ak(ap.Desc,am.ToolTipParent,true)
+                au.Container.AnchorPoint=Vector2.new(0.5,0.5)
 
-local function updatePosition()
-if au then
-au.Container.Position=UDim2.new(0,af.X,0,af.Y-4)
-end
-end
+                local function updatePosition()
+                    if au then
+                        au.Container.Position=UDim2.new(0,af.X,0,af.Y-4)
+                    end
+                end
 
-updatePosition()
-aw=af.Move:Connect(updatePosition)
-au:Open()
-end
-end)
-end)
+                updatePosition()
+                aw=af.Move:Connect(updatePosition)
+                au:Open()
+            end
+        end)
+    end)
 end
 
 ah.AddSignal(ap.UIElements.Main.MouseEnter,function()
-if not ap.Locked then
-ah.SetThemeTag(ap.UIElements.Main.Frame,{
-ImageTransparency="TabBackgroundHoverTransparency",
-ImageColor3="TabBackgroundHover",
-},0.1)
-end
+    if not ap.Locked then
+        ah.SetThemeTag(ap.UIElements.Main.Frame,{
+            ImageTransparency="TabBackgroundHoverTransparency",
+            ImageColor3="TabBackgroundHover",
+        },0.1)
+    end
 end)
 ah.AddSignal(ap.UIElements.Main.InputEnded,function()
-if ap.Desc then
-ax=false
-if av then
-task.cancel(av)
-av=nil
-end
-if aw then
-aw:Disconnect()
-aw=nil
-end
-if au then
-au:Close()
-au=nil
-end
-end
+    if ap.Desc then
+        ax=false
+        if av then
+            task.cancel(av)
+            av=nil
+        end
+        if aw then
+            aw:Disconnect()
+            aw=nil
+        end
+        if au then
+            au:Close()
+            au=nil
+        end
+    end
 
-if not ap.Locked then
-ah.SetThemeTag(ap.UIElements.Main.Frame,{
-ImageTransparency="TabBorderTransparency",
-},0.1)
-end
+    if not ap.Locked then
+        ah.SetThemeTag(ap.UIElements.Main.Frame,{
+            ImageTransparency="TabBorderTransparency",
+        },0.1)
+    end
 end)
 
 function ap.ScrollToTheElement(ay,az)
-ap.UIElements.ContainerFrame.ScrollingEnabled=false
+    ap.UIElements.ContainerFrame.ScrollingEnabled=false
 
-ah.Tween(ap.UIElements.ContainerFrame,0.45,{
-CanvasPosition=Vector2.new(
-0,
-ap.Elements[az].ElementFrame.AbsolutePosition.Y
--ap.UIElements.ContainerFrame.AbsolutePosition.Y
--ap.UIElements.ContainerFrame.UIPadding.PaddingTop.Offset
-),
-},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+    ah.Tween(ap.UIElements.ContainerFrame,0.45,{
+        CanvasPosition=Vector2.new(
+            0,
+            ap.Elements[az].ElementFrame.AbsolutePosition.Y
+            -ap.UIElements.ContainerFrame.AbsolutePosition.Y
+            -ap.UIElements.ContainerFrame.UIPadding.PaddingTop.Offset
+        ),
+    },Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+
+    task.spawn(function()
+        task.wait(0.48)
+
+        if ap.Elements[az].Highlight then
+            ap.Elements[az]:Highlight()
+        end
+        ap.UIElements.ContainerFrame.ScrollingEnabled=true
+    end)
+
+    return ap
+end
+
+local ay=a.load'X'
+
+ay.Load(
+    ap,
+    ap.UIElements.ContainerFrame,
+    ay.Elements,
+    Window,
+    WindUI,
+    nil,
+    ay,
+    ao,
+    ap
+)
+
+function ap.LockAll(az)
+    for aA,aB in next,Window.AllElements do
+        if aB.Tab and aB.Tab.Index and aB.Tab.Index==ap.Index and aB.Lock then
+            aB:Lock()
+        end
+    end
+end
+function ap.UnlockAll(az)
+    for aA,aB in next,Window.AllElements do
+        if aB.Tab and aB.Tab.Index and aB.Tab.Index==ap.Index and aB.Unlock then
+            aB:Unlock()
+        end
+    end
+end
+function ap.GetLocked(az)
+    local aA={}
+
+    for aB,b in next,Window.AllElements do
+        if b.Tab and b.Tab.Index and b.Tab.Index==ap.Index and b.Locked==true then
+            table.insert(aA,b)
+        end
+    end
+
+    return aA
+end
+function ap.GetUnlocked(az)
+    local aA={}
+
+    for aB,b in next,Window.AllElements do
+        if b.Tab and b.Tab.Index and b.Tab.Index==ap.Index and b.Locked==false then
+            table.insert(aA,b)
+        end
+    end
+
+    return aA
+end
+
+function ap.Select(az)
+    return am:SelectTab(ap.Index)
+end
 
 task.spawn(function()
-task.wait(0.48)
+    local az
+    if ap.CustomEmptyPage.Icon then
+        az=ah.Image(ap.CustomEmptyPage.Icon,ap.CustomEmptyPage.Icon,0,"Temp","EmptyPage",true)
+        az.Size=UDim2.fromOffset(ap.CustomEmptyPage.IconSize or 48,ap.CustomEmptyPage.IconSize or 48)
+    end
 
-if ap.Elements[az].Highlight then
-ap.Elements[az]:Highlight()
-end
-ap.UIElements.ContainerFrame.ScrollingEnabled=true
+    local aA=aj("Frame",{
+        BackgroundTransparency=1,
+        Size=UDim2.new(1,0,1,-Window.UIElements.Main.Main.Topbar.AbsoluteSize.Y),
+        Parent=ap.UIElements.ContainerFrame,
+    },{
+        aj("UIListLayout",{
+            Padding=UDim.new(0,8),
+            SortOrder="LayoutOrder",
+            VerticalAlignment="Center",
+            HorizontalAlignment="Center",
+            FillDirection="Vertical",
+        }),
+        az,
+        ap.CustomEmptyPage.Title
+        and aj("TextLabel",{
+            AutomaticSize="XY",
+            Text=ap.CustomEmptyPage.Title,
+            ThemeTag={
+                TextColor3="Text",
+            },
+            TextSize=18,
+            TextTransparency=0.5,
+            BackgroundTransparency=1,
+            FontFace=Font.new(ah.Font,Enum.FontWeight.Medium),
+        })
+        or nil,
+        ap.CustomEmptyPage.Desc
+        and aj("TextLabel",{
+            AutomaticSize="XY",
+            Text=ap.CustomEmptyPage.Desc,
+            ThemeTag={
+                TextColor3="Text",
+            },
+            TextSize=15,
+            TextTransparency=0.65,
+            BackgroundTransparency=1,
+            FontFace=Font.new(ah.Font,Enum.FontWeight.Regular),
+        })
+        or nil,
+    })
+
+    local aB
+    aB=ah.AddSignal(ap.UIElements.ContainerFrame.ChildAdded,function()
+        aA.Visible=false
+        aB:Disconnect()
+    end)
 end)
 
 return ap
 end
-
 
 
 local ay=a.load'X'
