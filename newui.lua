@@ -6222,7 +6222,7 @@ math.floor(aq/ap.Cols)*ap.Size.Y
 )
 end
 
-local an = (al and al.Radius) and math.floor(al.Radius * 0.6) or 24
+local an = (al and al.Radius) and math.floor(al.Radius * 0.6) or 12
 local ao
 
 if ag and ag~=""then
@@ -7142,13 +7142,7 @@ ParentConfig=aj,
 Radius=aj.Radius or 20, 
 }
 
-ak.UIElements.Keybind=ah(
-    ak.Value,
-    nil,
-    ak.KeybindFrame.UIElements.Main,
-    nil,
-    aj.Radius or (aj.Window.NewElements and 12 or 10) 
-)
+ak.UIElements.Keybind=ah(ak.Value,nil,ak.KeybindFrame.UIElements.Main,nil,aj.Window.NewElements and 12 or 10)
 
 ak.UIElements.Keybind.Size=UDim2.new(
 0,24
@@ -8122,7 +8116,7 @@ ParentConfig=an,
 }
 
 if ao.Callback then
-ao.UIElements.Dropdown=ah("",nil,ao.UIElements.Dropdown=ah( "",nil,ao.DropdownFrame.UIElements.Main,nil, an.Radius or (an.Window.NewElements and 12 or 10) )
+ah("",nil,ao.DropdownFrame.UIElements.Main,nil,an.Window.NewElements and 12 or 10)
 
 ao.UIElements.Dropdown.Frame.Frame.TextLabel.TextTruncate="AtEnd"
 ao.UIElements.Dropdown.Frame.Frame.TextLabel.Size=
