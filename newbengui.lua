@@ -1,17 +1,15 @@
 --[[
-     _      ___         ____  ______
-    | | /| / (_)__  ___/ / / / /  _/
-    | |/ |/ / / _ \/ _  / /_/ // /  
-    |__/|__/_/_//_/\_,_/\____/___/
-    
-    v1.6.65  |  2026-06-14  |  Roblox UI Library for scripts
-    
-    To view the source code, see the `src/` folder on the official GitHub repository.
-    
-    Author: Footagesus (Footages, .ftgs, oftgs)
-    Github: https://github.com/Footagesus/WindUI
-    Discord: https://discord.gg/ftgs-development-hub-1300692552005189632
-    License: MIT
+
+     __   ___       __            
+    |__) |__  |\ | / _`    |  | | 
+    |__) |___ | \| \__>    \__/ | 
+
+    V1.6.79 | Ui by:Footagesus | Script by:BENG | UI 1.8.9 | UPD: [2026/15/6]
+    https://bengscript.lol
+    no new updated
+    Lua — Luau
+    This UI is for personal use only. You may not use it without the permission of the creator (UI). To use it, please contact BENG SCRIPT. Creator (UI) must agree! Please do not add our UI to your GitHub repository!
+
 ]]
 
 type ConfigType__DARKLUA_TYPE_a={
