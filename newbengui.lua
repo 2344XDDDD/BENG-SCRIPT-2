@@ -5127,6 +5127,7 @@ return ae.Configs[ag]
 end
 
 return ae end function a.A()
+
 local aa={}
 
 local ab=a.load'd'
@@ -5142,7 +5143,9 @@ ae(game:GetService"UserInputService")
 
 function aa.New(af)
 local ag={
-Button=nil
+Button=nil,
+MarqueeConnection=nil,
+BlurFrame=nil,
 }
 
 local ah
@@ -5196,7 +5199,7 @@ BackgroundTransparency=.9,
 
 local al=ac("Frame",{
 Size=UDim2.new(0,0,0,0),
-Position=UDim2.new(0.5,0,0,28),
+Position=UDim2.new(0.5,0,0,-100),
 AnchorPoint=Vector2.new(0.5,0.5),
 Parent=af.Parent,
 BackgroundTransparency=1,
@@ -5266,9 +5269,20 @@ PaddingRight=UDim.new(0,11),
 }),
 ac("UIPadding",{
 PaddingLeft=UDim.new(0,4),
-PaddingRight=UDim.new(0,4),
+PaddingRight=UDim.new(0,4)
 })
 })
+
+local blurCreator = a.load'r'
+if blurCreator and af.Window and af.Window.Acrylic then
+    local blurPaint = blurCreator()
+    if blurPaint then
+        blurPaint.Frame.Parent = an
+        blurPaint.Frame.ZIndex = -1
+        blurPaint.SetVisibility(true)
+        ag.BlurFrame = blurPaint
+    end
+end
 
 ag.Button=an
 
@@ -5318,7 +5332,24 @@ local ao=ab.Drag(al)
 
 
 function ag.Visible(ap,aq)
-al.Visible=aq
+    if aq then
+        al.Visible = true
+        al.Position = UDim2.new(0.5, 0, 0, -100)
+        ad(al, 0.45, {
+            Position = UDim2.new(0.5, 0, 0, 28)
+        }, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
+    else
+        local anim = ad(al, 0.35, {
+            Position = UDim2.new(0.5, 0, 0, -100)
+        }, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        anim:Play()
+        task.spawn(function()
+            anim.Completed:Wait()
+            if not al.Visible then
+                al.Visible = false
+            end
+        end)
+    end
 end
 
 function ag.SetScale(ap,aq)
@@ -5339,6 +5370,7 @@ StrokeThickness=aq.StrokeThickness or 2,
 Scale=aq.Scale or 1,
 Color=aq.Color
 or ColorSequence.new(Color3.fromHex"40c9ff",Color3.fromHex"e81cff"),
+MarqueeSpeed=aq.MarqueeSpeed or 120,
 }
 
 
@@ -5399,6 +5431,20 @@ if Glow then
 Glow.UIGradient.Color=ar.Color
 end
 
+if ag.MarqueeConnection then
+    ag.MarqueeConnection:Disconnect()
+    ag.MarqueeConnection = nil
+end
+
+if ar.MarqueeSpeed and ar.MarqueeSpeed > 0 then
+    local rot = 0
+    local runService = game:GetService("RunService")
+    ag.MarqueeConnection = runService.RenderStepped:Connect(function(dt)
+        rot = (rot + ar.MarqueeSpeed * dt) % 360
+        an.UIStroke.UIGradient.Rotation = rot
+    end)
+end
+
 an.UICorner.CornerRadius=ar.CornerRadius
 an.TextButton.UICorner.CornerRadius=UDim.new(ar.CornerRadius.Scale,ar.CornerRadius.Offset-4)
 an.UIStroke.Thickness=ar.StrokeThickness
@@ -5408,8 +5454,6 @@ end
 
 return ag
 end
-
-
 
 return aa end function a.A()
 
@@ -5558,7 +5602,6 @@ PaddingRight=UDim.new(0,4)
 })
 })
 
--- 注入主 UI 同款模糊背景 Blur
 local blurCreator = a.load'r'
 if blurCreator and af.Window and af.Window.Acrylic then
     local blurPaint = blurCreator()
@@ -5622,13 +5665,11 @@ function ag.Visible(ap,aq)
         al.Visible = true
         local camera = game:GetService("Workspace").CurrentCamera
         local screenHeight = camera and camera.ViewportSize.Y or 800
-        -- 弹性向上弹出动画，适应不同屏幕高度
         al.Position = UDim2.new(0.5, 0, 1, 100)
         ad(al, 0.45, {
             Position = UDim2.new(0.5, 0, 1, -80)
         }, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
     else
-        -- 缩回底部动画
         local anim = ad(al, 0.35, {
             Position = UDim2.new(0.5, 0, 1, 150)
         }, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
@@ -5660,7 +5701,7 @@ StrokeThickness=aq.StrokeThickness or 2,
 Scale=aq.Scale or 1,
 Color=aq.Color
 or ColorSequence.new(Color3.fromHex"40c9ff",Color3.fromHex"e81cff"),
-MarqueeSpeed=aq.MarqueeSpeed or 120, -- 旋转速度
+MarqueeSpeed=aq.MarqueeSpeed or 120,
 }
 
 
@@ -5721,7 +5762,6 @@ if Glow then
 Glow.UIGradient.Color=ar.Color
 end
 
--- 跑马灯旋转连接
 if ag.MarqueeConnection then
     ag.MarqueeConnection:Disconnect()
     ag.MarqueeConnection = nil
@@ -11884,11 +11924,16 @@ ak.SetThemeTag(as.UIElements.Main,{
 ImageTransparency="TabBorderTransparency",
 },0.15)
 
-local uiPadding = as.UIElements.Main:FindFirstChild("Frame") and as.UIElements.Main.Frame:FindFirstChildOfClass("UIPadding")
-if uiPadding then
-    ak.Tween(uiPadding, 0.15, {
-        PaddingLeft = UDim.new(0, as.TabPaddingX)
-    }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+if as.UIElements and as.UIElements.Main then
+    local mainFrame = as.UIElements.Main:FindFirstChild("Frame")
+    if mainFrame then
+        local uiPadding = mainFrame:FindFirstChildOfClass("UIPadding")
+        if uiPadding then
+            ak.Tween(uiPadding, 0.15, {
+                PaddingLeft = UDim.new(0, as.TabPaddingX)
+            }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        end
+    end
 end
 
 if as.Border then
@@ -11915,11 +11960,16 @@ ImageColor3="TabBackgroundActive",
 ImageTransparency="TabBackgroundActiveTransparency",
 },0.15)
 
-local uiPadding = activeTab.UIElements.Main:FindFirstChild("Frame") and activeTab.UIElements.Main.Frame:FindFirstChildOfClass("UIPadding")
-if uiPadding then
-    ak.Tween(uiPadding, 0.15, {
-        PaddingLeft = UDim.new(0, activeTab.TabPaddingX + 8)
-    }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+if activeTab.UIElements and activeTab.UIElements.Main then
+    local mainFrame = activeTab.UIElements.Main:FindFirstChild("Frame")
+    if mainFrame then
+        local uiPadding = mainFrame:FindFirstChildOfClass("UIPadding")
+        if uiPadding then
+            ak.Tween(uiPadding, 0.15, {
+                PaddingLeft = UDim.new(0, activeTab.TabPaddingX + 8)
+            }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out):Play()
+        end
+    end
 end
 
 if activeTab.Border then
