@@ -6010,68 +6010,80 @@ PaddingBottom=UDim.new(0,ah.UIPadding),
 ah.UIElements.Main=d
 ah.UIElements.Locked=av
 
+local elementScale = ab("UIScale", {
+    Scale = 1,
+    Parent = d
+})
+
+aa.AddSignal(d.InputBegan, function(input)
+    if am and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        ad(elementScale, 0.08, {Scale = 0.97}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out):Play()
+    end
+end)
+
+aa.AddSignal(d.InputEnded, function(input)
+    if am and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        ad(elementScale, 0.15, {Scale = 1}, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
+    end
+end)
+
 if ah.Hover then
-aa.AddSignal(d.MouseEnter,function()
-if am then
-
-ad(aB,0.12,{ImageTransparency=0.9}):Play()
-ad(aA,0.12,{ImageTransparency=0.8}):Play()
-aa.AddSignal(d.MouseMoved,function(g,h)
-aB.HoverGradient.Offset=
-Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
-aA.HoverGradient.Offset=
-Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
-end)
-end
-end)
-aa.AddSignal(d.InputEnded,function()
-if am then
-
-ad(aB,0.12,{ImageTransparency=1}):Play()
-ad(aA,0.12,{ImageTransparency=1}):Play()
-end
-end)
+    aa.AddSignal(d.MouseEnter,function()
+        if am then
+            ad(aB,0.12,{ImageTransparency=0.9}):Play()
+            ad(aA,0.12,{ImageTransparency=0.8}):Play()
+            aa.AddSignal(d.MouseMoved,function(g,h)
+                aB.HoverGradient.Offset=Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
+                aA.HoverGradient.Offset=Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
+            end)
+        end
+    end)
+    aa.AddSignal(d.InputEnded,function()
+        if am then
+            ad(aB,0.12,{ImageTransparency=1}):Play()
+            ad(aA,0.12,{ImageTransparency=1}):Play()
+        end
+    end)
 end
 
 function ah.SetTitle(g,h)
-ah.Title=h
-aq.Text=h
+    ah.Title=h
+    aq.Text=h
 end
 
 function ah.SetDesc(g,h)
-ah.Desc=h
-ar.Text=h or""
-if not h then
-ar.Visible=false
-elseif not ar.Visible then
-ar.Visible=true
-end
+    ah.Desc=h
+    ar.Text=h or""
+    if not h then
+        ar.Visible=false
+    elseif not ar.Visible then
+        ar.Visible=true
+    end
 end
 
 function ah.Colorize(g,h,i)
-if ah.Color then
-h[i]=typeof(ah.Color)=="string"
-and GetTextColorForHSB(Color3.fromHex(aa.Colors[ah.Color]))
-or typeof(ah.Color)=="Color3"and GetTextColorForHSB(ah.Color)
-or nil
-end
+    if ah.Color then
+        h[i]=typeof(ah.Color)=="string"
+        and GetTextColorForHSB(Color3.fromHex(aa.Colors[ah.Color]))
+        or typeof(ah.Color)=="Color3"and GetTextColorForHSB(ah.Color)
+        or nil
+    end
 end
 
 if ag.ElementTable then
-aa.AddSignal(aq:GetPropertyChangedSignal"Text",function()
-if ah.Title~=aq.Text then
-ah:SetTitle(aq.Text)
-ag.ElementTable.Title=aq.Text
+    aa.AddSignal(aq:GetPropertyChangedSignal"Text",function()
+        if ah.Title~=aq.Text then
+            ah:SetTitle(aq.Text)
+            ag.ElementTable.Title=aq.Text
+        end
+    end)
+    aa.AddSignal(ar:GetPropertyChangedSignal"Text",function()
+        if ah.Desc~=ar.Text then
+            ah:SetDesc(ar.Text)
+            ag.ElementTable.Desc=ar.Text
+        end
+    end)
 end
-end)
-aa.AddSignal(ar:GetPropertyChangedSignal"Text",function()
-if ah.Desc~=ar.Text then
-ah:SetDesc(ar.Text)
-ag.ElementTable.Desc=ar.Text
-end
-end)
-end
-
 
 
 
@@ -13453,8 +13465,6 @@ end
 return".png"
 end
 
-
-
 if typeof(aw.Background)=="string"and l then
 h=true
 
@@ -13462,33 +13472,47 @@ if string.find(l,"http")then
 local r=(aw.Folder or"Temp").."/assets/."..an.SanitizeFilename(l)..".webm"
 if not isfile(r)then
 local u,v=pcall(function()
-
-
-
-
-
 local u=game.HttpGet and game:HttpGet(l)
 or an.Request{
 Url=l,
 Method="GET",
-Headers={["User-Agent"]="Roblox/Exploit"},
 }.Body
+or{}
 
+if not d:IsStudio()and writefile then
 writefile(r,u)
-end)
-if not u then
-warn("[ WindUI.Window.Background ] Failed to download video: "..tostring(v))
-end
 end
 
-local u,v=pcall(function()
-return getcustomasset(r)
+
+local N,O=pcall(getcustomasset,r)
+if N then
+J.ImageLabel.Image=O
+else
+warn(
+string.format(
+"[ WindUI.Creator ] Failed to load custom asset '%s': %s",
+r,
+tostring(O)
+)
+)
+J:Destroy()
+
+return
+end
+end)
 end)
 if not u then
-warn("[ WindUI.Window.Background ] Failed to load custom asset: "..tostring(v))
+warn(
+"[ WindUI.Creator ]  '"..identifyexecutor()
+or"Studio".."' doesnt support the URL Images. Error: "..v
+)
+
+J:Destroy()
 end
-warn"[ WindUI.Window.Background ] VideoFrame may not work with custom video"
-l=v
+elseif l==""then
+J.Visible=false
+else
+J.ImageLabel.Image=l
 end
 
 i=ao("VideoFrame",{
@@ -13504,41 +13528,31 @@ CornerRadius=UDim.new(0,aw.UICorner),
 })
 i:Play()
 elseif m then
-local r=(aw.Folder or"Temp")
-.."/assets/."
-..an.SanitizeFilename(m)
-..GetImageExtension(m)
-
-if isfile and not isfile(r)then
-local u,v=pcall(function()
+local r=(aw.Folder or"Temp").."/assets/."..an.SanitizeFilename(m)..GetImageExtension(m)
+if not isfile(r)then
+task.spawn(function()
 local u=game.HttpGet and game:HttpGet(m)
 or an.Request{
 Url=m,
 Method="GET",
-Headers={["User-Agent"]="Roblox/Exploit"},
 }.Body
+or{}
 
+if not d:IsStudio()and writefile then
 writefile(r,u)
-end)
-
-if not u then
-warn("[ Window.Background ] Failed to download image: "..tostring(v))
 end
+end)
 end
 
 local u,v=pcall(function()
 return getcustomasset(r)
 end)
 
-if not u then
-warn("[ Window.Background ] Failed to load custom asset: "..tostring(v))
-end
-
 i=ao("ImageLabel",{
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,1,0),
-Image=v,
-ImageTransparency=0,
+Image=u and v or m,
+ImageTransparency=1,
 ScaleType="Crop",
 },{
 ao("UICorner",{
@@ -13550,7 +13564,7 @@ i=ao("ImageLabel",{
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,1,0),
 Image=p,
-ImageTransparency=0,
+ImageTransparency=1,
 ScaleType="Crop",
 },{
 ao("UICorner",{
