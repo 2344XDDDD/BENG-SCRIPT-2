@@ -6010,79 +6010,84 @@ PaddingBottom=UDim.new(0,ah.UIPadding),
 ah.UIElements.Main=d
 ah.UIElements.Locked=av
 
-local elementScale = ab("UIScale", {
-    Scale = 1,
-    Parent = d
-})
+local TweenService = game:GetService("TweenService")
 
-aa.AddSignal(d.InputBegan, function(input)
-    if am and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        ad(elementScale, 0.08, {Scale = 0.97}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out):Play()
+local elementScale = Instance.new("UIScale")
+elementScale.Scale = 1
+elementScale.Parent = d
+
+d.InputBegan:Connect(function(input)
+    if (am ~= false) and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        TweenService:Create(elementScale, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 0.97}):Play()
     end
 end)
 
-aa.AddSignal(d.InputEnded, function(input)
-    if am and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        ad(elementScale, 0.15, {Scale = 1}, Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
+d.InputEnded:Connect(function(input)
+    if (am ~= false) and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        TweenService:Create(elementScale, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
     end
 end)
 
 if ah.Hover then
-    aa.AddSignal(d.MouseEnter,function()
-        if am then
-            ad(aB,0.12,{ImageTransparency=0.9}):Play()
-            ad(aA,0.12,{ImageTransparency=0.8}):Play()
-            aa.AddSignal(d.MouseMoved,function(g,h)
-                aB.HoverGradient.Offset=Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
-                aA.HoverGradient.Offset=Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
-            end)
-        end
-    end)
-    aa.AddSignal(d.InputEnded,function()
-        if am then
-            ad(aB,0.12,{ImageTransparency=1}):Play()
-            ad(aA,0.12,{ImageTransparency=1}):Play()
-        end
-    end)
+aa.AddSignal(d.MouseEnter,function()
+if am then
+
+ad(aB,0.12,{ImageTransparency=0.9}):Play()
+ad(aA,0.12,{ImageTransparency=0.8}):Play()
+aa.AddSignal(d.MouseMoved,function(g,h)
+aB.HoverGradient.Offset=
+Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
+aA.HoverGradient.Offset=
+Vector2.new(((g-d.AbsolutePosition.X)/d.AbsoluteSize.X)-0.5,0)
+end)
+end
+end)
+aa.AddSignal(d.InputEnded,function()
+if am then
+
+ad(aB,0.12,{ImageTransparency=1}):Play()
+ad(aA,0.12,{ImageTransparency=1}):Play()
+end
+end)
 end
 
 function ah.SetTitle(g,h)
-    ah.Title=h
-    aq.Text=h
+ah.Title=h
+aq.Text=h
 end
 
 function ah.SetDesc(g,h)
-    ah.Desc=h
-    ar.Text=h or""
-    if not h then
-        ar.Visible=false
-    elseif not ar.Visible then
-        ar.Visible=true
-    end
+ah.Desc=h
+ar.Text=h or""
+if not h then
+ar.Visible=false
+elseif not ar.Visible then
+ar.Visible=true
+end
 end
 
 function ah.Colorize(g,h,i)
-    if ah.Color then
-        h[i]=typeof(ah.Color)=="string"
-        and GetTextColorForHSB(Color3.fromHex(aa.Colors[ah.Color]))
-        or typeof(ah.Color)=="Color3"and GetTextColorForHSB(ah.Color)
-        or nil
-    end
+if ah.Color then
+h[i]=typeof(ah.Color)=="string"
+and GetTextColorForHSB(Color3.fromHex(aa.Colors[ah.Color]))
+or typeof(ah.Color)=="Color3"and GetTextColorForHSB(ah.Color)
+or nil
+end
 end
 
 if ag.ElementTable then
-    aa.AddSignal(aq:GetPropertyChangedSignal"Text",function()
-        if ah.Title~=aq.Text then
-            ah:SetTitle(aq.Text)
-            ag.ElementTable.Title=aq.Text
-        end
-    end)
-    aa.AddSignal(ar:GetPropertyChangedSignal"Text",function()
-        if ah.Desc~=ar.Text then
-            ah:SetDesc(ar.Text)
-            ag.ElementTable.Desc=ar.Text
-        end
-    end)
+aa.AddSignal(aq:GetPropertyChangedSignal"Text",function()
+if ah.Title~=aq.Text then
+ah:SetTitle(aq.Text)
+ag.ElementTable.Title=aq.Text
+end
+end)
+aa.AddSignal(ar:GetPropertyChangedSignal"Text",function()
+if ah.Desc~=ar.Text then
+ah:SetDesc(ar.Text)
+ag.ElementTable.Desc=ar.Text
+end
+end)
 end
 
 
