@@ -6010,24 +6010,6 @@ PaddingBottom=UDim.new(0,ah.UIPadding),
 ah.UIElements.Main=d
 ah.UIElements.Locked=av
 
-local TweenService = game:GetService("TweenService")
-
-local elementScale = Instance.new("UIScale")
-elementScale.Scale = 1
-elementScale.Parent = d
-
-d.InputBegan:Connect(function(input)
-    if (am ~= false) and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        TweenService:Create(elementScale, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 0.97}):Play()
-    end
-end)
-
-d.InputEnded:Connect(function(input)
-    if (am ~= false) and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        TweenService:Create(elementScale, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
-    end
-end)
-
 if ah.Hover then
 aa.AddSignal(d.MouseEnter,function()
 if am then
@@ -6089,6 +6071,7 @@ ag.ElementTable.Desc=ar.Text
 end
 end)
 end
+
 
 
 
@@ -13443,6 +13426,8 @@ local g
 local h=false
 local i
 
+-- 请在脚本中搜索 GetImageExtension，并替换以下这一整段：
+
 local l=typeof(aw.Background)=="string"and string.match(aw.Background,"^video:(.+)")or nil
 
 local m=typeof(aw.Background)=="string"
@@ -13470,6 +13455,8 @@ end
 return".png"
 end
 
+
+-- ==================== 替换此处的壁纸创建判断 ====================
 if typeof(aw.Background)=="string"and l then
 h=true
 
@@ -13557,7 +13544,7 @@ i=ao("ImageLabel",{
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,1,0),
 Image=u and v or m,
-ImageTransparency=1,
+ImageTransparency=1, -- 初始为 1 (渐变开始前隐藏)
 ScaleType="Crop",
 },{
 ao("UICorner",{
@@ -13569,7 +13556,7 @@ i=ao("ImageLabel",{
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,1,0),
 Image=p,
-ImageTransparency=1,
+ImageTransparency=1, -- 初始为 1 (渐变开始前隐藏)
 ScaleType="Crop",
 },{
 ao("UICorner",{
@@ -13581,7 +13568,7 @@ i=ao("ImageLabel",{
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,1,0),
 Image=typeof(aw.Background)=="string"and aw.Background or"",
-ImageTransparency=1,
+ImageTransparency=1, -- 初始为 1 (渐变开始前隐藏)
 ScaleType="Crop",
 },{
 ao("UICorner",{
