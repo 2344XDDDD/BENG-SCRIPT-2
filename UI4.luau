@@ -10679,13 +10679,12 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Visible = false
 
         MainFrame = New("TextButton", {
-            AnchorPoint = Vector2.new(0.5, 0.5),
             BackgroundColor3 = function()
                 return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
             end,
             Name = "Main",
             Text = "",
-            Position = UDim2.new(0.5, 0, 0.5, 0),
+            Position = WindowInfo.Position,
             Size = WindowInfo.Size,
             Visible = false,
             Parent = ScreenGui,
@@ -13648,39 +13647,46 @@ function Library:CreateWindow(WindowInfo)
             Library.Toggled = not Library.Toggled
         end
 
-        local WindowScale = MainFrame:FindFirstChildOfClass("UIScale")
-        if not WindowScale then
-            WindowScale = Instance.new("UIScale")
-            WindowScale.Parent = MainFrame
-        end
+        local FullSize = WindowInfo.Size
+        local TargetPos = MainFrame.Position
+        local CompactW = math.min(260, FullSize.X.Offset)
+        local CompactH = math.min(260, FullSize.Y.Offset)
+        local CompactSize = UDim2.fromOffset(CompactW, CompactH)
 
-        local BasePos = MainFrame.Position
-        local SlidePos = UDim2.new(BasePos.X.Scale, BasePos.X.Offset, BasePos.Y.Scale, BasePos.Y.Offset + 24)
+        local OffsetX = (FullSize.X.Offset - CompactW) / 2
+        local OffsetY = (FullSize.Y.Offset - CompactH) / 2
+        local CompactPos = UDim2.new(TargetPos.X.Scale, TargetPos.X.Offset + OffsetX, TargetPos.Y.Scale, TargetPos.Y.Offset + OffsetY)
 
-        local WindUIOpen = TweenInfo.new(0.48, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        local WindUIClose = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        local OpenTweenInfo = TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        local CloseTweenInfo = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
 
         if Library.Toggled then
             Fading = true
+            MainFrame.ClipsDescendants = true
+            MainFrame.Size = CompactSize
+            MainFrame.Position = CompactPos
             MainFrame.Visible = true
-            WindowScale.Scale = 0.75
-            MainFrame.Position = SlidePos
 
-            TweenService:Create(WindowScale, WindUIOpen, { Scale = 1 }):Play()
-            local OpenTween = TweenService:Create(MainFrame, WindUIOpen, { Position = BasePos })
-            OpenTween:Play()
-            OpenTween.Completed:Once(function()
+            TweenService:Create(MainFrame, OpenTweenInfo, {
+                Size = FullSize,
+                Position = TargetPos
+            }):Play()
+
+            task.delay(OpenTweenInfo.Time, function()
                 Fading = false
             end)
         else
             Fading = true
-            TweenService:Create(WindowScale, WindUIClose, { Scale = 0.75 }):Play()
-            local CloseTween = TweenService:Create(MainFrame, WindUIClose, { Position = SlidePos })
+            MainFrame.ClipsDescendants = true
+            local CloseTween = TweenService:Create(MainFrame, CloseTweenInfo, {
+                Size = CompactSize,
+                Position = CompactPos
+            })
             CloseTween:Play()
             CloseTween.Completed:Once(function()
                 MainFrame.Visible = false
-                WindowScale.Scale = 1
-                MainFrame.Position = BasePos
+                MainFrame.Size = FullSize
+                MainFrame.Position = TargetPos
                 Fading = false
             end)
         end
@@ -13966,27 +13972,20 @@ function Library:CreateLoading(LoadingInfo)
     Library:AddOutline(MainFrame)
     table.insert(Library.Corners, New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = MainFrame }))
 
-    local TargetScale = Library.IsMobile and 0.8 or 1
     local MainScale = New("UIScale", {
-        Scale = TargetScale * 0.72,
+        Scale = Library.IsMobile and 0.8 or 1,
         Parent = MainFrame
     })
     table.insert(Library.Scales, MainScale)
     Library.ScalesOffset[MainScale] = Library.IsMobile and 0.2 or 0
 
-    local BaseLoadingPos = UDim2.fromScale(0.5, 0.5)
-    MainFrame.Position = UDim2.fromScale(0.5, 0.53)
-
-    TweenService:Create(
-        MainScale,
-        TweenInfo.new(0.48, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        { Scale = TargetScale }
-    ):Play()
+    local TargetSize = UDim2.fromOffset(Loading.ShowSidebar and (Loading.ContentWidth + Loading.SidebarWidth) or Loading.WindowWidth, Loading.WindowHeight)
+    MainFrame.Size = UDim2.fromOffset(240, 240)
 
     TweenService:Create(
         MainFrame,
-        TweenInfo.new(0.48, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        { Position = BaseLoadingPos }
+        TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+        { Size = TargetSize }
     ):Play()
 
     --// Layout Containers \\--
