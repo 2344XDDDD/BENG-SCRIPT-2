@@ -13854,7 +13854,7 @@ function Library:CreateWindow(WindowInfo)
             ParentUI(PromptGui)
             SetAlwaysOnTop(PromptGui, true)
 
-            local TargetSize = UDim2.fromOffset(360, 195)
+            local TargetSize = UDim2.fromOffset(360, 200)
             local PromptRadius = WindowInfo.CornerRadius or Library.CornerRadius or 10
 
             local MainFrame = New("TextButton", {
@@ -13947,7 +13947,7 @@ function Library:CreateWindow(WindowInfo)
                 Name = "InnerContent",
                 BackgroundTransparency = 1,
                 Position = UDim2.fromOffset(0, 49),
-                Size = UDim2.new(1, 0, 1, -100),
+                Size = UDim2.new(1, 0, 0, 78),
                 Parent = MainFrame,
             })
             New("UIListLayout", {
@@ -13960,9 +13960,9 @@ function Library:CreateWindow(WindowInfo)
 
             New("TextLabel", {
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, -30, 0, 24),
-                Text = "关闭脚本",
-                TextSize = 18,
+                Size = UDim2.new(1, -30, 0, 22),
+                Text = "Close Script",
+                TextSize = 17,
                 TextColor3 = "FontColor",
                 TextXAlignment = Enum.TextXAlignment.Center,
                 Parent = InnerContent,
@@ -13971,7 +13971,7 @@ function Library:CreateWindow(WindowInfo)
             New("TextLabel", {
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, -30, 0, 18),
-                Text = "确定要退出并关闭脚本吗？",
+                Text = "Are you sure you want to exit?",
                 TextSize = 14,
                 TextColor3 = "FontColor",
                 TextTransparency = 0.5,
@@ -13982,23 +13982,23 @@ function Library:CreateWindow(WindowInfo)
             local ButtonContainer = New("Frame", {
                 Name = "Buttons",
                 BackgroundTransparency = 1,
-                AnchorPoint = Vector2.new(0, 1),
-                Position = UDim2.fromScale(0, 1),
-                Size = UDim2.new(1, 0, 0, 50),
+                AnchorPoint = Vector2.new(0.5, 1),
+                Position = UDim2.new(0.5, 0, 1, -16),
+                Size = UDim2.new(1, -32, 0, 36),
                 Parent = MainFrame,
             })
             New("UIListLayout", {
                 FillDirection = Enum.FillDirection.Horizontal,
                 HorizontalAlignment = Enum.HorizontalAlignment.Center,
                 VerticalAlignment = Enum.VerticalAlignment.Center,
-                Padding = UDim.new(0, 16),
+                Padding = UDim.new(0, 14),
                 Parent = ButtonContainer,
             })
 
             local LeftBtn = New("TextButton", {
                 BackgroundColor3 = "MainColor",
-                Size = UDim2.fromOffset(130, 32),
-                Text = "不关闭",
+                Size = UDim2.fromOffset(130, 34),
+                Text = "Cancel",
                 TextSize = 14,
                 TextColor3 = "FontColor",
                 Parent = ButtonContainer,
@@ -14014,8 +14014,8 @@ function Library:CreateWindow(WindowInfo)
 
             local RightBtn = New("TextButton", {
                 BackgroundColor3 = "DestructiveColor",
-                Size = UDim2.fromOffset(130, 32),
-                Text = "关闭",
+                Size = UDim2.fromOffset(130, 34),
+                Text = "Exit",
                 TextSize = 14,
                 TextColor3 = "WhiteColor",
                 Parent = ButtonContainer,
