@@ -14156,26 +14156,116 @@ function Library:CreateLoading(LoadingInfo)
         RotationTween:Play()
     end
 
-    local MessageLabel = New("TextLabel", {
+    local MessageMask = New("Frame", {
+        Name = "MessageMask",
         BackgroundTransparency = 1,
-        AutomaticSize = Loading.AutoResizeHeight and Enum.AutomaticSize.Y or Enum.AutomaticSize.XY,
-        Size = Loading.AutoResizeHeight and UDim2.new(1, -60, 0, 0) or UDim2.fromOffset(0, 0),
-        Text = "",
-        TextSize = 18,
-        TextWrapped = Loading.AutoResizeHeight,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, -60, 0, 22),
         Parent = InnerContent,
     })
 
-    local DescriptionLabel = New("TextLabel", {
+    local MessageLabelA = New("TextLabel", {
         BackgroundTransparency = 1,
-        AutomaticSize = Loading.AutoResizeHeight and Enum.AutomaticSize.Y or Enum.AutomaticSize.XY,
-        Size = Loading.AutoResizeHeight and UDim2.new(1, -60, 0, 0) or UDim2.fromOffset(0, 0),
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.fromScale(0, 0),
+        Text = "",
+        TextSize = 18,
+        Parent = MessageMask,
+    })
+
+    local MessageLabelB = New("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.new(0, 0, 1, 0),
+        Text = "",
+        TextSize = 18,
+        TextTransparency = 1,
+        Parent = MessageMask,
+    })
+
+    local CurrentMsgActive = MessageLabelA
+    local NextMsgActive = MessageLabelB
+
+    local function AnimateMessageText(newText)
+        if CurrentMsgActive.Text == newText then return end
+        local Outgoing = CurrentMsgActive
+        local Incoming = NextMsgActive
+
+        Incoming.Text = newText
+        Incoming.Position = UDim2.new(0, 0, 1, 0)
+        Incoming.TextTransparency = 1
+
+        TweenService:Create(
+            Outgoing,
+            TweenInfo.new(0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { Position = UDim2.new(0, 0, -1, 0), TextTransparency = 1 }
+        ):Play()
+
+        TweenService:Create(
+            Incoming,
+            TweenInfo.new(0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { Position = UDim2.fromScale(0, 0), TextTransparency = 0 }
+        ):Play()
+
+        CurrentMsgActive = Incoming
+        NextMsgActive = Outgoing
+    end
+
+    local DescMask = New("Frame", {
+        Name = "DescMask",
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, -60, 0, 18),
+        Parent = InnerContent,
+    })
+
+    local DescLabelA = New("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.fromScale(0, 0),
         Text = "",
         TextSize = 14,
         TextTransparency = 0.5,
-        TextWrapped = Loading.AutoResizeHeight,
-        Parent = InnerContent,
+        Parent = DescMask,
     })
+
+    local DescLabelB = New("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.new(0, 0, 1, 0),
+        Text = "",
+        TextSize = 14,
+        TextTransparency = 1,
+        Parent = DescMask,
+    })
+
+    local CurrentDescActive = DescLabelA
+    local NextDescActive = DescLabelB
+
+    local function AnimateDescText(newText)
+        if CurrentDescActive.Text == newText then return end
+        local Outgoing = CurrentDescActive
+        local Incoming = NextDescActive
+
+        Incoming.Text = newText
+        Incoming.Position = UDim2.new(0, 0, 1, 0)
+        Incoming.TextTransparency = 1
+
+        TweenService:Create(
+            Outgoing,
+            TweenInfo.new(0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { Position = UDim2.new(0, 0, -1, 0), TextTransparency = 1 }
+        ):Play()
+
+        TweenService:Create(
+            Incoming,
+            TweenInfo.new(0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { Position = UDim2.fromScale(0, 0), TextTransparency = 0.5 }
+        ):Play()
+
+        CurrentDescActive = Incoming
+        NextDescActive = Outgoing
+    end
 
     --// Progress Bar (WindUI Style) \\--
     local ProgressContainer = New("Frame", {
@@ -14548,22 +14638,30 @@ function Library:CreateLoading(LoadingInfo)
         Loading.WindowHeight = math.max(Loading.BaseWindowHeight, RequiredHeight)
     end
 
-    function Loading:SetMessage(Text)
-        MessageLabel.Text = Text
+    local CheckmarkIcon = New("ImageLabel", {
+        Name = "CheckmarkIcon",
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.fromScale(0.5, 0.5),
+        Size = UDim2.fromOffset(0, 0),
+        ImageColor3 = Color3.fromRGB(50, 220, 120),
+        ImageTransparency = 1,
+        Visible = false,
+        Parent = IconHolder,
+    })
+    local ResolvedCheck = Library:GetCustomIcon(Templates.CheckIcon or "check")
+    if ResolvedCheck then
+        Library:ApplyLucideIcon(CheckmarkIcon, ResolvedCheck)
+    else
+        CheckmarkIcon.Image = "rbxassetid://97682394690683"
+    end
 
-        if Loading.AutoResizeHeight then
-            Loading:RecalculateLoadingHeight()
-            Loading:UpdateLayout()
-        end
+    function Loading:SetMessage(Text)
+        AnimateMessageText(tostring(Text or ""))
     end
 
     function Loading:SetDescription(Text)
-        DescriptionLabel.Text = Text
-
-        if Loading.AutoResizeHeight then
-            Loading:RecalculateLoadingHeight()
-            Loading:UpdateLayout()
-        end
+        AnimateDescText(tostring(Text or ""))
     end
 
     function Loading:SetLoadingIcon(Icon)
@@ -14595,39 +14693,86 @@ function Library:CreateLoading(LoadingInfo)
         LoadingIcon.ImageColor3 = Color
     end
 
+    local VerifyingStarted = false
+
     function Loading:SetCurrentStep(Step)
+        if VerifyingStarted then return end
         Loading.CurrentStep = math.clamp(Step, 0, Loading.TotalSteps)
 
         local Progress = Loading.TotalSteps > 0 and (Loading.CurrentStep / Loading.TotalSteps) or 0
 
         TweenService:Create(
             SliderFill,
-            TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
+            TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
             { Size = UDim2.fromScale(Progress, 1) }
         ):Play()
 
         AnimateStepText(string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps))
 
         if Loading.CurrentStep >= Loading.TotalSteps and Loading.TotalSteps > 0 then
-            task.delay(0.4, function()
+            VerifyingStarted = true
+
+            task.delay(0.35, function()
                 if Loading.Destroyed then return end
 
-                TweenService:Create(SliderBar, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = 1
-                }):Play()
-                TweenService:Create(SliderFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = 1
-                }):Play()
-                if CurrentActive then
-                    TweenService:Create(CurrentActive, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                        TextTransparency = 1
-                    }):Play()
-                end
+                Loading:SetMessage("Authenticating...")
+                Loading:SetDescription("Verifying session...")
+                AnimateStepText("100%")
 
-                task.delay(0.35, function()
-                    if not Loading.Destroyed then
-                        Loading:Destroy()
+                TweenService:Create(
+                    SliderFill,
+                    TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
+                    { Size = UDim2.fromScale(1, 1) }
+                ):Play()
+
+                task.delay(2.2, function()
+                    if Loading.Destroyed then return end
+
+                    if RotationTween then
+                        RotationTween:Cancel()
                     end
+
+                    TweenService:Create(LoadingIcon, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        ImageTransparency = 1,
+                        Size = UDim2.fromOffset(0, 0)
+                    }):Play()
+
+                    CheckmarkIcon.Visible = true
+                    CheckmarkIcon.Size = UDim2.fromOffset(0, 0)
+                    CheckmarkIcon.ImageTransparency = 0
+
+                    TweenService:Create(CheckmarkIcon, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Size = UDim2.fromOffset(56, 56)
+                    }):Play()
+
+                    Loading:SetMessage("Authenticated")
+                    Loading:SetDescription("Welcome back!")
+
+                    TweenService:Create(SliderFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        BackgroundColor3 = Color3.fromRGB(50, 220, 120)
+                    }):Play()
+
+                    task.delay(0.85, function()
+                        if Loading.Destroyed then return end
+
+                        TweenService:Create(SliderBar, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                            BackgroundTransparency = 1
+                        }):Play()
+                        TweenService:Create(SliderFill, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                            BackgroundTransparency = 1
+                        }):Play()
+                        if CurrentActive then
+                            TweenService:Create(CurrentActive, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                TextTransparency = 1
+                            }):Play()
+                        end
+
+                        task.delay(0.3, function()
+                            if not Loading.Destroyed then
+                                Loading:Destroy()
+                            end
+                        end)
+                    end)
                 end)
             end)
         end
