@@ -14378,19 +14378,22 @@ function Library:CreateLoading(LoadingInfo)
         LoadingIcon.ImageColor3 = Color
     end
 
-    function Loading:Destroy()
-        if RotationTween then
-            StopTween(RotationTween, true)
-            RotationTween = nil
-        end
+    function Loading:SetCurrentStep(Step)
+        Loading.CurrentStep = math.clamp(Step, 0, Loading.TotalSteps)
 
-        ScreenGui:Destroy()
-        Loading.Destroyed = true
-        Library.ActiveLoading = nil
+        local Progress = Loading.CurrentStep / Loading.TotalSteps
+        TweenService:Create(
+            SliderFill,
+            TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            { Size = UDim2.fromScale(Progress, 1) }
+        ):Play()
 
-        if Library.Toggle and Library.Toggled == false and Library.Unloaded ~= true then
-            Library:Toggle(true)
-        end
+        ProgressLabel.Text = string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps)
+    end
+
+    function Loading:SetTotalSteps(Steps)
+        Loading.TotalSteps = Steps
+        Loading:SetCurrentStep(Loading.CurrentStep)
     end
 
     --// Size \\--
