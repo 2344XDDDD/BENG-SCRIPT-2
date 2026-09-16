@@ -14317,7 +14317,8 @@ function Library:CreateLoading(LoadingInfo)
         Parent = SidebarScrolling,
     })
 
-    local SidebarItemIndex = 0
+    local SidebarQueue = {}
+    local SidebarIsPlaying = false
 
     local SidebarObject = {
         Elements = {},
@@ -14338,49 +14339,75 @@ function Library:CreateLoading(LoadingInfo)
         },
     }
 
-    local function AnimateSidebarEntry(TargetGui, DescendantProps)
-        SidebarItemIndex = SidebarItemIndex + 1
-        local StaggerDelay = (SidebarItemIndex - 1) * 0.06
+    local function TriggerSidebarAnimations()
+        if SidebarIsPlaying or #SidebarQueue == 0 then return end
+        SidebarIsPlaying = true
 
-        local OriginalPos = TargetGui.Position
-        TargetGui.Position = UDim2.new(OriginalPos.X.Scale, OriginalPos.X.Offset, OriginalPos.Y.Scale, OriginalPos.Y.Offset - 12)
+        task.spawn(function()
+            for Index, ItemData in ipairs(SidebarQueue) do
+                if Loading.Destroyed then break end
 
-        local OriginalValues = {}
-        for InstanceObj, Props in DescendantProps do
-            OriginalValues[InstanceObj] = {}
-            for PropName, TargetVal in Props do
-                OriginalValues[InstanceObj][PropName] = TargetVal
-                InstanceObj[PropName] = 1
+                task.delay((Index - 1) * 0.08, function()
+                    if Loading.Destroyed or not ItemData.Gui.Parent then return end
+
+                    ItemData.Gui.Visible = true
+
+                    TweenService:Create(
+                        ItemData.Padding,
+                        TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                        { PaddingTop = UDim.new(0, 0) }
+                    ):Play()
+
+                    for Obj, Props in ItemData.Props do
+                        if Obj.Parent then
+                            TweenService:Create(
+                                Obj,
+                                TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                                Props
+                            ):Play()
+                        end
+                    end
+                end)
+            end
+
+            task.wait(#SidebarQueue * 0.08 + 0.35)
+            table.clear(SidebarQueue)
+            SidebarIsPlaying = false
+        end)
+    end
+
+    local function QueueSidebarAnimation(TargetGui, DescendantProps)
+        local AnimPadding = Instance.new("UIPadding")
+        AnimPadding.PaddingTop = UDim.new(0, -18)
+        AnimPadding.Parent = TargetGui
+
+        TargetGui.Visible = false
+
+        local Targets = {}
+        for Obj, Props in DescendantProps do
+            Targets[Obj] = {}
+            for PropName, FinalVal in Props do
+                Targets[Obj][PropName] = FinalVal
+                Obj[PropName] = 1
             end
         end
 
-        task.delay(StaggerDelay, function()
-            if Loading.Destroyed or not TargetGui.Parent then return end
+        table.insert(SidebarQueue, {
+            Gui = TargetGui,
+            Padding = AnimPadding,
+            Props = Targets
+        })
 
-            TweenService:Create(
-                TargetGui,
-                TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-                { Position = OriginalPos }
-            ):Play()
-
-            for InstanceObj, Props in OriginalValues do
-                if InstanceObj.Parent then
-                    TweenService:Create(
-                        InstanceObj,
-                        TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-                        Props
-                    ):Play()
-                end
-            end
-        end)
+        if SideBar.Visible then
+            task.defer(TriggerSidebarAnimations)
+        end
     end
 
     function SidebarObject:AddLabel(...)
         local LabelObj = BaseGroupbox.__index.AddLabel(self, ...)
         if LabelObj and LabelObj.TextLabel then
-            local Gui = LabelObj.TextLabel
-            AnimateSidebarEntry(Gui, {
-                [Gui] = { TextTransparency = 0 }
+            QueueSidebarAnimation(LabelObj.TextLabel, {
+                [LabelObj.TextLabel] = { TextTransparency = 0 }
             })
         end
         return LabelObj
@@ -14389,17 +14416,16 @@ function Library:CreateLoading(LoadingInfo)
     function SidebarObject:AddButton(...)
         local ButtonObj = BaseGroupbox.__index.AddButton(self, ...)
         if ButtonObj and ButtonObj.Holder then
-            local Gui = ButtonObj.Holder
-            local Targets = {
+            local Props = {
                 [ButtonObj.Base] = {
                     BackgroundTransparency = 0,
                     TextTransparency = 0.4
                 }
             }
             if ButtonObj.Stroke then
-                Targets[ButtonObj.Stroke] = { Transparency = 0 }
+                Props[ButtonObj.Stroke] = { Transparency = 0 }
             end
-            AnimateSidebarEntry(Gui, Targets)
+            QueueSidebarAnimation(ButtonObj.Holder, Props)
         end
         return ButtonObj
     end
