@@ -14200,7 +14200,6 @@ function Library:CreateLoading(LoadingInfo)
         Parent = SliderBar,
     })
 
-    -- 进度条填充（开启 ClipsDescendants 保证光泽绝不超出紫色部分）
     local SliderFill = New("Frame", {
         BackgroundColor3 = "AccentColor",
         BorderSizePixel = 0,
@@ -14210,7 +14209,6 @@ function Library:CreateLoading(LoadingInfo)
     })
     New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = SliderFill })
 
-    -- 光泽条（宽度设为 100%，从紫色条的最左侧划到最右侧，绝不跑到黑色未加载处）
     local Shimmer = New("Frame", {
         BackgroundColor3 = "WhiteColor",
         BackgroundTransparency = 0.85,
@@ -14234,7 +14232,6 @@ function Library:CreateLoading(LoadingInfo)
     )
     ShimmerTween:Play()
 
-    -- 文本视口容器（开启 ClipsDescendants 保证上下滚动时不穿帮）
     local LabelMask = New("Frame", {
         Name = "LabelMask",
         BackgroundTransparency = 1,
@@ -14244,11 +14241,11 @@ function Library:CreateLoading(LoadingInfo)
         Parent = ProgressContainer,
     })
 
-    local ProgressLabel = New("TextLabel", {
+    local LabelA = New("TextLabel", {
         BackgroundTransparency = 1,
         Size = UDim2.fromScale(1, 1),
         Position = UDim2.fromScale(0, 0),
-        Text = string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps),
+        Text = string.format("%d/%d", Loading.CurrentStep or 0, Loading.TotalSteps or 1),
         TextSize = 13,
         TextColor3 = "FontColor",
         TextTransparency = 0.35,
@@ -14256,43 +14253,45 @@ function Library:CreateLoading(LoadingInfo)
         Parent = LabelMask,
     })
 
-    -- 数字上下切换滚轮动效
+    local LabelB = New("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.new(0, 0, 1, 0),
+        Text = "",
+        TextSize = 13,
+        TextColor3 = "FontColor",
+        TextTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Right,
+        Parent = LabelMask,
+    })
+
+    local CurrentActive = LabelA
+    local NextActive = LabelB
+
     local function AnimateStepText(newText)
-        if ProgressLabel.Text == newText then return end
+        if CurrentActive.Text == newText then return end
 
-        local OldLabel = ProgressLabel
+        local Outgoing = CurrentActive
+        local Incoming = NextActive
 
-        -- 创建从下方待命的新文字
-        local NewLabel = New("TextLabel", {
-            BackgroundTransparency = 1,
-            Size = UDim2.fromScale(1, 1),
-            Position = UDim2.new(0, 0, 1, 0), -- 位于下方
-            Text = newText,
-            TextSize = 13,
-            TextColor3 = "FontColor",
-            TextTransparency = 1,
-            TextXAlignment = Enum.TextXAlignment.Right,
-            Parent = LabelMask,
-        })
-        ProgressLabel = NewLabel
+        Incoming.Text = newText
+        Incoming.Position = UDim2.new(0, 0, 1, 0)
+        Incoming.TextTransparency = 1
 
-        -- 旧文字：向上划出并淡出
-        local OutTween = TweenService:Create(
-            OldLabel,
-            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { Position = UDim2.new(0, 0, -1, 0), TextTransparency = 1 }
-        )
-        OutTween:Play()
-        OutTween.Completed:Once(function()
-            OldLabel:Destroy()
-        end)
-
-        -- 新文字：从下向上滑入并淡入
         TweenService:Create(
-            NewLabel,
-            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            Outgoing,
+            TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { Position = UDim2.new(0, 0, -1, 0), TextTransparency = 1 }
+        ):Play()
+
+        TweenService:Create(
+            Incoming,
+            TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
             { Position = UDim2.fromScale(0, 0), TextTransparency = 0.35 }
         ):Play()
+
+        CurrentActive = Incoming
+        NextActive = Outgoing
     end
 
     --// Sidebar Object \\--
@@ -14507,35 +14506,30 @@ function Library:CreateLoading(LoadingInfo)
 
         local Progress = Loading.TotalSteps > 0 and (Loading.CurrentStep / Loading.TotalSteps) or 0
 
-        -- 进度条伸长动画
         TweenService:Create(
             SliderFill,
             TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
             { Size = UDim2.fromScale(Progress, 1) }
         ):Play()
 
-        -- 触发文字“下进上出”平滑切换
         AnimateStepText(string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps))
 
-        -- 如果全部加载完毕，整个进度条和文字平滑渐变淡出，随后自动关闭
         if Loading.CurrentStep >= Loading.TotalSteps and Loading.TotalSteps > 0 then
             task.delay(0.4, function()
                 if Loading.Destroyed then return end
 
-                -- 进度条透明渐隐
                 TweenService:Create(SliderBar, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     BackgroundTransparency = 1
                 }):Play()
                 TweenService:Create(SliderFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     BackgroundTransparency = 1
                 }):Play()
-                if ProgressLabel then
-                    TweenService:Create(ProgressLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                if CurrentActive then
+                    TweenService:Create(CurrentActive, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         TextTransparency = 1
                     }):Play()
                 end
 
-                -- 稍作等待后平滑销毁并呼出主 UI
                 task.delay(0.35, function()
                     if not Loading.Destroyed then
                         Loading:Destroy()
@@ -14619,24 +14613,6 @@ function Library:CreateLoading(LoadingInfo)
     function Loading:SetErrorMessage(Text)
         ErrorLabel.Text = Text
         Loading:UpdateLayout()
-    end
-
-    function Loading:SetCurrentStep(Step)
-        Loading.CurrentStep = math.clamp(Step, 0, Loading.TotalSteps)
-
-        local Progress = Loading.CurrentStep / Loading.TotalSteps
-        TweenService:Create(
-            SliderFill,
-            TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { Size = UDim2.fromScale(Progress, 1) }
-        ):Play()
-
-        ProgressLabel.Text = string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps)
-    end
-
-    function Loading:SetTotalSteps(Steps)
-        Loading.TotalSteps = Steps
-        Loading:SetCurrentStep(Loading.CurrentStep)
     end
 
     function Loading:SetErrorButtons(Buttons)
