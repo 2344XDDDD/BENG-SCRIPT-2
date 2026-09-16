@@ -10608,7 +10608,10 @@ function Library:CreateWindow(WindowInfo)
     if typeof(WindowInfo.Font) == "EnumItem" then
         WindowInfo.Font = Font.fromEnum(WindowInfo.Font :: any)
     end
-    WindowInfo.CornerRadius = math.min(WindowInfo.CornerRadius, 20)
+    if WindowInfo.Radius ~= nil then
+        WindowInfo.CornerRadius = WindowInfo.Radius
+    end
+    WindowInfo.CornerRadius = math.clamp(WindowInfo.CornerRadius, 0, 50)
 
     local TabButtonsStyle = WindowInfo.TabButtonsStyle
 
@@ -11188,7 +11191,7 @@ function Library:CreateWindow(WindowInfo)
 
     function Window:SetCornerRadius(Radius: number)
         assert(typeof(Radius) == "number", "Expected number for Radius got: " .. typeof(Radius))
-        Radius = math.clamp(Radius, 0, 24)
+        Radius = math.clamp(Radius, 0, 50)
 
         local RadiusHalf = UDim.new(0, Radius / 2)
         local RadiusUDim = UDim.new(0, Radius)
@@ -13929,6 +13932,8 @@ function Library:CreateLoading(LoadingInfo)
 
     LoadingInfo = Library:Validate(LoadingInfo, Templates.Loading)
 
+    local LoadingCornerRadius = LoadingInfo.CornerRadius or LoadingInfo.Radius or Library.CornerRadius or 10
+
     local Loading = {
         CurrentStep = LoadingInfo.CurrentStep,
         TotalSteps = LoadingInfo.TotalSteps,
@@ -13950,7 +13955,6 @@ function Library:CreateLoading(LoadingInfo)
         SidebarWidth = LoadingInfo.SidebarWidth,
     }
 
-    --// ScreenGui \\--
     local ScreenGui = New("ScreenGui", {
         Name = "ObsidianLoading",
         DisplayOrder = 999,
@@ -13969,8 +13973,6 @@ function Library:CreateLoading(LoadingInfo)
             Library:RemoveFromRegistry(Instance)
         end)
     end)
-
-    local LoadingCornerRadius = LoadingInfo.CornerRadius or Library.CornerRadius or 10
 
     --// Main Frame \\--
     local MainFrame = New("TextButton", {
@@ -14714,9 +14716,6 @@ function Library:CreateLoading(LoadingInfo)
 
             task.delay(0.35, function()
                 if Loading.Destroyed then return end
-
-                Loading:SetMessage("Authenticating...")
-                Loading:SetDescription("Verifying session...")
                 AnimateStepText("100%")
 
                 TweenService:Create(
@@ -14744,9 +14743,6 @@ function Library:CreateLoading(LoadingInfo)
                     TweenService:Create(CheckmarkIcon, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                         Size = UDim2.fromOffset(56, 56)
                     }):Play()
-
-                    Loading:SetMessage("Authenticated")
-                    Loading:SetDescription("Welcome back!")
 
                     TweenService:Create(SliderFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         BackgroundColor3 = Color3.fromRGB(50, 220, 120)
