@@ -13653,21 +13653,21 @@ function Library:CreateWindow(WindowInfo)
             WindowScale.Parent = MainFrame
         end
 
-        local OpenTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        local CloseTweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        local WindUIOpen = TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        local WindUIClose = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
         if Library.Toggled then
             Fading = true
             MainFrame.Visible = true
-            WindowScale.Scale = 0.4
-            local OpenTween = TweenService:Create(WindowScale, OpenTweenInfo, { Scale = 1 })
+            WindowScale.Scale = 0.88
+            local OpenTween = TweenService:Create(WindowScale, WindUIOpen, { Scale = 1 })
             OpenTween:Play()
             OpenTween.Completed:Once(function()
                 Fading = false
             end)
         else
             Fading = true
-            local CloseTween = TweenService:Create(WindowScale, CloseTweenInfo, { Scale = 0.4 })
+            local CloseTween = TweenService:Create(WindowScale, WindUIClose, { Scale = 0.88 })
             CloseTween:Play()
             CloseTween.Completed:Once(function()
                 MainFrame.Visible = false
@@ -13959,25 +13959,16 @@ function Library:CreateLoading(LoadingInfo)
 
     local TargetScale = Library.IsMobile and 0.8 or 1
     local MainScale = New("UIScale", {
-        Scale = 0.35,
+        Scale = TargetScale * 0.88,
         Parent = MainFrame
     })
     table.insert(Library.Scales, MainScale)
     Library.ScalesOffset[MainScale] = Library.IsMobile and 0.2 or 0
 
-    local TargetSize = UDim2.fromOffset(Loading.ShowSidebar and (Loading.ContentWidth + Loading.SidebarWidth) or Loading.WindowWidth, Loading.WindowHeight)
-    MainFrame.Size = UDim2.fromOffset(260, 260)
-
     TweenService:Create(
         MainScale,
-        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
         { Scale = TargetScale }
-    ):Play()
-
-    TweenService:Create(
-        MainFrame,
-        TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        { Size = TargetSize }
     ):Play()
 
     --// Layout Containers \\--
@@ -14466,6 +14457,24 @@ function Library:CreateLoading(LoadingInfo)
     function Loading:SetErrorMessage(Text)
         ErrorLabel.Text = Text
         Loading:UpdateLayout()
+    end
+
+    function Loading:SetCurrentStep(Step)
+        Loading.CurrentStep = math.clamp(Step, 0, Loading.TotalSteps)
+
+        local Progress = Loading.CurrentStep / Loading.TotalSteps
+        TweenService:Create(
+            SliderFill,
+            TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            { Size = UDim2.fromScale(Progress, 1) }
+        ):Play()
+
+        ProgressLabel.Text = string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps)
+    end
+
+    function Loading:SetTotalSteps(Steps)
+        Loading.TotalSteps = Steps
+        Loading:SetCurrentStep(Loading.CurrentStep)
     end
 
     function Loading:SetErrorButtons(Buttons)
