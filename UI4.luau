@@ -13932,6 +13932,7 @@ function Library:CreateLoading(LoadingInfo)
     local Loading = {
         CurrentStep = LoadingInfo.CurrentStep,
         TotalSteps = LoadingInfo.TotalSteps,
+        CornerRadius = LoadingCornerRadius,
 
         ShowSidebar = LoadingInfo.ShowSidebar,
         AutoResizeHeight = LoadingInfo.AutoResizeHeight,
@@ -13969,6 +13970,8 @@ function Library:CreateLoading(LoadingInfo)
         end)
     end)
 
+    local LoadingCornerRadius = LoadingInfo.CornerRadius or Library.CornerRadius or 10
+
     --// Main Frame \\--
     local MainFrame = New("TextButton", {
         Name = "Main",
@@ -13984,7 +13987,12 @@ function Library:CreateLoading(LoadingInfo)
         Parent = ScreenGui,
     })
     Library:AddOutline(MainFrame)
-    table.insert(Library.Corners, New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius), Parent = MainFrame }))
+    
+    local MainFrameCorner = New("UICorner", { 
+        CornerRadius = UDim.new(0, LoadingCornerRadius), 
+        Parent = MainFrame 
+    })
+    table.insert(Library.Corners, MainFrameCorner)
 
     local MainScale = New("UIScale", {
         Scale = Library.IsMobile and 0.8 or 1,
@@ -14192,23 +14200,25 @@ function Library:CreateLoading(LoadingInfo)
         Parent = SliderBar,
     })
 
+    -- 进度条填充（开启 ClipsDescendants 保证光泽绝不超出紫色部分）
     local SliderFill = New("Frame", {
         BackgroundColor3 = "AccentColor",
         BorderSizePixel = 0,
         Size = UDim2.fromScale(0, 1),
+        ClipsDescendants = true,
         Parent = SliderBar,
     })
     New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = SliderFill })
 
+    -- 光泽条（宽度设为 100%，从紫色条的最左侧划到最右侧，绝不跑到黑色未加载处）
     local Shimmer = New("Frame", {
         BackgroundColor3 = "WhiteColor",
-        BackgroundTransparency = 0.8,
+        BackgroundTransparency = 0.85,
         BorderSizePixel = 0,
-        Size = UDim2.new(0.3, 0, 1, 0),
-        Position = UDim2.new(-0.3, 0, 0, 0),
+        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(-1, 0, 0, 0),
         Parent = SliderFill,
     })
-    New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Shimmer })
     New("UIGradient", {
         Transparency = NumberSequence.new({
             NumberSequenceKeypoint.new(0, 1),
@@ -14219,8 +14229,8 @@ function Library:CreateLoading(LoadingInfo)
     })
     local ShimmerTween = TweenService:Create(
         Shimmer,
-        TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1),
-        { Position = UDim2.new(1.2, 0, 0, 0) }
+        TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1),
+        { Position = UDim2.new(1, 0, 0, 0) }
     )
     ShimmerTween:Play()
 
@@ -14481,6 +14491,13 @@ function Library:CreateLoading(LoadingInfo)
     function Loading:SetSidebarWidth(Width)
         Loading.SidebarWidth = Width
         Loading:UpdateLayout()
+    end
+
+    function Loading:SetCornerRadius(Radius: number)
+        Loading.CornerRadius = Radius
+        if MainFrameCorner then
+            MainFrameCorner.CornerRadius = UDim.new(0, Radius)
+        end
     end
 
     --// Sidebar \\--
