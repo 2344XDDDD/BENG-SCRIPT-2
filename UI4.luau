@@ -14317,6 +14317,8 @@ function Library:CreateLoading(LoadingInfo)
         Parent = SidebarScrolling,
     })
 
+    local SidebarItemIndex = 0
+
     local SidebarObject = {
         Elements = {},
         DependencyBoxes = {},
@@ -14335,6 +14337,72 @@ function Library:CreateLoading(LoadingInfo)
             Tabboxes = {},
         },
     }
+
+    local function AnimateSidebarEntry(TargetGui, DescendantProps)
+        SidebarItemIndex = SidebarItemIndex + 1
+        local StaggerDelay = (SidebarItemIndex - 1) * 0.06
+
+        local OriginalPos = TargetGui.Position
+        TargetGui.Position = UDim2.new(OriginalPos.X.Scale, OriginalPos.X.Offset, OriginalPos.Y.Scale, OriginalPos.Y.Offset - 12)
+
+        local OriginalValues = {}
+        for InstanceObj, Props in DescendantProps do
+            OriginalValues[InstanceObj] = {}
+            for PropName, TargetVal in Props do
+                OriginalValues[InstanceObj][PropName] = TargetVal
+                InstanceObj[PropName] = 1
+            end
+        end
+
+        task.delay(StaggerDelay, function()
+            if Loading.Destroyed or not TargetGui.Parent then return end
+
+            TweenService:Create(
+                TargetGui,
+                TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                { Position = OriginalPos }
+            ):Play()
+
+            for InstanceObj, Props in OriginalValues do
+                if InstanceObj.Parent then
+                    TweenService:Create(
+                        InstanceObj,
+                        TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                        Props
+                    ):Play()
+                end
+            end
+        end)
+    end
+
+    function SidebarObject:AddLabel(...)
+        local LabelObj = BaseGroupbox.__index.AddLabel(self, ...)
+        if LabelObj and LabelObj.TextLabel then
+            local Gui = LabelObj.TextLabel
+            AnimateSidebarEntry(Gui, {
+                [Gui] = { TextTransparency = 0 }
+            })
+        end
+        return LabelObj
+    end
+
+    function SidebarObject:AddButton(...)
+        local ButtonObj = BaseGroupbox.__index.AddButton(self, ...)
+        if ButtonObj and ButtonObj.Holder then
+            local Gui = ButtonObj.Holder
+            local Targets = {
+                [ButtonObj.Base] = {
+                    BackgroundTransparency = 0,
+                    TextTransparency = 0.4
+                }
+            }
+            if ButtonObj.Stroke then
+                Targets[ButtonObj.Stroke] = { Transparency = 0 }
+            end
+            AnimateSidebarEntry(Gui, Targets)
+        end
+        return ButtonObj
+    end
 
     SidebarList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         SidebarObject:Resize()
