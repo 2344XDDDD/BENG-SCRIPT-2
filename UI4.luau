@@ -11182,34 +11182,46 @@ function Library:CreateWindow(WindowInfo)
         end
     end
 
+    function Window:GetCornerRadius(): number
+        return Library.CornerRadius
+    end
+
     function Window:SetCornerRadius(Radius: number)
         assert(typeof(Radius) == "number", "Expected number for Radius got: " .. typeof(Radius))
-        Radius = math.min(Radius, 20)
+        Radius = math.clamp(Radius, 0, 24)
 
         local RadiusHalf = UDim.new(0, Radius / 2)
         local RadiusUDim = UDim.new(0, Radius)
         local HalfCurrent = Library.CornerRadius / 2
 
         for _, UICorner in Library.Corners do
-            if math.abs(UICorner.CornerRadius.Offset - HalfCurrent) < 0.001 then
-                UICorner.CornerRadius = RadiusHalf
-            else
-                UICorner.CornerRadius = RadiusUDim
+            if UICorner and UICorner.Parent then
+                if math.abs(UICorner.CornerRadius.Offset - HalfCurrent) < 0.001 then
+                    UICorner.CornerRadius = RadiusHalf
+                else
+                    UICorner.CornerRadius = RadiusUDim
+                end
             end
         end
 
         for _, UICorner in Library.SpecificCorners do
-            SetUICorner(UICorner, "TopRightRadius", RadiusHalf)
-            SetUICorner(UICorner, "TopLeftRadius", RadiusHalf)
-            SetUICorner(UICorner, "BottomRightRadius", RadiusHalf)
-            SetUICorner(UICorner, "BottomLeftRadius", RadiusHalf)
+            if UICorner and UICorner.Parent then
+                SetUICorner(UICorner, "TopRightRadius", RadiusHalf)
+                SetUICorner(UICorner, "TopLeftRadius", RadiusHalf)
+                SetUICorner(UICorner, "BottomRightRadius", RadiusHalf)
+                SetUICorner(UICorner, "BottomLeftRadius", RadiusHalf)
+            end
         end
 
         Library.CornerRadius = Radius
         WindowInfo.CornerRadius = Radius
 
-        ResizeButton.Position = UDim2.new(1, -Radius / 4, 0, 0)
-        BottomBackground.Size = UDim2.new(1, 0, 0, 20 + Radius)
+        if ResizeButton then
+            ResizeButton.Position = UDim2.new(1, -Radius / 4, 0, 0)
+        end
+        if BottomBackground then
+            BottomBackground.Size = UDim2.new(1, 0, 0, 20 + Radius)
+        end
 
         for _, Menu in Library.ContextMenus do
             if Menu.Destroyed then
@@ -12572,6 +12584,7 @@ function Library:CreateWindow(WindowInfo)
             end
             TweenService:Create(TabLabel, Library.TweenInfo, {
                 TextTransparency = 0,
+                Position = UDim2.fromOffset(36, 0),
             }):Play()
             if TabIcon then
                 TweenService:Create(TabIcon, Library.TweenInfo, {
@@ -12606,6 +12619,7 @@ function Library:CreateWindow(WindowInfo)
 
             TweenService:Create(TabLabel, Library.TweenInfo, {
                 TextTransparency = 0.5,
+                Position = UDim2.fromOffset(30, 0),
             }):Play()
 
             if TabIcon then
@@ -14155,14 +14169,28 @@ function Library:CreateLoading(LoadingInfo)
         Parent = InnerContent,
     })
 
-    --// Progress Bar \\--
-    local SliderBar = New("Frame", {
-        BackgroundColor3 = "MainColor",
-        Size = UDim2.new(0.7, 0, 0, 15),
+    --// Progress Bar (WindUI Style) \\--
+    local ProgressContainer = New("Frame", {
+        Name = "WindUI_ProgressTrack",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.8, 0, 0, 24),
         Parent = InnerContent,
     })
-    Library:AddOutline(SliderBar)
-    table.insert(Library.Corners, New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius / 2), Parent = SliderBar }))
+
+    local SliderBar = New("Frame", {
+        BackgroundColor3 = "MainColor",
+        Size = UDim2.new(1, 0, 0, 8),
+        AnchorPoint = Vector2.new(0.5, 1),
+        Position = UDim2.new(0.5, 0, 1, 0),
+        ClipsDescendants = true,
+        Parent = ProgressContainer,
+    })
+    New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = SliderBar })
+    New("UIStroke", {
+        Color = "OutlineColor",
+        Thickness = 1,
+        Parent = SliderBar,
+    })
 
     local SliderFill = New("Frame", {
         BackgroundColor3 = "AccentColor",
@@ -14170,21 +14198,42 @@ function Library:CreateLoading(LoadingInfo)
         Size = UDim2.fromScale(0, 1),
         Parent = SliderBar,
     })
-    table.insert(Library.Corners, New("UICorner", { CornerRadius = UDim.new(0, Library.CornerRadius / 2), Parent = SliderFill }))
+    New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = SliderFill })
+
+    local Shimmer = New("Frame", {
+        BackgroundColor3 = "WhiteColor",
+        BackgroundTransparency = 0.8,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0.3, 0, 1, 0),
+        Position = UDim2.new(-0.3, 0, 0, 0),
+        Parent = SliderFill,
+    })
+    New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Shimmer })
+    New("UIGradient", {
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.5, 0.4),
+            NumberSequenceKeypoint.new(1, 1),
+        }),
+        Parent = Shimmer,
+    })
+    local ShimmerTween = TweenService:Create(
+        Shimmer,
+        TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1),
+        { Position = UDim2.new(1.2, 0, 0, 0) }
+    )
+    ShimmerTween:Play()
 
     local ProgressLabel = New("TextLabel", {
         BackgroundTransparency = 1,
-        Size = UDim2.fromScale(1, 1),
-        Text = "",
-        TextSize = 14,
-        ZIndex = 2,
-        Parent = SliderBar,
-    })
-    New("UIStroke", {
-        ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
-        Color = "DarkColor",
-        LineJoinMode = Enum.LineJoinMode.Miter,
-        Parent = ProgressLabel,
+        Size = UDim2.new(1, 0, 0, 14),
+        Position = UDim2.new(0, 0, 0, 0),
+        Text = "0%",
+        TextSize = 13,
+        TextColor3 = "FontColor",
+        TextTransparency = 0.35,
+        TextXAlignment = Enum.TextXAlignment.Right,
+        Parent = ProgressContainer,
     })
 
     --// Sidebar Object \\--
@@ -14397,14 +14446,15 @@ function Library:CreateLoading(LoadingInfo)
     function Loading:SetCurrentStep(Step)
         Loading.CurrentStep = math.clamp(Step, 0, Loading.TotalSteps)
 
-        local Progress = Loading.CurrentStep / Loading.TotalSteps
+        local Progress = Loading.TotalSteps > 0 and (Loading.CurrentStep / Loading.TotalSteps) or 0
         TweenService:Create(
             SliderFill,
-            TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
             { Size = UDim2.fromScale(Progress, 1) }
         ):Play()
 
-        ProgressLabel.Text = string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps)
+        local Percent = math.floor(Progress * 100)
+        ProgressLabel.Text = string.format("%d%% (%d/%d)", Percent, Loading.CurrentStep, Loading.TotalSteps)
     end
 
     function Loading:SetTotalSteps(Steps)
@@ -14601,6 +14651,11 @@ function Library:CreateLoading(LoadingInfo)
 
     --// Destroy/Continue \\--
     function Loading:Destroy()
+        if ShimmerTween then
+            StopTween(ShimmerTween, true)
+            ShimmerTween = nil
+        end
+
         if RotationTween then
             StopTween(RotationTween, true)
             RotationTween = nil
