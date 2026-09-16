@@ -14234,17 +14234,66 @@ function Library:CreateLoading(LoadingInfo)
     )
     ShimmerTween:Play()
 
+    -- 文本视口容器（开启 ClipsDescendants 保证上下滚动时不穿帮）
+    local LabelMask = New("Frame", {
+        Name = "LabelMask",
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, 0, 0, 16),
+        Position = UDim2.new(0, 0, 0, -2),
+        Parent = ProgressContainer,
+    })
+
     local ProgressLabel = New("TextLabel", {
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 14),
-        Position = UDim2.new(0, 0, 0, 0),
-        Text = "0%",
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.fromScale(0, 0),
+        Text = string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps),
         TextSize = 13,
         TextColor3 = "FontColor",
         TextTransparency = 0.35,
         TextXAlignment = Enum.TextXAlignment.Right,
-        Parent = ProgressContainer,
+        Parent = LabelMask,
     })
+
+    -- 数字上下切换滚轮动效
+    local function AnimateStepText(newText)
+        if ProgressLabel.Text == newText then return end
+
+        local OldLabel = ProgressLabel
+
+        -- 创建从下方待命的新文字
+        local NewLabel = New("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.fromScale(1, 1),
+            Position = UDim2.new(0, 0, 1, 0), -- 位于下方
+            Text = newText,
+            TextSize = 13,
+            TextColor3 = "FontColor",
+            TextTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Right,
+            Parent = LabelMask,
+        })
+        ProgressLabel = NewLabel
+
+        -- 旧文字：向上划出并淡出
+        local OutTween = TweenService:Create(
+            OldLabel,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            { Position = UDim2.new(0, 0, -1, 0), TextTransparency = 1 }
+        )
+        OutTween:Play()
+        OutTween.Completed:Once(function()
+            OldLabel:Destroy()
+        end)
+
+        -- 新文字：从下向上滑入并淡入
+        TweenService:Create(
+            NewLabel,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            { Position = UDim2.fromScale(0, 0), TextTransparency = 0.35 }
+        ):Play()
+    end
 
     --// Sidebar Object \\--
     local SidebarScrolling = New("ScrollingFrame", {
@@ -14457,14 +14506,43 @@ function Library:CreateLoading(LoadingInfo)
         Loading.CurrentStep = math.clamp(Step, 0, Loading.TotalSteps)
 
         local Progress = Loading.TotalSteps > 0 and (Loading.CurrentStep / Loading.TotalSteps) or 0
+
+        -- 进度条伸长动画
         TweenService:Create(
             SliderFill,
-            TweenInfo.new(0.4, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
+            TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
             { Size = UDim2.fromScale(Progress, 1) }
         ):Play()
 
-        local Percent = math.floor(Progress * 100)
-        ProgressLabel.Text = string.format("%d%% (%d/%d)", Percent, Loading.CurrentStep, Loading.TotalSteps)
+        -- 触发文字“下进上出”平滑切换
+        AnimateStepText(string.format("%d/%d", Loading.CurrentStep, Loading.TotalSteps))
+
+        -- 如果全部加载完毕，整个进度条和文字平滑渐变淡出，随后自动关闭
+        if Loading.CurrentStep >= Loading.TotalSteps and Loading.TotalSteps > 0 then
+            task.delay(0.4, function()
+                if Loading.Destroyed then return end
+
+                -- 进度条透明渐隐
+                TweenService:Create(SliderBar, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = 1
+                }):Play()
+                TweenService:Create(SliderFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = 1
+                }):Play()
+                if ProgressLabel then
+                    TweenService:Create(ProgressLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        TextTransparency = 1
+                    }):Play()
+                end
+
+                -- 稍作等待后平滑销毁并呼出主 UI
+                task.delay(0.35, function()
+                    if not Loading.Destroyed then
+                        Loading:Destroy()
+                    end
+                end)
+            end)
+        end
     end
 
     function Loading:SetTotalSteps(Steps)
