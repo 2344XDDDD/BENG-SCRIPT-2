@@ -13841,8 +13841,260 @@ function Library:CreateWindow(WindowInfo)
     end
 
     if Library.IsMobile then
+        local ActivePrompt = nil
+
+        local function ShowCustomPrompt()
+            if ActivePrompt then return end
+
+            local PromptGui = New("ScreenGui", {
+                Name = "ObsidianPrompt",
+                DisplayOrder = 1005,
+                ResetOnSpawn = false
+            })
+            ParentUI(PromptGui)
+            SetAlwaysOnTop(PromptGui, true)
+
+            local TargetSize = UDim2.fromOffset(360, 195)
+            local PromptRadius = WindowInfo.CornerRadius or Library.CornerRadius or 10
+
+            local MainFrame = New("TextButton", {
+                Name = "Main",
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                BackgroundColor3 = function()
+                    return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
+                end,
+                Position = UDim2.fromScale(0.5, 0.5),
+                Size = UDim2.fromOffset(240, 140),
+                ClipsDescendants = true,
+                Text = "",
+                AutoButtonColor = false,
+                Parent = PromptGui,
+            })
+            Library:AddOutline(MainFrame)
+
+            table.insert(
+                Library.Corners,
+                New("UICorner", {
+                    CornerRadius = UDim.new(0, PromptRadius),
+                    Parent = MainFrame
+                })
+            )
+
+            local MainScale = New("UIScale", {
+                Scale = 0.85,
+                Parent = MainFrame
+            })
+            table.insert(Library.Scales, MainScale)
+
+            TweenService:Create(
+                MainFrame,
+                TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                { Size = TargetSize }
+            ):Play()
+
+            local TopBar = New("Frame", {
+                Name = "TopBar",
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 48),
+                ZIndex = 2,
+                Parent = MainFrame,
+            })
+            Library:MakeDraggable(MainFrame, TopBar, true, true)
+
+            local TitleHolder = New("Frame", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 1, 0),
+                Parent = TopBar,
+            })
+            New("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                HorizontalAlignment = Enum.HorizontalAlignment.Left,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                Padding = UDim.new(0, 6),
+                Parent = TitleHolder,
+            })
+            New("UIPadding", {
+                PaddingLeft = UDim.new(0, 12),
+                Parent = TitleHolder,
+            })
+
+            if WindowInfo.Icon then
+                local Icon = Library:GetCustomIcon(WindowInfo.Icon)
+                local WindowIcon = New("ImageLabel", {
+                    Size = WindowInfo.IconSize or UDim2.fromOffset(24, 24),
+                    Parent = TitleHolder,
+                })
+                if Icon then
+                    Library:ApplyLucideIcon(WindowIcon, Icon)
+                end
+            end
+
+            New("TextLabel", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -50, 1, 0),
+                Text = WindowInfo.Title,
+                TextSize = 18,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = TitleHolder,
+            })
+
+            Library:MakeLine(MainFrame, {
+                Position = UDim2.fromOffset(0, 48),
+                Size = UDim2.new(1, 0, 0, 1),
+            })
+
+            local InnerContent = New("Frame", {
+                Name = "InnerContent",
+                BackgroundTransparency = 1,
+                Position = UDim2.fromOffset(0, 49),
+                Size = UDim2.new(1, 0, 1, -100),
+                Parent = MainFrame,
+            })
+            New("UIListLayout", {
+                FillDirection = Enum.FillDirection.Vertical,
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                Padding = UDim.new(0, 6),
+                Parent = InnerContent,
+            })
+
+            New("TextLabel", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -30, 0, 24),
+                Text = "关闭脚本",
+                TextSize = 18,
+                TextColor3 = "FontColor",
+                TextXAlignment = Enum.TextXAlignment.Center,
+                Parent = InnerContent,
+            })
+
+            New("TextLabel", {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -30, 0, 18),
+                Text = "确定要退出并关闭脚本吗？",
+                TextSize = 14,
+                TextColor3 = "FontColor",
+                TextTransparency = 0.5,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                Parent = InnerContent,
+            })
+
+            local ButtonContainer = New("Frame", {
+                Name = "Buttons",
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2.new(0, 1),
+                Position = UDim2.fromScale(0, 1),
+                Size = UDim2.new(1, 0, 0, 50),
+                Parent = MainFrame,
+            })
+            New("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                Padding = UDim.new(0, 16),
+                Parent = ButtonContainer,
+            })
+
+            local LeftBtn = New("TextButton", {
+                BackgroundColor3 = "MainColor",
+                Size = UDim2.fromOffset(130, 32),
+                Text = "不关闭",
+                TextSize = 14,
+                TextColor3 = "FontColor",
+                Parent = ButtonContainer,
+            })
+            table.insert(
+                Library.Corners,
+                New("UICorner", {
+                    CornerRadius = UDim.new(0, PromptRadius),
+                    Parent = LeftBtn
+                })
+            )
+            Library:AddOutline(LeftBtn)
+
+            local RightBtn = New("TextButton", {
+                BackgroundColor3 = "DestructiveColor",
+                Size = UDim2.fromOffset(130, 32),
+                Text = "关闭",
+                TextSize = 14,
+                TextColor3 = "WhiteColor",
+                Parent = ButtonContainer,
+            })
+            table.insert(
+                Library.Corners,
+                New("UICorner", {
+                    CornerRadius = UDim.new(0, PromptRadius),
+                    Parent = RightBtn
+                })
+            )
+            Library:AddOutline(RightBtn)
+
+            local function ClosePrompt(Callback)
+                local ExitTween = TweenService:Create(
+                    MainScale,
+                    TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+                    { Scale = 0.6 }
+                )
+                ExitTween:Play()
+                ExitTween.Completed:Once(function()
+                    PromptGui:Destroy()
+                    ActivePrompt = nil
+                    if Callback then Callback() end
+                end)
+            end
+
+            LeftBtn.MouseEnter:Connect(function()
+                TweenService:Create(LeftBtn, Library.TweenInfo, {
+                    BackgroundColor3 = Library:GetBetterColor(Library.Scheme.MainColor, 10)
+                }):Play()
+            end)
+            LeftBtn.MouseLeave:Connect(function()
+                TweenService:Create(LeftBtn, Library.TweenInfo, {
+                    BackgroundColor3 = Library.Scheme.MainColor
+                }):Play()
+            end)
+            LeftBtn.MouseButton1Click:Connect(function()
+                ClosePrompt()
+            end)
+
+            RightBtn.MouseEnter:Connect(function()
+                TweenService:Create(RightBtn, Library.TweenInfo, {
+                    BackgroundColor3 = Library:GetBetterColor(Library.Scheme.DestructiveColor, 10)
+                }):Play()
+            end)
+            RightBtn.MouseLeave:Connect(function()
+                TweenService:Create(RightBtn, Library.TweenInfo, {
+                    BackgroundColor3 = Library.Scheme.DestructiveColor
+                }):Play()
+            end)
+            RightBtn.MouseButton1Click:Connect(function()
+                ClosePrompt(function()
+                    Library:Unload()
+                end)
+            end)
+
+            ActivePrompt = PromptGui
+        end
+
+        local LastToggleClickTime = 0
+        local SingleClickTask = nil
+
         local ToggleButton = Library:AddDraggableButton("Toggle", function()
-            Library:Toggle()
+            local CurrentTime = tick()
+            if CurrentTime - LastToggleClickTime < 0.3 then
+                if SingleClickTask then
+                    task.cancel(SingleClickTask)
+                    SingleClickTask = nil
+                end
+                LastToggleClickTime = 0
+                ShowCustomPrompt()
+            else
+                LastToggleClickTime = CurrentTime
+                SingleClickTask = task.delay(0.3, function()
+                    SingleClickTask = nil
+                    Library:Toggle()
+                end)
+            end
         end, true, true)
 
         local LockButton = Library:AddDraggableButton("Lock", function(self)
