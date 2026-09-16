@@ -13653,21 +13653,21 @@ function Library:CreateWindow(WindowInfo)
             WindowScale.Parent = MainFrame
         end
 
-        local AnimTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        local OpenTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         local CloseTweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 
         if Library.Toggled then
             Fading = true
             MainFrame.Visible = true
-            WindowScale.Scale = 0.82
-            local OpenTween = TweenService:Create(WindowScale, AnimTweenInfo, { Scale = 1 })
+            WindowScale.Scale = 0.4
+            local OpenTween = TweenService:Create(WindowScale, OpenTweenInfo, { Scale = 1 })
             OpenTween:Play()
             OpenTween.Completed:Once(function()
                 Fading = false
             end)
         else
             Fading = true
-            local CloseTween = TweenService:Create(WindowScale, CloseTweenInfo, { Scale = 0.82 })
+            local CloseTween = TweenService:Create(WindowScale, CloseTweenInfo, { Scale = 0.4 })
             CloseTween:Play()
             CloseTween.Completed:Once(function()
                 MainFrame.Visible = false
@@ -13959,18 +13959,26 @@ function Library:CreateLoading(LoadingInfo)
 
     local TargetScale = Library.IsMobile and 0.8 or 1
     local MainScale = New("UIScale", {
-        Scale = 0.65,
+        Scale = 0.35,
         Parent = MainFrame
     })
     table.insert(Library.Scales, MainScale)
     Library.ScalesOffset[MainScale] = Library.IsMobile and 0.2 or 0
 
-    local PopTween = TweenService:Create(
+    local TargetSize = UDim2.fromOffset(Loading.ShowSidebar and (Loading.ContentWidth + Loading.SidebarWidth) or Loading.WindowWidth, Loading.WindowHeight)
+    MainFrame.Size = UDim2.fromOffset(260, 260)
+
+    TweenService:Create(
         MainScale,
-        TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
         { Scale = TargetScale }
-    )
-    PopTween:Play()
+    ):Play()
+
+    TweenService:Create(
+        MainFrame,
+        TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = TargetSize }
+    ):Play()
 
     --// Layout Containers \\--
     local Container = New("Frame", {
